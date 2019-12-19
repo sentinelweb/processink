@@ -3,7 +3,6 @@ package test
 import processing.core.PApplet
 
 // from https://happycoding.io/examples/java/processing-in-java/swing-control-window
-
 class Test1 : PApplet() {
 
     private var red = 0f

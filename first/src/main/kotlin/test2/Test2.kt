@@ -17,7 +17,7 @@ class Test2 : PApplet() {
     companion object {
         const val MOVIE_PATH  = "/Users/robmunro/Dropbox/Photos/20170615_185709.mp4"
         const val SPRITE_PATH  = "/Users/robmunro/Documents/Processing/sketch_191031a/data/sprite.png"
-        const val LIB_PATH  = "file:/Users/robmunro/Documents/Processing/libraries/video/library"
+        const val LIB_PATH  = "/Users/robmunro/Documents/Processing/libraries/video/library/macosx64/"
 
     }
 
@@ -27,14 +27,16 @@ class Test2 : PApplet() {
     private lateinit var sprite: PImage
 
     init {
-        //NativeLibrary.addSearchPath("gstreamer-0.10",LIB_PATH)
-//        val path = System.getProperty("java.library.path")
-//        System.setProperty("java.library.path", "$path:$LIB_PATH")
+        // https://forum.processing.org/two/discussion/7593/processing-2-2-1-in-maven
+         System.setProperty("jna.library.path", LIB_PATH)
+         System.setProperty("gstreamer.library.path", LIB_PATH)
+         System.setProperty("gstreamer.plugin.path", "${LIB_PATH}plugins/")
     }
 
     override fun settings() {
         size(640, 360, PConstants.P2D)
     }
+
     override fun setup() {
         background(0)
         sprite = loadImage(SPRITE_PATH)
@@ -45,19 +47,20 @@ class Test2 : PApplet() {
         hint(PConstants.DISABLE_DEPTH_MASK)
         // Create the font
         printArray(PFont.list())
-        //f = createFont("SourceCodePro-Regular.ttf", 24);
-        //textFont(f);
+//        f = createFont("ArialMT", 24f);
+        f = createFont("Thonburi", 24f)
+        textFont(f)
         textSize(24f)
         textAlign(PConstants.CENTER, PConstants.CENTER)
         // TODO figure out how to configure movie libraries
-//        myMovie = Movie(this, MOVIE_PATH)
-//        myMovie.loop()
+        myMovie = Movie(this, MOVIE_PATH)
+        myMovie.loop()
     }
 
     override fun draw() {
         background(0)
         fill(255f, 204f, 0f)
-//        image(myMovie, 0f, 0f)
+        image(myMovie, 0f, 0f)
         ps.update()
         ps.display()
         ps.setEmitter(mouseX.toFloat(), mouseY.toFloat())
