@@ -29,7 +29,7 @@ class Test3 : PApplet() {
                     createShape(PConstants.BOX, it*10f).apply {
                         setFill(false)
                         setStroke(color(255))
-                        setStrokeWeight(it.toFloat())
+                        setStrokeWeight(1f)
                     })
             )
         }
