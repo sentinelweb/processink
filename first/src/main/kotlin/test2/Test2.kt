@@ -1,6 +1,5 @@
 package test2
 
-import com.sun.jna.NativeLibrary
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
@@ -8,8 +7,7 @@ import processing.core.PImage
 import processing.video.Movie
 
 fun main(args: Array<String>) {
-    val sketch = Test2()
-    sketch.run()
+    Test2().run()
 }
 
 class Test2 : PApplet() {
