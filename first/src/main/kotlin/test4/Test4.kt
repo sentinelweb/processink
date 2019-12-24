@@ -18,8 +18,8 @@ class Test4:PApplet() {
     override fun setup() {
 
         pointShader = loadShader(
-            "/Users/robmunro/repos/personal/processink/first/src/main/resources/test4/pointfrag.glsl",
-            "/Users/robmunro/repos/personal/processink/first/src/main/resources/test4/pointvert.glsl"
+            "$BASE_RESOURCES/test4/pointfrag.glsl",
+            "$BASE_RESOURCES/test4/pointvert.glsl"
         )
         pointShader.set("sharpness", 0.9f)
         strokeCap(PConstants.SQUARE)
@@ -35,6 +35,10 @@ class Test4:PApplet() {
             stroke(random(255f), random(255f), random(255f))
             point(mouseX.toFloat(), mouseY.toFloat())
         }
+    }
+
+    companion object {
+        private var BASE_RESOURCES = "${System.getProperty("user.dir")}/first/src/main/resources"
     }
 
     fun run() {

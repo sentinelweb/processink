@@ -13,20 +13,21 @@ fun main(args: Array<String>) {
 class Test3 : PApplet() {
     lateinit var lineShader: PShader
     val cubes = mutableListOf<Cubey>()
+
     override fun settings() {
-        size(640, 360, PConstants.P3D)
+        size(1920, 1080, PConstants.P3D)
     }
 
     override fun setup() {
         lineShader = loadShader(
-            "/Users/robmunro/repos/personal/processink/first/src/main/resources/test3/linefrag.glsl",
-            "/Users/robmunro/repos/personal/processink/first/src/main/resources/test3/linevert.glsl"
+            "$BASE_RESOURCES/test3/linefrag.glsl",
+            "$BASE_RESOURCES/test3/linevert.glsl"
         )
         lineShader.set("weight", 20f)
         (0..20).forEach {
             cubes.add(
                 Cubey(
-                    createShape(PConstants.BOX, it*10f).apply {
+                    createShape(PConstants.BOX, (it+2)*25f).apply {
                         setFill(false)
                         setStroke(color(255))
                         setStrokeWeight(1f)
@@ -43,7 +44,7 @@ class Test3 : PApplet() {
             pushMatrix()
             rotateX(cubey.angle)
             rotateY(cubey.angle)
-            lineShader.set("weight", mouseX * i / 150f)
+//            lineShader.set("weight", mouseX * i / 20f)
             shader(lineShader, PConstants.LINES)
             shape(cubey.cube)
             cubey.angle += 0.001f * i
@@ -58,5 +59,9 @@ class Test3 : PApplet() {
 
     fun run() {
         runSketch(arrayOf(this::class.java.simpleName), this)
+    }
+
+    companion object {
+        private var BASE_RESOURCES = "${System.getProperty("user.dir")}/first/src/main/resources"
     }
 }
