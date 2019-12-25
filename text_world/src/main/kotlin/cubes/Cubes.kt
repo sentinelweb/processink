@@ -1,7 +1,9 @@
 package cubes
 
+import cubes.TextList.Text
 import processing.core.PApplet
 import processing.core.PConstants
+import processing.core.PFont
 import processing.core.PShape
 import processing.opengl.PShader
 
@@ -12,56 +14,88 @@ fun main(args: Array<String>) {
 
 class Cubes : PApplet() {
     lateinit var lineShader: PShader
-    val cubes = mutableListOf<Cubey>()
+    lateinit var cubesList: CubeList
+    lateinit var textList: TextList
+    private lateinit var f: PFont
+    //lateinit var terminator:Terminator
 
     override fun settings() {
         size(1920, 1080, PConstants.P3D)
     }
 
     override fun setup() {
+        //terminator = Terminator(this)
+        textList = TextList(
+            this, mutableListOf(
+                Text("In every fact"),
+                Text("there is something"),
+                Text("that is true and false."),
+                Text("Every fact is true and false"),
+                Text("at the same time."),
+                Text("The truth is resonance."),
+                Text("All truth has a context"),
+                Text("and that context is us."),
+                Text("But this is at odds"),
+                Text("with the very definition of truth."),
+                Text("That truth is universal."),
+                Text("All truth is yours"),
+                Text("and don't let anyone "),
+                Text("tell you differently."),
+                Text("Love without hope.")
+            )
+        )
         lineShader = loadShader(
-            "$BASE_RESOURCES/test3/linefrag.glsl",
-            "$BASE_RESOURCES/test3/linevert.glsl"
+            "$BASE_RESOURCES/cubes/linefrag.glsl",
+            "$BASE_RESOURCES/cubes/linevert.glsl"
         )
         lineShader.set("weight", 20f)
-        (0..20).forEach {
-            cubes.add(
-                Cubey(
-                    createShape(PConstants.BOX, (it+2)*25f).apply {
-                        setFill(false)
-                        setStroke(color(255))
-                        setStrokeWeight(1f)
-                    })
-            )
-        }
+        cubesList = CubeList(this, textList.texts.size, 50f, 500f)
         hint(PConstants.DISABLE_DEPTH_MASK)
     }
 
-    override fun draw() {
-        background(0)
-        translate(width / 2f, height / 2f)
-        cubes.forEachIndexed() { i, cubey ->
-            pushMatrix()
-            rotateX(cubey.angle)
-            rotateY(cubey.angle)
-//            lineShader.set("weight", mouseX * i / 20f)
-            shader(lineShader, PConstants.LINES)
-            shape(cubey.cube)
-            cubey.angle += 0.001f * i
-            popMatrix()
-        }
+    private fun alignTexts() {
+        textList.apply { setProps() }
+            .texts
+            .zip(cubesList.cubes.toTypedArray())
+            .forEach { (text, cube) ->
+                val fl = cube.width / 2
+                text.point.set(fl - textWidth(text.text.toString()) / 2, fl, fl)
+
+//                val fl = cube.width * Math.sqrt(2.0).toFloat()
+//                val angle = cube.angle + Math.PI / 4
+//                text.point.set(fl*Math.sin(angle).toFloat(), fl*Math.sin(angle).toFloat() , fl*Math.sin(angle).toFloat() )
+            }
     }
 
-    data class Cubey(
-        val cube: PShape,
-        var angle: Float = 0f
-    )
+    // make a algo to send different cubes to catch each other up.
+    override fun draw() {
+        background(0)
+        alignTexts()
+        lineShader.set("weight", mouseX / 200f)
+        shader(lineShader, PConstants.LINES)
+        cubesList.draw() { i, cube ->
+            val angleWrap = cube.angle % 2 * Math.PI
+            val threshold = 1
+            if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
+                pushMatrix()
+                rotateX(cube.angle)
+                rotateY(cube.angle)
+                textList.texts[i].draw(this)
+                popMatrix()
+            }
+        }
+        resetShader()
+
+        //terminator.draw()
+        //textList.draw()
+        //text("Love without hope", 320f, 180f)
+    }
 
     fun run() {
         runSketch(arrayOf(this::class.java.simpleName), this)
     }
 
     companion object {
-        private var BASE_RESOURCES = "${System.getProperty("user.dir")}/first/src/main/resources"
+        internal var BASE_RESOURCES = "${System.getProperty("user.dir")}/text_world/src/main/resources"
     }
 }
