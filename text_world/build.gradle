@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
+//    id 'application'
+//    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 ext {
@@ -18,6 +20,11 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
 }
+//
+//javafx {
+//    version = "13"
+//    modules = [ 'javafx.controls' ]
+//}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -40,6 +47,8 @@ dependencies {
     //implementation "org.processing:serial:$processing_version"
     // https://mvnrepository.com/artifact/org.processing/pdf
     //implementation "org.processing:pdf:$processing_version"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
+    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
 
     // testing
     testCompile group: 'junit', name: 'junit', version: '4.12'

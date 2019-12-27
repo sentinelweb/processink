@@ -1,22 +1,25 @@
 package cubes
 
 import cubes.TextList.Text
+import cubes.gui.SwingGui
 import processing.core.PApplet
 import processing.core.PConstants
-import processing.core.PFont
 import processing.opengl.PShader
-
+import java.awt.Color
 
 fun main(args: Array<String>) {
-    Cubes().run()
+    val cubes = Cubes()
+    cubes.run()
+    SwingGui(cubes).show()
 }
 
 class Cubes : PApplet() {
-    lateinit var lineShader: PShader
-    lateinit var cubesList: CubeList
-    lateinit var textList: TextList
-    private lateinit var f: PFont
+    private lateinit var lineShader: PShader
+    private lateinit var cubesList: CubeList
+    private lateinit var textList: TextList
     //lateinit var terminator:Terminator
+
+    var color = Color.BLACK
 
     override fun settings() {
         size(1920, 1080, PConstants.P3D)
@@ -68,7 +71,7 @@ class Cubes : PApplet() {
 
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
-        background(0)
+        background(color.red.toFloat(),color.green.toFloat(),color.blue.toFloat())
         alignTexts()
         lineShader.set("weight", mouseX / 200f)
         shader(lineShader, PConstants.LINES)
