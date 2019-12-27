@@ -13,10 +13,9 @@ fun main(args: Array<String>) {
 class Test2 : PApplet() {
 
     companion object {
-        const val MOVIE_PATH  = "/Users/robmunro/Dropbox/Photos/20170615_185709.mp4"
-        const val SPRITE_PATH  = "/Users/robmunro/Documents/Processing/sketch_191031a/data/sprite.png"
-        const val LIB_PATH  = "/Users/robmunro/Documents/Processing/libraries/video/library/macosx64/"
-
+        val MOVIE_PATH  = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
+        val SPRITE_PATH  = "${System.getProperty("user.home")}/Documents/Processing/sketch_191031a/data/sprite.png"
+        val LIB_PATH  = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
     }
 
     private lateinit var f: PFont
@@ -26,9 +25,9 @@ class Test2 : PApplet() {
 
     init {
         // https://forum.processing.org/two/discussion/7593/processing-2-2-1-in-maven
-         System.setProperty("jna.library.path", LIB_PATH)
-         System.setProperty("gstreamer.library.path", LIB_PATH)
-         System.setProperty("gstreamer.plugin.path", "${LIB_PATH}plugins/")
+         System.setProperty("jna.library.path", "$LIB_PATH/")
+         System.setProperty("gstreamer.library.path", "$LIB_PATH/")
+         System.setProperty("gstreamer.plugin.path", "$LIB_PATH/plugins/")
     }
 
     override fun settings() {

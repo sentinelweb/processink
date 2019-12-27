@@ -1,13 +1,14 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
+    // java fx version incompatibility :(
 //    id 'application'
 //    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 ext {
     // this is the path to the native libs in the p3 installation
-    processing_native_lib_path = '/Users/robmunro/Documents/Processing/libraries/video/library/macosx64/'
+    processing_native_lib_path = "$PROCESSING_LIB_PATH"
     processing_version="3.3.7"
     jna_version="3.4.0"
 }
