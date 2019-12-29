@@ -6,17 +6,28 @@ package cubes.gui
 
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.GridLayout
+import java.awt.event.ActionEvent
 import javax.swing.*
 
 fun main() {
     Controls(object : Controls.MyPanel.Listener {
-        override fun sliderSpeed(value: Float) = println("slider1: $value")
-        override fun slider2(value: Float) = println("slider2: $value")
-        override fun slider3(value: Float) = println("slider3: $value")
-        override fun buttonNone() = println("button1")
-        override fun buttonLine() = println("button2")
-        override fun buttonNeon() = println("button3")
-        override fun sliderWeight(value: Float) = println("sliderWeight: $value")
+        override fun motionSliderSpeed(value: Float) = println("sliderspeed: $value")
+        override fun shaderButtonNone() = println("shader button none")
+        override fun shaderButtonLine() = println("shader button line")
+        override fun shaderButtonNeon() = println("shader button neon")
+        override fun shaderSliderWeight(value: Float) = println("sliderWeight: $value")
+        override fun motionRotZ(selected: Boolean) = println("motionRotZ: $selected")
+        override fun motionRotY(selected: Boolean) = println("motionRotY: $selected")
+        override fun motionRotX(selected: Boolean) = println("motionRotX: $selected")
+        override fun motionAlignExecute() = println("motionAlignExecute")
+        override fun motionSliderAlignTime(alignTime: Float) = println("motionSliderAlignTime :$alignTime")
+        override fun textRandom(selected: Boolean) = println("textRandom: $selected")
+        override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
+        override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
+        override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
+        override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
+        override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
     })
 }
 
@@ -41,25 +52,23 @@ class Controls constructor(cubesApplet: MyPanel.Listener) {
     class MyPanel constructor(val listener: Listener) : JPanel() {
 
         interface Listener {
-            fun sliderSpeed(value: Float)
-            fun slider2(value: Float)
-            fun slider3(value: Float)
-            fun buttonNone()
-            fun buttonLine()
-            fun buttonNeon()
-            fun sliderWeight(value: Float)
+            fun motionSliderSpeed(value: Float)
+            fun shaderButtonNone()
+            fun shaderButtonLine()
+            fun shaderButtonNeon()
+            fun shaderSliderWeight(value: Float)
+            fun motionRotZ(selected: Boolean)
+            fun motionRotY(selected: Boolean)
+            fun motionRotX(selected: Boolean)
+            fun motionAlignExecute()
+            fun motionSliderAlignTime(alignTime: Float)
+            fun textRandom(selected: Boolean)
+            fun textNearRandom(selected: Boolean)
+            fun textInOrder(selected: Boolean)
+            fun textMotionCube(selected: Boolean)
+            fun textMotionAround(selected: Boolean)
+            fun textMotionFade(selected: Boolean)
         }
-
-        private var buttonNone: JButton
-        private var buttonLine: JButton
-        private var buttonNeon: JButton
-        private var shaderSliderWeight: JSlider
-        private var sliderSpeed: JSlider
-        private var slider2: JSlider
-        private var slider3: JSlider
-        //private var selectShaderCombo: JComboBox<String>
-        private var motionLabel = JLabel("Motion")
-        private var speedLabel = JLabel("Speed")
 
         init {
             //construct preComponents
@@ -68,47 +77,98 @@ class Controls constructor(cubesApplet: MyPanel.Listener) {
 
             setPreferredSize(Dimension(800, 400))
             setLayout(BorderLayout())
-            //construct components
-            buttonNone = JButton("None").setup { listener.buttonNone() }
-            buttonLine = JButton("Line").setup { listener.buttonLine() }
-            buttonNeon = JButton("Neon").setup { listener.buttonNeon() }
-            shaderSliderWeight = JSlider(0, 200)
-                .setup(1, 50) {
-                    val source = it.source as JSlider
-                    listener.sliderWeight(source.value.toFloat() / 10f)
-                }
 
             add(JPanel().apply {
                 preferredSize = Dimension(200, 400)
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                add(buttonNone)
-                add(buttonLine)
-                add(buttonNeon)
-                add(shaderSliderWeight)
+                titledBorder("Shader")
+
+                add(JButton("None").setup { listener.shaderButtonNone() })
+                add(JButton("Line").setup { listener.shaderButtonLine() })
+                add(JButton("Neon").setup { listener.shaderButtonNeon() })
+                add(
+                    JSlider(0, 200)
+                        .setup(1, 50, false, {
+                            val source = it.source as JSlider
+                            listener.shaderSliderWeight(source.value.toFloat() / 10f)
+                        })
+                )
+
             }, BorderLayout.EAST)
-
-            sliderSpeed = JSlider(-400, 400)
-                .setup(1, 50) {
-                    val source = it.source as JSlider
-                    listener.sliderSpeed(source.value.toFloat()/10f)
-                }
-            slider2 = JSlider(0, 20)
-                .setup(1, 5) {
-                    val source = it.source as JSlider
-                    listener.slider2(source.value.toFloat())
-                }
-            slider3 = JSlider(0, 20)
-                .setup(1, 5) {
-                    val source = it.source as JSlider
-                    listener.slider3(source.value.toFloat())
-                }
-
-            add( JPanel().apply {
+            add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                add(sliderSpeed)
-                add(slider2)
-                add(slider3)
+                add(JPanel().apply {
+                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    titledBorder("Cube Motion")
+                    // speed
+                    add(
+                        JSlider(-400, 400)
+                            .setup(1, 50, true, {
+                                val source = it.source as JSlider
+                                listener.motionSliderSpeed(source.value.toFloat() / 10f)
+                            }).wrapWithLabel("Speed")
+                    )
+                    // axis
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JToggleButton("X").setup { ae -> listener.motionRotX(isSelected(ae)) })
+                            add(JToggleButton("Y").setup { ae -> listener.motionRotY(isSelected(ae)) })
+                            add(JToggleButton("Z").setup { ae -> listener.motionRotZ(isSelected(ae)) })
+                        }.wrapWithLabel("RotationAxis", 100)
+                    )
+
+                    // align
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(
+                            JSlider(-400, 400)
+                                .setup(1, 100, false, {
+                                    val source = it.source as JSlider
+                                    listener.motionSliderAlignTime(source.value.toFloat() / 10f)
+                                })
+                        )
+                        add(JButton("Execute").setup { listener.motionAlignExecute() })
+                    }.wrapWithLabel("Align time"))
+                }, BorderLayout.CENTER)
+
+                add(JPanel().apply {
+                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    titledBorder("Text Control")
+                    // order
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JToggleButton("Random").setup { ae -> listener.textRandom(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Near Random").setup { ae -> listener.textNearRandom(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("In order").setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
+                        }.wrapWithLabel("Ordering")
+                    )
+
+                    // motion
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JToggleButton("With Cube").setup { ae -> listener.textMotionCube(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Around").setup { ae -> listener.textMotionAround(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Fade").setup { ae -> listener.textMotionFade(isSelectedDeselectOthers(ae)) })
+                        }.wrapWithLabel("Motion")
+                    )
+
+                })
             }, BorderLayout.CENTER)
+        }
+
+        private fun isSelected(ae: ActionEvent) = (ae.source as JToggleButton).isSelected
+        private fun isSelectedDeselectOthers(ae: ActionEvent): Boolean {
+            val jToggleButton = ae.source as JToggleButton
+            val selected = jToggleButton.isSelected
+            jToggleButton.parent.components.forEach { component ->
+                if (component != jToggleButton && component is JToggleButton) {
+                    component.isSelected = false
+                }
+            }
+            return selected;
         }
 
     }

@@ -87,7 +87,7 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
         //text("Love without hope", 320f, 180f)
     }
 
-    override fun sliderSpeed(value: Float) {
+    override fun motionSliderSpeed(value: Float) {
         rotationSpeed = value / 10000f
         cubesList.stateUpdater = fun(i: Int, cube: Cube) {
             cube.angle += rotationSpeed * (i + 1)
@@ -95,28 +95,64 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
         }
     }
 
-    override fun slider2(value: Float) {
-
-    }
-
-    override fun slider3(value: Float) {
-
-    }
-
-    override fun buttonNone() {
+    override fun shaderButtonNone() {
         currentShader = null
     }
 
-    override fun buttonLine() {
+    override fun shaderButtonLine() {
         currentShader = lineShader
     }
 
-    override fun buttonNeon() {
+    override fun shaderButtonNeon() {
 
     }
 
-    override fun sliderWeight(value: Float) {
+    override fun shaderSliderWeight(value: Float) {
         lineShader.set("weight", value)
+    }
+
+    override fun motionRotZ(selected: Boolean) {
+
+    }
+
+    override fun motionRotY(selected: Boolean) {
+
+    }
+
+    override fun motionRotX(selected: Boolean) {
+
+    }
+
+    override fun motionAlignExecute() {
+
+    }
+
+    override fun motionSliderAlignTime(alignTime: Float) {
+
+    }
+
+    override fun textRandom(selected: Boolean) {
+
+    }
+
+    override fun textNearRandom(selected: Boolean) {
+
+    }
+
+    override fun textInOrder(selected: Boolean) {
+
+    }
+
+    override fun textMotionCube(selected: Boolean) {
+
+    }
+
+    override fun textMotionAround(selected: Boolean) {
+
+    }
+
+    override fun textMotionFade(selected: Boolean) {
+
     }
 
     fun run() {
