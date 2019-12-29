@@ -2,9 +2,12 @@ package cubes
 
 import cubes.TextList.Text
 import cubes.gui.Controls
-import cubes.gui.SwingGui
+import cubes.shaders.FlameShader
+import cubes.shaders.LineShader
+import cubes.shaders.ShaderWrapper
 import processing.core.PApplet
 import processing.core.PConstants
+import processing.opengl.FrameBuffer
 import processing.opengl.PShader
 import java.awt.Color
 
@@ -16,10 +19,11 @@ fun main(args: Array<String>) {
 }
 
 class Cubes : PApplet(), Controls.MyPanel.Listener {
-    private lateinit var lineShader: PShader
+    private lateinit var lineShader: LineShader
+    private lateinit var flameShader: FlameShader
     private lateinit var cubesList: CubeList
     private lateinit var textList: TextList
-    private var currentShader:PShader? = null
+    private var currentShader:ShaderWrapper? = null
     //lateinit var terminator:Terminator
 
     var color = Color.BLACK
@@ -51,14 +55,16 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
                 Text("Love without hope.")
             )
         )
-        lineShader = loadShader(
-            "$BASE_RESOURCES/cubes/linefrag.glsl",
-            "$BASE_RESOURCES/cubes/linevert.glsl"
-        )
+//        lineShader = loadShader(
+//            "$BASE_RESOURCES/cubes/linefrag.glsl",
+//            "$BASE_RESOURCES/cubes/linevert.glsl"
+//        )
+        lineShader = LineShader(this)
         lineShader.set("weight", 20f)
+        flameShader = FlameShader(this)
         cubesList = CubeList(this, textList.texts.size, 50f, 400f)
         hint(PConstants.DISABLE_DEPTH_MASK)
-        //currentShader = lineShader
+        currentShader = flameShader
     }
 
     private fun alignTexts() {
@@ -77,7 +83,7 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
 
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
-        currentShader?.let { shader(lineShader, PConstants.LINES) } ?: resetShader()
+        currentShader?.engage() ?: resetShader()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         alignTexts()
         cubesList.draw()
@@ -104,7 +110,7 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
     }
 
     override fun shaderButtonNeon() {
-
+        currentShader = flameShader
     }
 
     override fun shaderSliderWeight(value: Float) {

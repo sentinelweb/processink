@@ -19,7 +19,7 @@ class BookOfShadersTest : PApplet() {
     override fun setup() {
         noStroke()
 
-        shader = loadShader("$BASE_RESOURCES/bookofshaders/8_motionRotationFrag.glsl")
+        shader = loadShader("$BASE_RESOURCES/shadertoy/st_neon.glsl")
     }
 
     override fun  draw() {
