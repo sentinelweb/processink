@@ -1,7 +1,6 @@
 package cubes.gui
 
 import cubes.Cubes
-import java.awt.Color
 import javax.swing.JButton
 import javax.swing.JColorChooser
 import javax.swing.JFrame

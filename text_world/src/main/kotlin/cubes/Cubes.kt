@@ -1,6 +1,7 @@
 package cubes
 
 import cubes.TextList.Text
+import cubes.gui.Controls
 import cubes.gui.SwingGui
 import processing.core.PApplet
 import processing.core.PConstants
@@ -10,19 +11,23 @@ import java.awt.Color
 fun main(args: Array<String>) {
     val cubes = Cubes()
     cubes.run()
-    SwingGui(cubes).show()
+    //SwingGui(cubes).show()
+    Controls(cubes)
 }
 
-class Cubes : PApplet() {
+class Cubes : PApplet(), Controls.MyPanel.Listener {
     private lateinit var lineShader: PShader
     private lateinit var cubesList: CubeList
     private lateinit var textList: TextList
+    private var currentShader:PShader? = null
     //lateinit var terminator:Terminator
 
     var color = Color.BLACK
 
+    private var rotationSpeed = 0.01f
+
     override fun settings() {
-        size(1920, 1080, PConstants.P3D)
+        size(1280, 720, PConstants.P3D)
     }
 
     override fun setup() {
@@ -51,8 +56,9 @@ class Cubes : PApplet() {
             "$BASE_RESOURCES/cubes/linevert.glsl"
         )
         lineShader.set("weight", 20f)
-        cubesList = CubeList(this, textList.texts.size, 50f, 500f)
+        cubesList = CubeList(this, textList.texts.size, 50f, 400f)
         hint(PConstants.DISABLE_DEPTH_MASK)
+        //currentShader = lineShader
     }
 
     private fun alignTexts() {
@@ -71,26 +77,46 @@ class Cubes : PApplet() {
 
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
-        background(color.red.toFloat(),color.green.toFloat(),color.blue.toFloat())
+        currentShader?.let { shader(lineShader, PConstants.LINES) } ?: resetShader()
+        background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         alignTexts()
-        lineShader.set("weight", mouseX / 200f)
-        shader(lineShader, PConstants.LINES)
-        cubesList.draw() { i, cube ->
-            val angleWrap = cube.angle % 2 * Math.PI
-            val threshold = 1
-            if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
-                pushMatrix()
-                rotateX(cube.angle)
-                rotateY(cube.angle)
-                textList.texts[i].draw(this)
-                popMatrix()
-            }
-        }
-        resetShader()
+        cubesList.draw()
 
         //terminator.draw()
         //textList.draw()
         //text("Love without hope", 320f, 180f)
+    }
+
+    override fun sliderSpeed(value: Float) {
+        rotationSpeed = value / 10000f
+        cubesList.stateUpdater = fun(i: Int, cube: Cube) {
+            cube.angle += rotationSpeed * (i + 1)
+            // cube.angle += 0.001f + if (i>0) cubes[i-1].angle * 0.01f else 0f
+        }
+    }
+
+    override fun slider2(value: Float) {
+
+    }
+
+    override fun slider3(value: Float) {
+
+    }
+
+    override fun buttonNone() {
+        currentShader = null
+    }
+
+    override fun buttonLine() {
+        currentShader = lineShader
+    }
+
+    override fun buttonNeon() {
+
+    }
+
+    override fun sliderWeight(value: Float) {
+        lineShader.set("weight", value)
     }
 
     fun run() {
@@ -99,5 +125,19 @@ class Cubes : PApplet() {
 
     companion object {
         internal var BASE_RESOURCES = "${System.getProperty("user.dir")}/text_world/src/main/resources"
+
+    }
+
+    /// experiments //////////////
+    val textToCube = { i: Int, cube: Cube ->
+        val angleWrap = cube.angle % 2 * Math.PI
+        val threshold = 1
+        if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
+            pushMatrix()
+            rotateX(cube.angle)
+            rotateY(cube.angle)
+            textList.texts[i].draw(this)
+            popMatrix()
+        }
     }
 }
