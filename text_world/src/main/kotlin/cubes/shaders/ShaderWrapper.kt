@@ -21,7 +21,7 @@ abstract class ShaderWrapper(
         shader.set("u_time", p.millis() / 1000.0f)
     }
 
-    fun set(param: String, value: Any) {
+    fun set(param: String, value: Any):ShaderWrapper {
         when (value) {
             is Float -> shader.set(param, value)
             is Double -> shader.set(param, value.toFloat())
@@ -34,6 +34,7 @@ abstract class ShaderWrapper(
             is PImage -> shader.set(param, value)
             else -> println("Cannot handle type ${value::class.java.simpleName} : $param to $value")
         }
+        return this
     }
 
     fun engage() {

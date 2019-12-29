@@ -1,5 +1,6 @@
 package cubes
 
+import cubes.CubesContract.ShaderType
 import cubes.TextList.Text
 import cubes.gui.Controls
 import cubes.shaders.FlameShader
@@ -7,28 +8,26 @@ import cubes.shaders.LineShader
 import cubes.shaders.ShaderWrapper
 import processing.core.PApplet
 import processing.core.PConstants
-import processing.opengl.FrameBuffer
-import processing.opengl.PShader
 import java.awt.Color
 
-fun main(args: Array<String>) {
+fun main() {
     val cubes = Cubes()
+    val controls = Controls()
+    val presenter = CubesPresenter(controls, cubes)
+    cubes.cubesPresenter = presenter
     cubes.run()
-    //SwingGui(cubes).show()
-    Controls(cubes)
 }
 
-class Cubes : PApplet(), Controls.MyPanel.Listener {
+class Cubes : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var flameShader: FlameShader
     private lateinit var cubesList: CubeList
     private lateinit var textList: TextList
     private var currentShader:ShaderWrapper? = null
     //lateinit var terminator:Terminator
+    lateinit var cubesPresenter: CubesPresenter
 
     var color = Color.BLACK
-
-    private var rotationSpeed = 0.01f
 
     override fun settings() {
         size(1280, 720, PConstants.P3D)
@@ -55,10 +54,6 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
                 Text("Love without hope.")
             )
         )
-//        lineShader = loadShader(
-//            "$BASE_RESOURCES/cubes/linefrag.glsl",
-//            "$BASE_RESOURCES/cubes/linevert.glsl"
-//        )
         lineShader = LineShader(this)
         lineShader.set("weight", 20f)
         flameShader = FlameShader(this)
@@ -67,25 +62,11 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
         currentShader = flameShader
     }
 
-    private fun alignTexts() {
-        textList.apply { setProps() }
-            .texts
-            .zip(cubesList.cubes.toTypedArray())
-            .forEach { (text, cube) ->
-                val fl = cube.width / 2
-                text.point.set(fl - textWidth(text.text.toString()) / 2, fl, fl)
-
-//                val fl = cube.width * Math.sqrt(2.0).toFloat()
-//                val angle = cube.angle + Math.PI / 4
-//                text.point.set(fl*Math.sin(angle).toFloat(), fl*Math.sin(angle).toFloat() , fl*Math.sin(angle).toFloat() )
-            }
-    }
-
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
         currentShader?.engage() ?: resetShader()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
-        alignTexts()
+        // alignTexts()
         cubesList.draw()
 
         //terminator.draw()
@@ -93,72 +74,24 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
         //text("Love without hope", 320f, 180f)
     }
 
-    override fun motionSliderSpeed(value: Float) {
-        rotationSpeed = value / 10000f
-        cubesList.stateUpdater = fun(i: Int, cube: Cube) {
-            cube.angle += rotationSpeed * (i + 1)
-            // cube.angle += 0.001f + if (i>0) cubes[i-1].angle * 0.01f else 0f
+    override fun setShaderType(type: ShaderType) {
+        when(type) {
+            ShaderType.NONE -> currentShader = null
+            ShaderType.LINES -> currentShader = lineShader
+            ShaderType.NEON -> currentShader = flameShader
         }
     }
 
-    override fun shaderButtonNone() {
-        currentShader = null
+    override fun setShaderParam(type: ShaderType, param: String, value: Any) {
+        when(type) {
+            ShaderType.NONE -> currentShader = null
+            ShaderType.LINES -> lineShader.set(param,value)
+            ShaderType.NEON -> flameShader.set(param,value)
+        }
     }
 
-    override fun shaderButtonLine() {
-        currentShader = lineShader
-    }
-
-    override fun shaderButtonNeon() {
-        currentShader = flameShader
-    }
-
-    override fun shaderSliderWeight(value: Float) {
-        lineShader.set("weight", value)
-    }
-
-    override fun motionRotZ(selected: Boolean) {
-
-    }
-
-    override fun motionRotY(selected: Boolean) {
-
-    }
-
-    override fun motionRotX(selected: Boolean) {
-
-    }
-
-    override fun motionAlignExecute() {
-
-    }
-
-    override fun motionSliderAlignTime(alignTime: Float) {
-
-    }
-
-    override fun textRandom(selected: Boolean) {
-
-    }
-
-    override fun textNearRandom(selected: Boolean) {
-
-    }
-
-    override fun textInOrder(selected: Boolean) {
-
-    }
-
-    override fun textMotionCube(selected: Boolean) {
-
-    }
-
-    override fun textMotionAround(selected: Boolean) {
-
-    }
-
-    override fun textMotionFade(selected: Boolean) {
-
+    override fun setCubesMotion(function: (Int, Cube) -> Unit) {
+        cubesList.stateUpdater = function
     }
 
     fun run() {
@@ -170,16 +103,27 @@ class Cubes : PApplet(), Controls.MyPanel.Listener {
 
     }
 
+
     /// experiments //////////////
-    val textToCube = { i: Int, cube: Cube ->
-        val angleWrap = cube.angle % 2 * Math.PI
-        val threshold = 1
-        if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
-            pushMatrix()
-            rotateX(cube.angle)
-            rotateY(cube.angle)
-            textList.texts[i].draw(this)
-            popMatrix()
-        }
-    }
+//    val textToCube = { i: Int, cube: Cube ->
+//        val angleWrap = cube.angle % 2 * Math.PI
+//        val threshold = 1
+//        if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
+//            pushMatrix()
+//            rotateX(cube.angle)
+//            rotateY(cube.angle)
+//            textList.texts[i].draw(this)
+//            popMatrix()
+//        }
+//    }
+
+//    private fun alignTexts() {
+//        textList.apply { setProps() }
+//            .texts
+//            .zip(cubesList.cubes.toTypedArray())
+//            .forEach { (text, cube) ->
+//                val fl = cube.width / 2
+//                text.point.set(fl - textWidth(text.text.toString()) / 2, fl, fl)
+//            }
+//    }
 }

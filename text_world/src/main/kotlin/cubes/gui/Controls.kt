@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent
 import javax.swing.*
 
 fun main() {
-    Controls(object : Controls.MyPanel.Listener {
+    val printListener = object : Controls.Listener {
         override fun motionSliderSpeed(value: Float) = println("sliderspeed: $value")
         override fun shaderButtonNone() = println("shader button none")
         override fun shaderButtonLine() = println("shader button line")
@@ -28,18 +28,21 @@ fun main() {
         override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
         override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
         override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
-    })
+    }
+    Controls()
+        .setListener(printListener)
+        .showWindow()
 }
 
-class Controls constructor(cubesApplet: MyPanel.Listener) {
+class Controls constructor() {
 
-    private val controlPanel: JPanel
-
-    init {
+    private lateinit var controlPanel: JPanel
+    private lateinit var listener: Listener
+    fun showWindow() {
         val frame = JFrame("Controls")
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
-        controlPanel = MyPanel(cubesApplet)
+        controlPanel = MyPanel(listener)
         //controlPanel.setOpaque(true) //content panes must be opaque
 
         frame.add(controlPanel)
@@ -49,26 +52,31 @@ class Controls constructor(cubesApplet: MyPanel.Listener) {
         frame.isVisible = true
     }
 
-    class MyPanel constructor(val listener: Listener) : JPanel() {
+    fun setListener(listener: Listener):Controls {
+        this.listener = listener
+        return this
+    }
 
-        interface Listener {
-            fun motionSliderSpeed(value: Float)
-            fun shaderButtonNone()
-            fun shaderButtonLine()
-            fun shaderButtonNeon()
-            fun shaderSliderWeight(value: Float)
-            fun motionRotZ(selected: Boolean)
-            fun motionRotY(selected: Boolean)
-            fun motionRotX(selected: Boolean)
-            fun motionAlignExecute()
-            fun motionSliderAlignTime(alignTime: Float)
-            fun textRandom(selected: Boolean)
-            fun textNearRandom(selected: Boolean)
-            fun textInOrder(selected: Boolean)
-            fun textMotionCube(selected: Boolean)
-            fun textMotionAround(selected: Boolean)
-            fun textMotionFade(selected: Boolean)
-        }
+    interface Listener {
+        fun motionSliderSpeed(value: Float)
+        fun shaderButtonNone()
+        fun shaderButtonLine()
+        fun shaderButtonNeon()
+        fun shaderSliderWeight(value: Float)
+        fun motionRotZ(selected: Boolean)
+        fun motionRotY(selected: Boolean)
+        fun motionRotX(selected: Boolean)
+        fun motionAlignExecute()
+        fun motionSliderAlignTime(alignTime: Float)
+        fun textRandom(selected: Boolean)
+        fun textNearRandom(selected: Boolean)
+        fun textInOrder(selected: Boolean)
+        fun textMotionCube(selected: Boolean)
+        fun textMotionAround(selected: Boolean)
+        fun textMotionFade(selected: Boolean)
+    }
+
+    inner class MyPanel constructor(listener: Listener) : JPanel() {
 
         init {
             //construct preComponents
@@ -140,7 +148,11 @@ class Controls constructor(cubesApplet: MyPanel.Listener) {
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
                             add(JToggleButton("Random").setup { ae -> listener.textRandom(isSelectedDeselectOthers(ae)) })
-                            add(JToggleButton("Near Random").setup { ae -> listener.textNearRandom(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Near Random").setup { ae ->
+                                listener.textNearRandom(
+                                    isSelectedDeselectOthers(ae)
+                                )
+                            })
                             add(JToggleButton("In order").setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
                         }.wrapWithLabel("Ordering")
                     )
@@ -149,8 +161,18 @@ class Controls constructor(cubesApplet: MyPanel.Listener) {
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JToggleButton("With Cube").setup { ae -> listener.textMotionCube(isSelectedDeselectOthers(ae)) })
-                            add(JToggleButton("Around").setup { ae -> listener.textMotionAround(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("With Cube").setup { ae ->
+                                listener.textMotionCube(
+                                    isSelectedDeselectOthers(ae)
+                                )
+                            })
+                            add(JToggleButton("Around").setup { ae ->
+                                listener.textMotionAround(
+                                    isSelectedDeselectOthers(
+                                        ae
+                                    )
+                                )
+                            })
                             add(JToggleButton("Fade").setup { ae -> listener.textMotionFade(isSelectedDeselectOthers(ae)) })
                         }.wrapWithLabel("Motion")
                     )
