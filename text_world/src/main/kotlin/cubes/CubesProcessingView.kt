@@ -21,11 +21,10 @@ fun main() {
 class Cubes : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var flameShader: FlameShader
-    private lateinit var cubesList: CubeList
-    private lateinit var textList: TextList
-    private var currentShader:ShaderWrapper? = null
+    private var currentShader: ShaderWrapper? = null
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
+    lateinit var cubesState: CubesState
 
     var color = Color.BLACK
 
@@ -35,29 +34,32 @@ class Cubes : PApplet(), CubesContract.View {
 
     override fun setup() {
         //terminator = Terminator(this)
-        textList = TextList(
-            this, mutableListOf(
-                Text("In every fact"),
-                Text("there is something"),
-                Text("that is true and false."),
-                Text("Every fact is true and false"),
-                Text("at the same time."),
-                Text("The truth is resonance."),
-                Text("All truth has a context"),
-                Text("and that context is us."),
-                Text("But this is at odds"),
-                Text("with the very definition of truth."),
-                Text("That truth is universal."),
-                Text("All truth is yours"),
-                Text("and don't let anyone "),
-                Text("tell you differently."),
-                Text("Love without hope.")
-            )
+        cubesState = CubesState(
+            textList = TextList(
+                this, mutableListOf(
+                    Text("In every fact"),
+                    Text("there is something"),
+                    Text("that is true and false."),
+                    Text("Every fact is true and false"),
+                    Text("at the same time."),
+                    Text("The truth is resonance."),
+                    Text("All truth has a context"),
+                    Text("and that context is us."),
+                    Text("But this is at odds"),
+                    Text("with the very definition of truth."),
+                    Text("That truth is universal."),
+                    Text("All truth is yours"),
+                    Text("and don't let anyone "),
+                    Text("tell you differently."),
+                    Text("Love without hope.")
+                )
+            ),
+            cubeList = CubeList(this, 15, 50f, 400f)
         )
+        cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
-        lineShader.set("weight", 20f)
+        lineShader.set("weight", 5f)
         flameShader = FlameShader(this)
-        cubesList = CubeList(this, textList.texts.size, 50f, 400f)
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentShader = flameShader
     }
@@ -67,7 +69,7 @@ class Cubes : PApplet(), CubesContract.View {
         currentShader?.engage() ?: resetShader()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         // alignTexts()
-        cubesList.draw()
+        cubesState.cubeList.draw()
 
         //terminator.draw()
         //textList.draw()
@@ -75,7 +77,7 @@ class Cubes : PApplet(), CubesContract.View {
     }
 
     override fun setShaderType(type: ShaderType) {
-        when(type) {
+        when (type) {
             ShaderType.NONE -> currentShader = null
             ShaderType.LINES -> currentShader = lineShader
             ShaderType.NEON -> currentShader = flameShader
@@ -83,15 +85,11 @@ class Cubes : PApplet(), CubesContract.View {
     }
 
     override fun setShaderParam(type: ShaderType, param: String, value: Any) {
-        when(type) {
+        when (type) {
             ShaderType.NONE -> currentShader = null
-            ShaderType.LINES -> lineShader.set(param,value)
-            ShaderType.NEON -> flameShader.set(param,value)
+            ShaderType.LINES -> lineShader.set(param, value)
+            ShaderType.NEON -> flameShader.set(param, value)
         }
-    }
-
-    override fun setCubesMotion(function: (Int, Cube) -> Unit) {
-        cubesList.stateUpdater = function
     }
 
     fun run() {
@@ -100,9 +98,7 @@ class Cubes : PApplet(), CubesContract.View {
 
     companion object {
         internal var BASE_RESOURCES = "${System.getProperty("user.dir")}/text_world/src/main/resources"
-
     }
-
 
     /// experiments //////////////
 //    val textToCube = { i: Int, cube: Cube ->

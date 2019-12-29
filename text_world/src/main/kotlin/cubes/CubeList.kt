@@ -34,8 +34,12 @@ class CubeList constructor(
 
     companion object {
         val DEFAULT_MOTION_UPDATER = fun(i: Int, cube: Cube) {
-            cube.angle += 0.001f * (i + 1)
-            // cube.angle += 0.001f + if (i>0) cubes[i-1].angle * 0.01f else 0f
+            val fl = 0.001f * (i + 1)
+            cube.angle = Triple(
+                cube.angle.first + fl,
+                cube.angle.second + fl,
+                cube.angle.third + fl
+            )
         }
     }
 }

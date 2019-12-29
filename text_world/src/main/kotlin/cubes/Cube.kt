@@ -9,7 +9,7 @@ class Cube constructor(
     val width: Float,
     height: Float = width,
     depth: Float = width,
-    var angle: Float = 0f,
+    var angle: Triple<Float, Float, Float> = Triple(0f, 0f, 0f),
     val position: Triple<Float, Float, Float> = Triple(0f, 0f, 0f)
 ) {
     private var cube: PShape
@@ -23,8 +23,9 @@ class Cube constructor(
 
     fun draw() {
         p.pushMatrix()
-        p.rotateX(angle)
-        p.rotateY(angle)
+        p.rotateX(angle.first)
+        p.rotateY(angle.second)
+        p.rotateZ(angle.third)
         p.shape(cube)
         p.popMatrix()
     }

@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeEvent
 
 fun JSlider.setup(
+    initial: Int,
     minor: Int,
     major: Int,
     paintTicks: Boolean = false,

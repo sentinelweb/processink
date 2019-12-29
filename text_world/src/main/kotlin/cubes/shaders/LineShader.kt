@@ -10,5 +10,15 @@ class LineShader constructor(
 ): ShaderWrapper(p,
     "${Cubes.BASE_RESOURCES}/cubes/linefrag.glsl",
     "${Cubes.BASE_RESOURCES}/cubes/linevert.glsl") {
-    fun x() {}
+    init {
+        setWeight(DEFAULT_WEIGHT)
+    }
+    fun setWeight(weight:Float) {
+        set(PARAM_WEIGHT, weight)
+    }
+
+    companion object {
+        const val DEFAULT_WEIGHT = 5f
+        const val PARAM_WEIGHT = "weight"
+    }
 }
