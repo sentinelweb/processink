@@ -11,14 +11,14 @@ import processing.core.PConstants
 import java.awt.Color
 
 fun main() {
-    val cubes = Cubes()
+    val cubes = CubesProcessingView()
     val controls = Controls()
     val presenter = CubesPresenter(controls, cubes)
     cubes.cubesPresenter = presenter
     cubes.run()
 }
 
-class Cubes : PApplet(), CubesContract.View {
+class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var flameShader: FlameShader
     private var currentShader: ShaderWrapper? = null
@@ -54,18 +54,22 @@ class Cubes : PApplet(), CubesContract.View {
                     Text("Love without hope.")
                 )
             ),
-            cubeList = CubeList(this, 15, 50f, 400f)
+            cubeList = CubeList(this, 15, 50f, 400f),
+            rotationSpeed = 0.001f,
+            cubeAlignTime = 2000f
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
         lineShader.set("weight", 5f)
         flameShader = FlameShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
-        currentShader = flameShader
+        currentShader = lineShader
+        cubesPresenter.setup()
     }
 
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
+        cubesPresenter.updateBeforeDraw()
         currentShader?.engage() ?: resetShader()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         // alignTexts()

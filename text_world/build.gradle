@@ -1,16 +1,13 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
-    // java fx version incompatibility :(
-//    id 'application'
-//    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 ext {
     // this is the path to the native libs in the p3 installation
-    processing_native_lib_path = "$PROCESSING_LIB_PATH"
-    processing_version="3.3.7"
-    jna_version="3.4.0"
+    processing_native_lib_path = "$PROCESSING_LIB_PATH".toString()
+    processing_version = "3.3.7"
+    jna_version = "3.4.0"
 }
 
 group 'net.robmunro.processing'
@@ -20,41 +17,33 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    jcenter()
 }
-//
-//javafx {
-//    version = "13"
-//    modules = [ 'javafx.controls' ]
-//}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     // https://mvnrepository.com/artifact/org.processing/core
-    implementation ("org.processing:core:$processing_version") {
+    implementation("org.processing:core:$processing_version") {
         exclude group: 'net.java.dev.jna'
     }
     // https://mvnrepository.com/artifact/org.processing/video
-    implementation ("org.processing:video:$processing_version") {
+    implementation("org.processing:video:$processing_version") {
         exclude group: 'net.java.dev.jna'
     }
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
-    // not required
-    // https://mvnrepository.com/artifact/org.processing/pde
-    //implementation "org.processing:pde:$processing_version"
-    // https://mvnrepository.com/artifact/org.processing/net
-    //implementation "org.processing:net:$processing_version"
-    // https://mvnrepository.com/artifact/org.processing/serial
-    //implementation "org.processing:serial:$processing_version"
-    // https://mvnrepository.com/artifact/org.processing/pdf
-    //implementation "org.processing:pdf:$processing_version"
+
     implementation "io.reactivex.rxjava2:rxjava:2.2.16"
     implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
 
-    // testing
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
+    // native lib path
     runtime files("$processing_native_lib_path")
+
+    // testing
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+    // https://mvnrepository.com/artifact/org.hamcrest/hamcrest
+    testCompile group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 }
 
 compileKotlin {

@@ -1,6 +1,6 @@
 package cubes.shaders
 
-import cubes.Cubes
+import cubes.CubesProcessingView
 import processing.core.PApplet
 import processing.core.PConstants
 
@@ -8,8 +8,8 @@ class LineShader constructor(
     p:PApplet,
     override val type: Int = PConstants.LINES
 ): ShaderWrapper(p,
-    "${Cubes.BASE_RESOURCES}/cubes/linefrag.glsl",
-    "${Cubes.BASE_RESOURCES}/cubes/linevert.glsl") {
+    "${CubesProcessingView.BASE_RESOURCES}/cubes/linefrag.glsl",
+    "${CubesProcessingView.BASE_RESOURCES}/cubes/linevert.glsl") {
     init {
         setWeight(DEFAULT_WEIGHT)
     }

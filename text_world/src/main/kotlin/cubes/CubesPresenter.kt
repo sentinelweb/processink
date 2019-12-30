@@ -2,36 +2,34 @@ package cubes
 
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
+import cubes.motion.CubeRotationAlignMotion
+import cubes.motion.VelocityRotationMotion
 
 class CubesPresenter constructor(
     private val controls: Controls,
     private val view: CubesContract.View
 ) : CubesContract.Presenter, Controls.Listener {
 
-    private lateinit var state : CubesState
+    private lateinit var state: CubesState
 
-    private var motionRotation = Triple(true, true, true)
-
-    init {
+    override fun setup() {
         controls
             .setListener(this)
             .showWindow()
     }
 
+    fun updateBeforeDraw() {
+        state.cubeList.updateState()
+    }
+
     override fun motionSliderSpeed(value: Float) {
-        val rotationSpeed = value / 10000f
-        state.cubeList.stateUpdater = fun(i: Int, cube: Cube) {
-            val fl = rotationSpeed * (i + 1)
-            cube.angle = Triple(
-                cube.angle.first + if (motionRotation.first) fl else 0f,
-                cube.angle.second + if (motionRotation.second) fl else 0f,
-                cube.angle.third + if (motionRotation.third) fl else 0f
-            )
-        }
+        state.rotationSpeed = value / 10000f
+        setCubeVelocity()
+
     }
 
     override fun motionResetRotation() {
-        state.cubeList.cubes.forEach{it.angle = Triple(0f,0f,0f) }
+        state.cubeList.cubes.forEach { it.angle = Triple(0f, 0f, 0f) }
     }
 
     override fun shaderButtonNone() {
@@ -50,24 +48,29 @@ class CubesPresenter constructor(
         view.setShaderParam(LINES, "weight", value)
     }
 
-    override fun motionRotZ(selected: Boolean) {
-        motionRotation = motionRotation.copy(third = selected)
+    override fun motionRotX(selected: Boolean) {
+        state.cubeRotationAxes = state.cubeRotationAxes.copy(first = selected)
+        setCubeVelocity()
     }
 
     override fun motionRotY(selected: Boolean) {
-        motionRotation = motionRotation.copy(second = selected)
+        state.cubeRotationAxes = state.cubeRotationAxes.copy(second = selected)
+        setCubeVelocity()
     }
 
-    override fun motionRotX(selected: Boolean) {
-        motionRotation = motionRotation.copy(first = selected)
+    override fun motionRotZ(selected: Boolean) {
+        state.cubeRotationAxes = state.cubeRotationAxes.copy(third = selected)
+        setCubeVelocity()
     }
 
     override fun motionAlignExecute() {
-
+        state.cubeList.stateUpdater = CubeRotationAlignMotion(state.cubeList, state.cubeAlignTime) {
+            state.cubeList.stateUpdater = VelocityRotationMotion(0f, state.cubeRotationAxes)
+        }
     }
 
     override fun motionSliderAlignTime(alignTime: Float) {
-
+        state.cubeAlignTime = alignTime
     }
 
     override fun textRandom(selected: Boolean) {
@@ -98,4 +101,7 @@ class CubesPresenter constructor(
         this.state = state
     }
 
+    private fun setCubeVelocity() {
+        state.cubeList.stateUpdater = VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+    }
 }

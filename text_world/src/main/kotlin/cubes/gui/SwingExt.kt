@@ -19,6 +19,7 @@ fun JSlider.setup(
     setPaintTicks(paintTicks)
     setPaintLabels(true)
     addChangeListener(change)
+    value = initial
     return this
 }
 
@@ -27,7 +28,8 @@ fun JButton.setup(click: (ActionEvent) -> Unit): JButton {
     return this
 }
 
-fun JToggleButton.setup(click: (ActionEvent) -> Unit): JToggleButton {
+fun JToggleButton.setup(selected:Boolean = false, click: (ActionEvent) -> Unit): JToggleButton {
+    isSelected = selected
     addActionListener(click)
     return this
 }
@@ -43,7 +45,7 @@ fun JPanel.titledBorder(title: String, padding: Int = 10): JPanel {
     return this
 }
 
-fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel {
+fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
     JPanel().apply {
         //background = Color.red
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
@@ -54,5 +56,3 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel {
         add(this@wrapWithLabel)
         return this
     }
-
-}

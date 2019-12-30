@@ -1,5 +1,7 @@
 package cubes
 
+import cubes.motion.Motion
+import cubes.motion.VelocityRotationMotion
 import processing.core.PApplet
 
 class CubeList constructor(
@@ -11,12 +13,21 @@ class CubeList constructor(
     val cubes: MutableList<Cube> = mutableListOf()
 
     val increment = (endSisze - startSize) / length
-    var stateUpdater: ((i: Int, cube: Cube) -> Unit) = DEFAULT_MOTION_UPDATER
+    var stateUpdater: MotionUpdater = DEFAULT_MOTION_UPDATER
 
     init {
-        stateUpdater = DEFAULT_MOTION_UPDATER
         (0..length - 1).forEach {
             cubes.add(Cube(p, startSize + (it * increment)))
+        }
+    }
+
+    fun updateState() {
+        cubes.forEachIndexed { i, cube ->
+            if (!stateUpdater.isEnded()) {
+                stateUpdater.updateState(i, cube)
+            } else {
+                stateUpdater.callEndOnce()
+            }
         }
     }
 
@@ -25,21 +36,17 @@ class CubeList constructor(
         p.pushMatrix()
         p.translate(p.width / 2f, p.height / 2f)
         cubes.forEachIndexed { i, cube ->
-            stateUpdater(i, cube)
             contextFunction?.let { it(i, cube) }
             cube.draw()
         }
         p.popMatrix()
     }
 
+    abstract class MotionUpdater constructor(endFunction: () -> Unit = {}): Motion(endFunction) {
+        abstract fun updateState(i: Int, cube: Cube)
+    }
+
     companion object {
-        val DEFAULT_MOTION_UPDATER = fun(i: Int, cube: Cube) {
-            val fl = 0.001f * (i + 1)
-            cube.angle = Triple(
-                cube.angle.first + fl,
-                cube.angle.second + fl,
-                cube.angle.third + fl
-            )
-        }
+        val DEFAULT_MOTION_UPDATER = VelocityRotationMotion(0.001f)
     }
 }

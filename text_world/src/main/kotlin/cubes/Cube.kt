@@ -12,9 +12,9 @@ class Cube constructor(
     var angle: Triple<Float, Float, Float> = Triple(0f, 0f, 0f),
     val position: Triple<Float, Float, Float> = Triple(0f, 0f, 0f)
 ) {
-    private var cube: PShape
+    private var cubeShape: PShape
     init {
-        cube = p.createShape(PConstants.BOX, width, height, depth).apply {
+        cubeShape = p.createShape(PConstants.BOX, width, height, depth).apply {
             setFill(false)
             setStroke(p.color(255))
             setStrokeWeight(20f)
@@ -26,7 +26,7 @@ class Cube constructor(
         p.rotateX(angle.first)
         p.rotateY(angle.second)
         p.rotateZ(angle.third)
-        p.shape(cube)
+        p.shape(cubeShape)
         p.popMatrix()
     }
 

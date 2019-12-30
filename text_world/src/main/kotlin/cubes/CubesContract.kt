@@ -12,5 +12,6 @@ interface CubesContract {
 
     interface Presenter {
         fun setState(state:CubesState)
+        fun setup()
     }
 }

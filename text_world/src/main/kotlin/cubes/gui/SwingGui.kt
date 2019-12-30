@@ -1,11 +1,11 @@
 package cubes.gui
 
-import cubes.Cubes
+import cubes.CubesProcessingView
 import javax.swing.JButton
 import javax.swing.JColorChooser
 import javax.swing.JFrame
 
-class SwingGui(sketch: Cubes) {
+class SwingGui(sketch: CubesProcessingView) {
     private val frame: JFrame
     fun show() {
         frame.isVisible = true

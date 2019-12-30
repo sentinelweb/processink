@@ -1,6 +1,6 @@
 package cubes.shaders
 
-import cubes.Cubes
+import cubes.CubesProcessingView
 import processing.core.PApplet
 import processing.core.PConstants
 
@@ -9,4 +9,4 @@ class FlameShader constructor(
     p:PApplet,
     override val type: Int = PConstants.POINTS
 ): ShaderWrapper(p,
-    "${Cubes.BASE_RESOURCES}/shadertoy/st_coldFlameFrag.glsl")
+    "${CubesProcessingView.BASE_RESOURCES}/shadertoy/st_coldFlameFrag.glsl")

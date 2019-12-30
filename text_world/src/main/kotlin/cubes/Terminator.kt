@@ -10,7 +10,7 @@ class Terminator constructor(
     val terminator: PShape
 
     init {
-        terminator = p.loadShape("${Cubes.BASE_RESOURCES}/terminator/terminator.obj")
+        terminator = p.loadShape("${CubesProcessingView.BASE_RESOURCES}/terminator/terminator.obj")
         terminator.scale(13.0f)
     }
 

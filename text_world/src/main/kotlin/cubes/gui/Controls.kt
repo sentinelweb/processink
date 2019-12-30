@@ -40,21 +40,24 @@ class Controls constructor() {
 
     private lateinit var controlPanel: JPanel
     private lateinit var listener: Listener
+
     fun showWindow() {
-        val frame = JFrame("Controls")
-        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        SwingUtilities.invokeLater {
+            val frame = JFrame("Controls")
+            frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
-        controlPanel = MyPanel(listener)
-        //controlPanel.setOpaque(true) //content panes must be opaque
+            controlPanel = MyPanel(listener)
+            //controlPanel.setOpaque(true) //content panes must be opaque
 
-        frame.add(controlPanel)
+            frame.add(controlPanel)
 
-        // Display the window.
-        frame.pack()
-        frame.isVisible = true
+            // Display the window.
+            frame.pack()
+            frame.isVisible = true
+        }
     }
 
-    fun setListener(listener: Listener):Controls {
+    fun setListener(listener: Listener): Controls {
         this.listener = listener
         return this
     }
@@ -89,6 +92,7 @@ class Controls constructor() {
             setPreferredSize(Dimension(800, 400))
             setLayout(BorderLayout())
 
+            // east panel - shader
             add(JPanel().apply {
                 preferredSize = Dimension(200, 400)
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
@@ -98,23 +102,25 @@ class Controls constructor() {
                 add(JButton("Line").setup { listener.shaderButtonLine() })
                 add(JButton("Neon").setup { listener.shaderButtonNeon() })
                 add(
-                    JSlider(0, 200)
-                        .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 50, false, {
+                    JSlider(0, 20)
+                        .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false, {
                             val source = it.source as JSlider
-                            listener.shaderSliderWeight(source.value.toFloat() / 10f)
+                            listener.shaderSliderWeight(source.value.toFloat())
                         })
                 )
-
             }, BorderLayout.EAST)
+
+            // center panel - motion, text
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+                // motion panel
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
                     titledBorder("Cube Motion")
                     // speed
                     add(
                         JSlider(-400, 400)
-                            .setup(0,1, 50, true, {
+                            .setup(0, 1, 50, true, {
                                 val source = it.source as JSlider
                                 listener.motionSliderSpeed(source.value.toFloat() / 10f)
                             }).wrapWithLabel("Speed")
@@ -123,9 +129,12 @@ class Controls constructor() {
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JToggleButton("X").setup { ae -> listener.motionRotX(isSelected(ae)) })
-                            add(JToggleButton("Y").setup { ae -> listener.motionRotY(isSelected(ae)) })
-                            add(JToggleButton("Z").setup { ae -> listener.motionRotZ(isSelected(ae)) })
+                            add(JToggleButton("X")
+                                .setup(true) { ae -> listener.motionRotX(isSelected(ae)) })
+                            add(JToggleButton("Y")
+                                .setup(true) { ae -> listener.motionRotY(isSelected(ae)) })
+                            add(JToggleButton("Z")
+                                .setup(true) { ae -> listener.motionRotZ(isSelected(ae)) })
                             add(JButton("0").setup { listener.motionResetRotation() })
                         }.wrapWithLabel("RotationAxis", 100)
                     )
@@ -135,14 +144,14 @@ class Controls constructor() {
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                         add(
                             JSlider(0, 2000)
-                                .setup(0,1, 500, false, {
+                                .setup(0, 1, 500, false, {
                                     val source = it.source as JSlider
-                                    listener.motionSliderAlignTime(source.value.toFloat() / 10f)
+                                    listener.motionSliderAlignTime(source.value.toFloat())
                                 })
                         )
                         add(JButton("Execute").setup { listener.motionAlignExecute() })
                     }.wrapWithLabel("Align time"))
-                }, BorderLayout.CENTER)
+                })
 
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
@@ -151,13 +160,12 @@ class Controls constructor() {
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JToggleButton("Random").setup { ae -> listener.textRandom(isSelectedDeselectOthers(ae)) })
-                            add(JToggleButton("Near Random").setup { ae ->
-                                listener.textNearRandom(
-                                    isSelectedDeselectOthers(ae)
-                                )
-                            })
-                            add(JToggleButton("In order").setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Random")
+                                .setup { ae -> listener.textRandom(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Near Random")
+                                .setup { ae -> listener.textNearRandom(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("In order")
+                                .setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
                         }.wrapWithLabel("Ordering")
                     )
 
@@ -165,19 +173,12 @@ class Controls constructor() {
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JToggleButton("With Cube").setup { ae ->
-                                listener.textMotionCube(
-                                    isSelectedDeselectOthers(ae)
-                                )
-                            })
-                            add(JToggleButton("Around").setup { ae ->
-                                listener.textMotionAround(
-                                    isSelectedDeselectOthers(
-                                        ae
-                                    )
-                                )
-                            })
-                            add(JToggleButton("Fade").setup { ae -> listener.textMotionFade(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("With Cube")
+                                .setup { ae -> listener.textMotionCube(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Around")
+                                .setup { ae -> listener.textMotionAround(isSelectedDeselectOthers(ae)) })
+                            add(JToggleButton("Fade")
+                                .setup { ae -> listener.textMotionFade(isSelectedDeselectOthers(ae)) })
                         }.wrapWithLabel("Motion")
                     )
 
@@ -186,6 +187,7 @@ class Controls constructor() {
         }
 
         private fun isSelected(ae: ActionEvent) = (ae.source as JToggleButton).isSelected
+
         private fun isSelectedDeselectOthers(ae: ActionEvent): Boolean {
             val jToggleButton = ae.source as JToggleButton
             val selected = jToggleButton.isSelected
@@ -194,7 +196,7 @@ class Controls constructor() {
                     component.isSelected = false
                 }
             }
-            return selected;
+            return selected
         }
 
     }
