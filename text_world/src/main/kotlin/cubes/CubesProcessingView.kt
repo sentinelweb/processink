@@ -28,6 +28,8 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
     var color = Color.BLACK
 
+    fun getInfo() = PAppletInfo(width, height)
+
     override fun settings() {
         size(1280, 720, PConstants.P3D)
     }
@@ -56,14 +58,17 @@ class CubesProcessingView : PApplet(), CubesContract.View {
             ),
             cubeList = CubeList(this, 15, 50f, 400f),
             rotationSpeed = 0.001f,
-            cubeAlignTime = 2000f
+            animationTime = 2000f,
+            info = getInfo(),
+            cubeScale = 10f,
+            cubeScaleDist = 0f
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
         lineShader.set("weight", 5f)
         flameShader = FlameShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
-        currentShader = lineShader
+        //currentShader = lineShader
         cubesPresenter.setup()
     }
 

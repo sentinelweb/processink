@@ -7,17 +7,18 @@ class VelocityRotationMotion(
     private val rotationSpeed: Float,
     private val motionRotation: Triple<Boolean, Boolean, Boolean> = Triple(true, true, true),
     val endFunction: () -> Unit = {}
-) : CubeList.MotionUpdater() {
+) : Motion<Cube>() {
 
     override fun isEnded() = false
+
     override fun ensureEndState() = Unit
 
-    override fun updateState(i: Int, cube: Cube) {
+    override fun updateState(i: Int, shape: Cube) {
         val increment = rotationSpeed * (i + 1)
-        cube.angle = Triple(
-            cube.angle.first + if (motionRotation.first) increment else 0f,
-            cube.angle.second + if (motionRotation.second) increment else 0f,
-            cube.angle.third + if (motionRotation.third) increment else 0f
+        shape.angle = Triple(
+            shape.angle.first + if (motionRotation.first) increment else 0f,
+            shape.angle.second + if (motionRotation.second) increment else 0f,
+            shape.angle.third + if (motionRotation.third) increment else 0f
         )
     }
 }

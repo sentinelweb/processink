@@ -6,37 +6,19 @@ package cubes.gui
 
 import cubes.shaders.LineShader
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridLayout
 import java.awt.event.ActionEvent
 import javax.swing.*
 
 fun main() {
-    val printListener = object : Controls.Listener {
-        override fun motionSliderSpeed(value: Float) = println("sliderspeed: $value")
-        override fun shaderButtonNone() = println("shader button none")
-        override fun shaderButtonLine() = println("shader button line")
-        override fun shaderButtonNeon() = println("shader button neon")
-        override fun shaderSliderWeight(value: Float) = println("sliderWeight: $value")
-        override fun motionRotZ(selected: Boolean) = println("motionRotZ: $selected")
-        override fun motionRotY(selected: Boolean) = println("motionRotY: $selected")
-        override fun motionRotX(selected: Boolean) = println("motionRotX: $selected")
-        override fun motionAlignExecute() = println("motionAlignExecute")
-        override fun motionSliderAlignTime(alignTime: Float) = println("motionSliderAlignTime :$alignTime")
-        override fun textRandom(selected: Boolean) = println("textRandom: $selected")
-        override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
-        override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
-        override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
-        override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
-        override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
-        override fun motionResetRotation() = println("motionResetRotation")
-    }
     Controls()
         .setListener(printListener)
         .showWindow()
 }
 
-class Controls constructor() {
+class Controls {
 
     private lateinit var controlPanel: JPanel
     private lateinit var listener: Listener
@@ -62,26 +44,6 @@ class Controls constructor() {
         return this
     }
 
-    interface Listener {
-        fun motionSliderSpeed(value: Float)
-        fun shaderButtonNone()
-        fun shaderButtonLine()
-        fun shaderButtonNeon()
-        fun shaderSliderWeight(value: Float)
-        fun motionRotZ(selected: Boolean)
-        fun motionRotY(selected: Boolean)
-        fun motionRotX(selected: Boolean)
-        fun motionAlignExecute()
-        fun motionSliderAlignTime(alignTime: Float)
-        fun textRandom(selected: Boolean)
-        fun textNearRandom(selected: Boolean)
-        fun textInOrder(selected: Boolean)
-        fun textMotionCube(selected: Boolean)
-        fun textMotionAround(selected: Boolean)
-        fun textMotionFade(selected: Boolean)
-        fun motionResetRotation()
-    }
-
     inner class MyPanel constructor(listener: Listener) : JPanel() {
 
         init {
@@ -89,7 +51,7 @@ class Controls constructor() {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            setPreferredSize(Dimension(800, 400))
+            setPreferredSize(Dimension(800, 600))
             setLayout(BorderLayout())
 
             // east panel - shader
@@ -101,13 +63,7 @@ class Controls constructor() {
                 add(JButton("None").setup { listener.shaderButtonNone() })
                 add(JButton("Line").setup { listener.shaderButtonLine() })
                 add(JButton("Neon").setup { listener.shaderButtonNeon() })
-                add(
-                    JSlider(0, 20)
-                        .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false, {
-                            val source = it.source as JSlider
-                            listener.shaderSliderWeight(source.value.toFloat())
-                        })
-                )
+
             }, BorderLayout.EAST)
 
             // center panel - motion, text
@@ -116,15 +72,17 @@ class Controls constructor() {
                 // motion panel
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
-                    titledBorder("Cube Motion")
+                    titledBorder("Cubes")
+
                     // speed
                     add(
                         JSlider(-400, 400)
-                            .setup(0, 1, 50, true, {
+                            .setup(0, 1, 100, true, {
                                 val source = it.source as JSlider
                                 listener.motionSliderSpeed(source.value.toFloat() / 10f)
                             }).wrapWithLabel("Speed")
                     )
+
                     // axis
                     add(
                         JPanel().apply {
@@ -135,8 +93,48 @@ class Controls constructor() {
                                 .setup(true) { ae -> listener.motionRotY(isSelected(ae)) })
                             add(JToggleButton("Z")
                                 .setup(true) { ae -> listener.motionRotZ(isSelected(ae)) })
-                            add(JButton("0").setup { listener.motionResetRotation() })
+                            add(JButton("0")
+                                .setup { listener.motionRotationReset() })
                         }.wrapWithLabel("RotationAxis", 100)
+                    )
+
+                    // translation
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JButton("grid")
+                                .setup { listener.motionGrid() })
+                            add(JButton("line")
+                                .setup { listener.motionLine() })
+                            add(JButton("square")
+                                .setup { listener.motionSquare() })
+                            add(JButton("0")
+                                .setup { listener.motionTranslationReset() })
+                        }.wrapWithLabel("Position", 100)
+                    )
+
+                    // scale
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+
+                            add(
+                                JSlider(0, 400)
+                                    .setup(0, 1, 200, false, {
+                                        val source = it.source as JSlider
+                                        listener.motionSliderScale(source.value.toFloat())
+                                    })
+                            )
+                            add(
+                                JSlider(0, 400)
+                                    .setup(0, 1, 200, false, {
+                                        val source = it.source as JSlider
+                                        listener.motionSliderScaleDist(source.value.toFloat())
+                                    }).wrapWithLabel("Dist")
+                            )
+                            add(JButton("Apply")
+                                .setup { listener.motionApplyScale() })
+                        }.wrapWithLabel("Scale", 100)
                     )
 
                     // align
@@ -146,16 +144,75 @@ class Controls constructor() {
                             JSlider(0, 2000)
                                 .setup(0, 1, 500, false, {
                                     val source = it.source as JSlider
-                                    listener.motionSliderAlignTime(source.value.toFloat())
+                                    listener.motionSliderRotationTime(source.value.toFloat())
                                 })
                         )
                         add(JButton("Execute").setup { listener.motionAlignExecute() })
                     }.wrapWithLabel("Align time"))
+
+                    // fill
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(JButton("Start").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Fill Start Color", Color.WHITE)
+                                color?.let {
+                                    listener.fillColor(it)
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JButton("End").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Fill End Color", Color.WHITE)
+                                color?.let {
+                                    listener.fillEndColor(it)
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JToggleButton("Fill")
+                            .setup { ae -> listener.fill(isSelected(ae)) })
+                        add(
+                            JSlider(0, 255)
+                                .setup(0, 1, 64, false, {
+                                    val source = it.source as JSlider
+                                    listener.fillAlpha(source.value.toFloat())
+                                }).wrapWithLabel("Alpha")
+                        )
+                    }.wrapWithLabel("Fill"))
+
+                    // stroke
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(JButton("Color").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Stroke Color", Color.WHITE)
+                                color?.let {
+                                    listener.strokeColor(it)
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JToggleButton("Stroke")
+                            .setup { ae -> listener.stroke(isSelected(ae)) })
+                        add(
+                            JSlider(0, 20)
+                                .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false, {
+                                    val source = it.source as JSlider
+                                    listener.strokeWeight(source.value.toFloat())
+                                })
+                        )
+                    }.wrapWithLabel("Stroke"))
                 })
 
                 add(JPanel().apply {
-                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    layout = GridLayout(-1, 1)
                     titledBorder("Text Control")
+
                     // order
                     add(
                         JPanel().apply {
@@ -201,5 +258,96 @@ class Controls constructor() {
 
     }
 
+    interface Listener {
+        fun motionSliderSpeed(value: Float)
+        fun shaderButtonNone()
+        fun shaderButtonLine()
+        fun shaderButtonNeon()
+        fun strokeWeight(value: Float)
+        fun motionRotZ(selected: Boolean)
+        fun motionRotY(selected: Boolean)
+        fun motionRotX(selected: Boolean)
+        fun motionAlignExecute()
+        fun motionSliderRotationTime(alignTime: Float)
+        fun textRandom(selected: Boolean)
+        fun textNearRandom(selected: Boolean)
+        fun textInOrder(selected: Boolean)
+        fun textMotionCube(selected: Boolean)
+        fun textMotionAround(selected: Boolean)
+        fun textMotionFade(selected: Boolean)
+        fun motionRotationReset()
+        fun motionGrid()
+        fun motionLine()
+        fun motionSquare()
+        fun motionTranslationReset()
+        fun motionSliderScale(scale: Float)
+        fun motionApplyScale()
+        fun motionSliderScaleDist(dist: Float)
+        fun fillColor(color: Color)
+        fun fill(selected: Boolean)
+        fun fillEndColor(color: Color)
+        fun strokeColor(color: Color)
+        fun stroke(selected: Boolean)
+        fun fillAlpha(alpha: Float)
+    }
 
+    // todo use this to map slider to log values
+    fun logslider(position:Int):Double {
+        val (minp, minv, scale) = setupLog()
+
+        return Math.exp(minv + scale*(position-minp));
+    }
+
+    // todo use this to map log values to slider
+    fun logposition(value:Double):Double {
+        val (minp, minv, scale) = setupLog()
+        return (Math.log(value)-minv) / scale + minp;
+    }
+
+    private fun setupLog(): Triple<Int, Double, Double> {
+        // position will be between 0 and 100
+        val minp = 0;
+        val maxp = 100;
+
+        // The result should be between 100 an 10000000
+        val minv = Math.log(100.0);
+        val maxv = Math.log(10000000.0);
+
+        // calculate adjustment factor
+        val scale = (maxv - minv) / (maxp - minp);
+        return Triple(minp, minv, scale)
+    }
+}
+
+val printListener = object : Controls.Listener {
+    override fun motionSliderSpeed(value: Float) = println("sliderspeed: $value")
+    override fun shaderButtonNone() = println("shader button none")
+    override fun shaderButtonLine() = println("shader button line")
+    override fun shaderButtonNeon() = println("shader button neon")
+    override fun strokeWeight(value: Float) = println("sliderWeight: $value")
+    override fun motionRotZ(selected: Boolean) = println("motionRotZ: $selected")
+    override fun motionRotY(selected: Boolean) = println("motionRotY: $selected")
+    override fun motionRotX(selected: Boolean) = println("motionRotX: $selected")
+    override fun motionAlignExecute() = println("motionAlignExecute")
+    override fun motionSliderRotationTime(alignTime: Float) = println("motionSliderAlignTime: $alignTime")
+    override fun textRandom(selected: Boolean) = println("textRandom: $selected")
+    override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
+    override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
+    override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
+    override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
+    override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
+    override fun motionRotationReset() = println("motionResetRotation")
+    override fun motionGrid() = println("motionGrid")
+    override fun motionLine() = println("motionLine")
+    override fun motionSquare() = println("motionSquare")
+    override fun motionTranslationReset() = println("motionTranslationResetRotation")
+    override fun motionSliderScale(scale: Float) = println("motionSliderScale: $scale")
+    override fun motionApplyScale() = println("motionApplyScale")
+    override fun motionSliderScaleDist(dist: Float) = println("motionSliderScaleDist: $dist")
+    override fun fillColor(color: Color) = println("fillColor: $color")
+    override fun fill(selected: Boolean)  = println("fill: $selected")
+    override fun fillEndColor(color: Color) = println("fillEndColor: $color")
+    override fun strokeColor(color: Color) = println("strokeColor: $color")
+    override fun stroke(selected: Boolean) = println("stroke: $selected")
+    override fun fillAlpha(alpha: Float) = println("fillAlpha: $alpha")
 }

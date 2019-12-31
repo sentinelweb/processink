@@ -1,6 +1,6 @@
 package cubes.motion
 
-abstract class Motion constructor(
+abstract class Motion<T> constructor(
     private val endFunction: () -> Unit = {}
 ) {
     private var wasEndFunctionCalled = false
@@ -9,6 +9,8 @@ abstract class Motion constructor(
 
     abstract fun ensureEndState()
 
+    abstract fun updateState(i:Int, shape:T)
+
     fun callEndOnce() {
         if (isEnded() && !wasEndFunctionCalled) {
             ensureEndState()
@@ -16,4 +18,8 @@ abstract class Motion constructor(
             wasEndFunctionCalled = true
         }
     }
+
+    protected fun interpolate(startPos: Float, endPos: Float, ratio: Float) =
+        startPos + (endPos - startPos) * ratio
+
 }

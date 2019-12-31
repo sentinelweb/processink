@@ -2,8 +2,8 @@ package cubes
 
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
-import cubes.motion.CubeRotationAlignMotion
-import cubes.motion.VelocityRotationMotion
+import cubes.motion.*
+import java.awt.Color
 
 class CubesPresenter constructor(
     private val controls: Controls,
@@ -28,7 +28,7 @@ class CubesPresenter constructor(
 
     }
 
-    override fun motionResetRotation() {
+    override fun motionRotationReset() {
         state.cubeList.cubes.forEach { it.angle = Triple(0f, 0f, 0f) }
     }
 
@@ -44,8 +44,9 @@ class CubesPresenter constructor(
         view.setShaderType(NEON)
     }
 
-    override fun shaderSliderWeight(value: Float) {
+    override fun strokeWeight(value: Float) {
         view.setShaderParam(LINES, "weight", value)
+        state.cubeList.cubes.forEach { it.strokeWeight = value }
     }
 
     override fun motionRotX(selected: Boolean) {
@@ -64,13 +65,86 @@ class CubesPresenter constructor(
     }
 
     override fun motionAlignExecute() {
-        state.cubeList.stateUpdater = CubeRotationAlignMotion(state.cubeList, state.cubeAlignTime) {
-            state.cubeList.stateUpdater = VelocityRotationMotion(0f, state.cubeRotationAxes)
+        state.cubeList.cubeListMotion = CubeRotationAlignMotion(state.cubeList, state.animationTime) {
+            state.cubeList.cubeListMotion = VelocityRotationMotion(0f, state.cubeRotationAxes)
         }
     }
 
-    override fun motionSliderAlignTime(alignTime: Float) {
-        state.cubeAlignTime = alignTime
+    override fun motionSliderRotationTime(alignTime: Float) {
+        state.animationTime = alignTime
+    }
+
+    override fun motionGrid() {
+        val dimension = Math.sqrt(state.cubeList.cubes.size.toDouble()).toInt() + 1
+        state.cubeList.cubeListMotion =
+            CompositeMotion(
+                listOf(
+                    CubeTranslationMotion.grid(state.cubeList, state.animationTime, dimension, 200f),
+                    cubeScaleMotion(),
+                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                )
+            )
+    }
+
+    override fun motionLine() {
+        state.cubeList.cubeListMotion =
+            CompositeMotion(
+                listOf(
+                    CubeTranslationMotion.line(state.cubeList, state.animationTime, 50f),
+                    cubeScaleMotion(),
+                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                )
+            )
+    }
+
+    override fun motionSquare() {
+
+    }
+
+    override fun motionTranslationReset() {
+        state.cubeList.cubes.forEach { it.position.set(0f, 0f, 0f) }
+    }
+
+    override fun motionSliderScale(scale: Float) {
+        state.cubeScale = scale
+    }
+
+    override fun motionSliderScaleDist(dist: Float) {
+        state.cubeScaleDist = dist
+    }
+
+    override fun fillColor(color: Color) {
+        state.cubeList.cubes.forEach { it.fillColor = color;  }
+    }
+
+    override fun motionApplyScale() {
+        state.cubeList.cubeListMotion =
+            CompositeMotion(
+                listOf(
+                    cubeScaleMotion(),
+                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                )
+            )
+    }
+
+    override fun fill(selected: Boolean) {
+        state.cubeList.cubes.forEach { it.fill = selected; }
+    }
+
+    override fun fillEndColor(color: Color) {
+
+    }
+
+    override fun strokeColor(color: Color) {
+
+    }
+
+    override fun stroke(selected: Boolean) {
+
+    }
+
+    override fun fillAlpha(alpha: Float) {
+
     }
 
     override fun textRandom(selected: Boolean) {
@@ -97,11 +171,17 @@ class CubesPresenter constructor(
 
     }
 
+    private fun cubeScaleMotion() = if (state.cubeScaleDist == 0f) {
+        CubeScaleMotion.scale(state.cubeList, state.animationTime, state.cubeScale)
+    } else {
+        CubeScaleMotion.range(state.cubeList, state.animationTime, state.cubeScale, state.cubeScaleDist)
+    }
+
     override fun setState(state: CubesState) {
         this.state = state
     }
 
     private fun setCubeVelocity() {
-        state.cubeList.stateUpdater = VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+        state.cubeList.cubeListMotion = VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
     }
 }

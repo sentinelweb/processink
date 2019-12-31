@@ -10,23 +10,25 @@ class CubeList constructor(
     private val startSize: Float,
     endSisze: Float
 ) {
-    val cubes: MutableList<Cube> = mutableListOf()
-
+    val cubes: List<Cube>
     val increment = (endSisze - startSize) / length
-    var stateUpdater: MotionUpdater = DEFAULT_MOTION_UPDATER
+    var cubeListMotion: Motion<Cube> = DEFAULT_MOTION_UPDATER
 
     init {
-        (0..length - 1).forEach {
-            cubes.add(Cube(p, startSize + (it * increment)))
+        cubes = (0..length - 1).map {
+            Cube(p, 1f).apply {
+                val scaleRatio = startSize + (it * increment)
+                scale.set(scaleRatio, scaleRatio, scaleRatio)
+            }
         }
     }
 
     fun updateState() {
         cubes.forEachIndexed { i, cube ->
-            if (!stateUpdater.isEnded()) {
-                stateUpdater.updateState(i, cube)
+            if (!cubeListMotion.isEnded()) {
+                cubeListMotion.updateState(i, cube)
             } else {
-                stateUpdater.callEndOnce()
+                cubeListMotion.callEndOnce()
             }
         }
     }
@@ -40,10 +42,6 @@ class CubeList constructor(
             cube.draw()
         }
         p.popMatrix()
-    }
-
-    abstract class MotionUpdater constructor(endFunction: () -> Unit = {}): Motion(endFunction) {
-        abstract fun updateState(i: Int, cube: Cube)
     }
 
     companion object {

@@ -22,15 +22,15 @@ class BookOfShadersTest : PApplet() {
         shader = loadShader("$BASE_RESOURCES/shadertoy/st_neon.glsl")
     }
 
-    override fun  draw() {
+    override fun draw() {
 //        val c = Color.decode("#3949ab")
         val c = Color.BLACK
         background(c.red.toFloat(),c.green.toFloat(),c.blue.toFloat())
         shader.set("u_resolution", width.toFloat(), height.toFloat())
         shader.set("u_mouse", mouseX.toFloat(), mouseY.toFloat())
-        shader.set("u_time", millis() / 1000.0f)
+        shader.set("u_time", millis() / 1000f)
         shader(shader)
-        rect(0f,0f,width.toFloat(),height.toFloat())
+        rect(0f,0f, width.toFloat(), height.toFloat())
     }
 
     fun run() {

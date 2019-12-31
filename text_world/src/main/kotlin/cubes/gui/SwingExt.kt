@@ -1,5 +1,6 @@
 package cubes.gui
 
+import processing.core.PApplet
 import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
@@ -28,7 +29,7 @@ fun JButton.setup(click: (ActionEvent) -> Unit): JButton {
     return this
 }
 
-fun JToggleButton.setup(selected:Boolean = false, click: (ActionEvent) -> Unit): JToggleButton {
+fun JToggleButton.setup(selected: Boolean = false, click: (ActionEvent) -> Unit): JToggleButton {
     isSelected = selected
     addActionListener(click)
     return this
@@ -47,12 +48,13 @@ fun JPanel.titledBorder(title: String, padding: Int = 10): JPanel {
 
 fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
     JPanel().apply {
-        //background = Color.red
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-        //layout = FlowLayout()
         add(JLabel(label).apply {
             preferredSize = Dimension(labelWidth, 20)
         })
         add(this@wrapWithLabel)
         return this
     }
+
+fun Color.toProcessing(p: PApplet) = p.color(red, green, blue)
+fun Color.toProcessing(alpha:Int, p: PApplet) = p.color(red, green, blue, alpha)

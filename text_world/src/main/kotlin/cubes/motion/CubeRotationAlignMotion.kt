@@ -11,35 +11,30 @@ class CubeRotationAlignMotion constructor(
     private val endAngle: Triple<Float,Float,Float> = Triple(0f,0f,0f),
     private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : CubeList.MotionUpdater(endFunction) {
+) : Motion<Cube>(endFunction) {
 
     private val start = cubeList.cubes.map { cube -> wrapTo2Pi(cube.angle.copy()) }
     private val startTime = timeProvider.getTime()
 
-    override fun updateState(i: Int, cube: Cube) {
+    override fun updateState(i: Int, shape: Cube) {
+        if (isEnded()) return
         val currentTime = timeProvider.getTime()
         val ratio = (currentTime - startTime) / timeMs
 
-        cube.angle = Triple(
+        shape.angle = Triple(
             interpolate(start[i].first, endAngle.first, ratio),
             interpolate(start[i].second, endAngle.second, ratio),
             interpolate(start[i].third, endAngle.third, ratio)
         )
     }
 
-    override fun isEnded(): Boolean {
-        val time = timeProvider.getTime()
-        return time - startTime > timeMs
-    }
+    override fun isEnded() = timeProvider.getTime() - startTime > timeMs
 
     override fun ensureEndState() {
         cubeList.cubes.forEach {
             it.angle = endAngle
         }
     }
-
-    fun interpolate(startPos: Float, endPos: Float, ratio: Float) =
-        startPos - abs(endPos - startPos) * ratio
 
     fun wrapTo2Pi(angle: Float): Float {
         val minusPiToPi = Math.atan2(Math.sin(angle.toDouble()), Math.cos(angle.toDouble())).toFloat()
