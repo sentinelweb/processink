@@ -11,6 +11,7 @@ import java.awt.Dimension
 import java.awt.GridLayout
 import java.awt.event.ActionEvent
 import javax.swing.*
+import kotlin.math.ln
 
 fun main() {
     Controls()
@@ -51,8 +52,8 @@ class Controls {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            setPreferredSize(Dimension(800, 600))
-            setLayout(BorderLayout())
+            preferredSize = Dimension(800, 600)
+            layout = BorderLayout()
 
             // east panel - shader
             add(JPanel().apply {
@@ -76,14 +77,26 @@ class Controls {
 
                     // speed
                     add(
-                        JSlider(-400, 400)
-                            .setup(0, 1, 100, true, {
-                                val source = it.source as JSlider
-                                listener.motionSliderSpeed(source.value.toFloat() / 10f)
-                            }).wrapWithLabel("Speed")
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JSlider(-400, 400)
+                                .setup(0, 1, 200, false) {
+                                    val source = it.source as JSlider
+                                    listener.motionSliderRotationSpeed(source.value.toFloat())
+                                })
+                            add(
+                                JSlider(-100, 100)
+                                    .setup(0, 1, 50, false) {
+                                        val source = it.source as JSlider
+                                        listener.motionSliderRotationOffset(source.value.toFloat())
+                                    }
+                                    .apply { value = 1 }
+                                    .wrapWithLabel("Offset")
+                            )
+                        }.wrapWithLabel("Speed", 100)
                     )
 
-                    // axis
+                    // rotation
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
@@ -95,7 +108,8 @@ class Controls {
                                 .setup(true) { ae -> listener.motionRotZ(isSelected(ae)) })
                             add(JButton("0")
                                 .setup { listener.motionRotationReset() })
-                        }.wrapWithLabel("RotationAxis", 100)
+                            add(JButton("Align").setup { listener.motionAlignExecute() })
+                        }.wrapWithLabel("Rotation", 100)
                     )
 
                     // translation
@@ -120,35 +134,35 @@ class Controls {
 
                             add(
                                 JSlider(0, 400)
-                                    .setup(0, 1, 200, false, {
+                                    .setup(0, 1, 200, false) {
                                         val source = it.source as JSlider
                                         listener.motionSliderScale(source.value.toFloat())
-                                    })
+                                    }
                             )
                             add(
                                 JSlider(0, 400)
-                                    .setup(0, 1, 200, false, {
+                                    .setup(0, 1, 200, false) {
                                         val source = it.source as JSlider
                                         listener.motionSliderScaleDist(source.value.toFloat())
-                                    }).wrapWithLabel("Dist")
+                                    }.wrapWithLabel("Dist")
                             )
                             add(JButton("Apply")
                                 .setup { listener.motionApplyScale() })
                         }.wrapWithLabel("Scale", 100)
                     )
 
-                    // align
+                    // animation
                     add(JPanel().apply {
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                         add(
                             JSlider(0, 2000)
-                                .setup(0, 1, 500, false, {
+                                .setup(0, 1, 500, false) {
                                     val source = it.source as JSlider
-                                    listener.motionSliderRotationTime(source.value.toFloat())
-                                })
+                                    listener.motionSliderAnimationTime(source.value.toFloat())
+                                }
+                                .apply { value = 1000 }
                         )
-                        add(JButton("Execute").setup { listener.motionAlignExecute() })
-                    }.wrapWithLabel("Align time"))
+                    }.wrapWithLabel("Anim time"))
 
                     // fill
                     add(JPanel().apply {
@@ -158,6 +172,7 @@ class Controls {
                                 val color = JColorChooser.showDialog(this, "Fill Start Color", Color.WHITE)
                                 color?.let {
                                     listener.fillColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
                                     this@apply.background = it
                                 }
                             }
@@ -168,6 +183,7 @@ class Controls {
                                 val color = JColorChooser.showDialog(this, "Fill End Color", Color.WHITE)
                                 color?.let {
                                     listener.fillEndColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
                                     this@apply.background = it
                                 }
                             }
@@ -177,10 +193,10 @@ class Controls {
                             .setup { ae -> listener.fill(isSelected(ae)) })
                         add(
                             JSlider(0, 255)
-                                .setup(0, 1, 64, false, {
+                                .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
                                     listener.fillAlpha(source.value.toFloat())
-                                }).wrapWithLabel("Alpha")
+                                }.wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
 
@@ -192,6 +208,7 @@ class Controls {
                                 val color = JColorChooser.showDialog(this, "Stroke Color", Color.WHITE)
                                 color?.let {
                                     listener.strokeColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
                                     this@apply.background = it
                                 }
                             }
@@ -201,10 +218,10 @@ class Controls {
                             .setup { ae -> listener.stroke(isSelected(ae)) })
                         add(
                             JSlider(0, 20)
-                                .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false, {
+                                .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false) {
                                     val source = it.source as JSlider
                                     listener.strokeWeight(source.value.toFloat())
-                                })
+                                }
                         )
                     }.wrapWithLabel("Stroke"))
                 })
@@ -259,7 +276,7 @@ class Controls {
     }
 
     interface Listener {
-        fun motionSliderSpeed(value: Float)
+        fun motionSliderRotationSpeed(value: Float)
         fun shaderButtonNone()
         fun shaderButtonLine()
         fun shaderButtonNeon()
@@ -268,7 +285,8 @@ class Controls {
         fun motionRotY(selected: Boolean)
         fun motionRotX(selected: Boolean)
         fun motionAlignExecute()
-        fun motionSliderRotationTime(alignTime: Float)
+        fun motionSliderAnimationTime(alignTime: Float)
+        fun motionSliderRotationOffset(offset: Float)
         fun textRandom(selected: Boolean)
         fun textNearRandom(selected: Boolean)
         fun textInOrder(selected: Boolean)
@@ -292,35 +310,35 @@ class Controls {
     }
 
     // todo use this to map slider to log values
-    fun logslider(position:Int):Double {
+    fun logslider(position: Int): Double {
         val (minp, minv, scale) = setupLog()
 
-        return Math.exp(minv + scale*(position-minp));
+        return Math.exp(minv + scale * (position - minp))
     }
 
     // todo use this to map log values to slider
-    fun logposition(value:Double):Double {
+    fun logposition(value: Double): Double {
         val (minp, minv, scale) = setupLog()
-        return (Math.log(value)-minv) / scale + minp;
+        return (ln(value) - minv) / scale + minp
     }
 
     private fun setupLog(): Triple<Int, Double, Double> {
         // position will be between 0 and 100
-        val minp = 0;
-        val maxp = 100;
+        val minp = 0
+        val maxp = 100
 
         // The result should be between 100 an 10000000
-        val minv = Math.log(100.0);
-        val maxv = Math.log(10000000.0);
+        val minv = ln(100.0)
+        val maxv = ln(10000000.0)
 
         // calculate adjustment factor
-        val scale = (maxv - minv) / (maxp - minp);
+        val scale = (maxv - minv) / (maxp - minp)
         return Triple(minp, minv, scale)
     }
 }
 
 val printListener = object : Controls.Listener {
-    override fun motionSliderSpeed(value: Float) = println("sliderspeed: $value")
+    override fun motionSliderRotationSpeed(value: Float) = println("sliderspeed: $value")
     override fun shaderButtonNone() = println("shader button none")
     override fun shaderButtonLine() = println("shader button line")
     override fun shaderButtonNeon() = println("shader button neon")
@@ -329,7 +347,8 @@ val printListener = object : Controls.Listener {
     override fun motionRotY(selected: Boolean) = println("motionRotY: $selected")
     override fun motionRotX(selected: Boolean) = println("motionRotX: $selected")
     override fun motionAlignExecute() = println("motionAlignExecute")
-    override fun motionSliderRotationTime(alignTime: Float) = println("motionSliderAlignTime: $alignTime")
+    override fun motionSliderAnimationTime(alignTime: Float) = println("motionSliderAlignTime: $alignTime")
+    override fun motionSliderRotationOffset(offset: Float) = println("motionSliderRotationOffset: $offset")
     override fun textRandom(selected: Boolean) = println("textRandom: $selected")
     override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
     override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
@@ -345,7 +364,7 @@ val printListener = object : Controls.Listener {
     override fun motionApplyScale() = println("motionApplyScale")
     override fun motionSliderScaleDist(dist: Float) = println("motionSliderScaleDist: $dist")
     override fun fillColor(color: Color) = println("fillColor: $color")
-    override fun fill(selected: Boolean)  = println("fill: $selected")
+    override fun fill(selected: Boolean) = println("fill: $selected")
     override fun fillEndColor(color: Color) = println("fillEndColor: $color")
     override fun strokeColor(color: Color) = println("strokeColor: $color")
     override fun stroke(selected: Boolean) = println("stroke: $selected")

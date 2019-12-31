@@ -60,7 +60,7 @@ class CubeTranslationMotion constructor(
                 timeMs,
                 cubeList.cubes.mapIndexed { i, cube ->
                     PVector(
-                        -spacing / 2 + (i - cubeList.cubes.size / 2 - 1) * spacing,
+                        -spacing / 2 + (i) * spacing/cubeList.cubes.size,
                         0f,
                         0f
                     )

@@ -19,21 +19,10 @@ class Cube constructor(
     private var cubeShape: PShape
 
     var fill: Boolean = false
-        set(value) {
-            field = value;updateColors()
-        }
     var fillColor: Color = Color.BLUE
-        set(value) {
-            field = value;updateColors()
-        }
+    var fillAlpha: Float = 255f
     var stroke: Boolean = true
-        set(value) {
-            field = value;updateColors()
-        }
     var strokeColor: Color = Color.WHITE
-        set(value) {
-            field = value;updateColors()
-        }
     var strokeWeight: Float = 20f
         set(value) {
             field = if (value > 0) value else 1f
@@ -52,7 +41,7 @@ class Cube constructor(
 
     private fun updateColors() {
         if (fill) {
-            p.fill(fillColor.toProcessing(p))
+            p.fill(fillColor.toProcessing(fillAlpha,p))
         } else {
             p.noFill()
         }

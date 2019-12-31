@@ -57,4 +57,4 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
     }
 
 fun Color.toProcessing(p: PApplet) = p.color(red, green, blue)
-fun Color.toProcessing(alpha:Int, p: PApplet) = p.color(red, green, blue, alpha)
+fun Color.toProcessing(alpha:Float, p: PApplet) = p.color(red, green, blue, alpha.toInt())

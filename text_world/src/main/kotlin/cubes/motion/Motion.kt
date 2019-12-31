@@ -19,7 +19,8 @@ abstract class Motion<T> constructor(
         }
     }
 
-    protected fun interpolate(startPos: Float, endPos: Float, ratio: Float) =
-        startPos + (endPos - startPos) * ratio
-
+    companion object {
+        fun interpolate(startPos: Float, endPos: Float, ratio: Float) =
+            startPos + (endPos - startPos) * ratio
+    }
 }

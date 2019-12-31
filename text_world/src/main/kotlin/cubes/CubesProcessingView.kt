@@ -36,32 +36,37 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
     override fun setup() {
         //terminator = Terminator(this)
+        val textList = TextList(
+            this, mutableListOf(
+                Text("In every fact"),
+                Text("there is something"),
+                Text("that is true and false."),
+                Text("Every fact is true and false"),
+                Text("at the same time."),
+                Text("The truth is resonance."),
+                Text("All truth has a context"),
+                Text("and that context is us."),
+                Text("But this is at odds"),
+                Text("with the very definition of truth."),
+                Text("That truth is universal."),
+                Text("All truth is yours"),
+                Text("and yours alone"),
+                Text("and don't let anyone "),
+                Text("tell you differently."),
+                Text("Love without hope.")
+            )
+        )
         cubesState = CubesState(
-            textList = TextList(
-                this, mutableListOf(
-                    Text("In every fact"),
-                    Text("there is something"),
-                    Text("that is true and false."),
-                    Text("Every fact is true and false"),
-                    Text("at the same time."),
-                    Text("The truth is resonance."),
-                    Text("All truth has a context"),
-                    Text("and that context is us."),
-                    Text("But this is at odds"),
-                    Text("with the very definition of truth."),
-                    Text("That truth is universal."),
-                    Text("All truth is yours"),
-                    Text("and don't let anyone "),
-                    Text("tell you differently."),
-                    Text("Love without hope.")
-                )
-            ),
-            cubeList = CubeList(this, 15, 50f, 400f),
+            textList = textList,
+            cubeList = CubeList(this, textList.texts.size, 50f, 400f),
             rotationSpeed = 0.001f,
             animationTime = 2000f,
             info = getInfo(),
             cubeScale = 10f,
-            cubeScaleDist = 0f
+            cubeScaleDist = 0f,
+            rotationOffset = 0f,
+            fillColor = Color.WHITE,
+            fillEndColor = Color.GRAY
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)

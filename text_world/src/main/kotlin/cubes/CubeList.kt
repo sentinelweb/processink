@@ -45,6 +45,6 @@ class CubeList constructor(
     }
 
     companion object {
-        val DEFAULT_MOTION_UPDATER = VelocityRotationMotion(0.001f)
+        val DEFAULT_MOTION_UPDATER = VelocityRotationMotion(0.001f, 0.01f)
     }
 }

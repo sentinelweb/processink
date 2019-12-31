@@ -22,7 +22,7 @@ class CubesPresenter constructor(
         state.cubeList.updateState()
     }
 
-    override fun motionSliderSpeed(value: Float) {
+    override fun motionSliderRotationSpeed(value: Float) {
         state.rotationSpeed = value / 10000f
         setCubeVelocity()
 
@@ -66,22 +66,26 @@ class CubesPresenter constructor(
 
     override fun motionAlignExecute() {
         state.cubeList.cubeListMotion = CubeRotationAlignMotion(state.cubeList, state.animationTime) {
-            state.cubeList.cubeListMotion = VelocityRotationMotion(0f, state.cubeRotationAxes)
+            state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
         }
     }
 
-    override fun motionSliderRotationTime(alignTime: Float) {
+    override fun motionSliderAnimationTime(alignTime: Float) {
         state.animationTime = alignTime
     }
 
+    override fun motionSliderRotationOffset(offset: Float) {
+        state.rotationOffset = offset / 10000f
+        setCubeVelocity()
+    }
+
     override fun motionGrid() {
-        val dimension = Math.sqrt(state.cubeList.cubes.size.toDouble()).toInt() + 1
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
-                    CubeTranslationMotion.grid(state.cubeList, state.animationTime, dimension, 200f),
+                    CubeTranslationMotion.grid(state.cubeList, state.animationTime, 4, 200f),
                     cubeScaleMotion(),
-                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                    VelocityRotationMotion.make(state)
                 )
             )
     }
@@ -90,9 +94,9 @@ class CubesPresenter constructor(
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
-                    CubeTranslationMotion.line(state.cubeList, state.animationTime, 50f),
+                    CubeTranslationMotion.line(state.cubeList, state.animationTime, 1000f),
                     cubeScaleMotion(),
-                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                    VelocityRotationMotion.make(state)
                 )
             )
     }
@@ -114,7 +118,8 @@ class CubesPresenter constructor(
     }
 
     override fun fillColor(color: Color) {
-        state.cubeList.cubes.forEach { it.fillColor = color;  }
+        state.fillColor = color
+        state.cubeList.cubes.forEach { it.fillColor = color }
     }
 
     override fun motionApplyScale() {
@@ -122,29 +127,48 @@ class CubesPresenter constructor(
             CompositeMotion(
                 listOf(
                     cubeScaleMotion(),
-                    VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+                    VelocityRotationMotion.make(state)
                 )
             )
     }
 
     override fun fill(selected: Boolean) {
-        state.cubeList.cubes.forEach { it.fill = selected; }
+        state.cubeList.cubes.forEach { it.fill = selected }
     }
 
     override fun fillEndColor(color: Color) {
-
+        state.fillEndColor = color
+        state.cubeList.cubes.forEachIndexed { i, cube ->
+            cube.fillColor = Color(
+                Motion.interpolate(
+                    state.fillColor.red.toFloat(),
+                    state.fillEndColor.red.toFloat(),
+                    i.toFloat() / state.cubeList.cubes.size
+                ).toInt(),
+                Motion.interpolate(
+                    state.fillColor.green.toFloat(),
+                    state.fillEndColor.green.toFloat(),
+                    i.toFloat() / state.cubeList.cubes.size
+                ).toInt(),
+                Motion.interpolate(
+                    state.fillColor.blue.toFloat(),
+                    state.fillEndColor.blue.toFloat(),
+                    i.toFloat() / state.cubeList.cubes.size
+                ).toInt()
+            )
+        }
     }
 
     override fun strokeColor(color: Color) {
-
+        state.cubeList.cubes.forEach { it.strokeColor = color }
     }
 
     override fun stroke(selected: Boolean) {
-
+        state.cubeList.cubes.forEach { it.stroke = selected }
     }
 
     override fun fillAlpha(alpha: Float) {
-
+        state.cubeList.cubes.forEach { it.fillAlpha = alpha }
     }
 
     override fun textRandom(selected: Boolean) {
@@ -182,6 +206,6 @@ class CubesPresenter constructor(
     }
 
     private fun setCubeVelocity() {
-        state.cubeList.cubeListMotion = VelocityRotationMotion(state.rotationSpeed, state.cubeRotationAxes)
+        state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
     }
 }

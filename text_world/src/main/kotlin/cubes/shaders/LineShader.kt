@@ -18,7 +18,7 @@ class LineShader constructor(
     }
 
     companion object {
-        const val DEFAULT_WEIGHT = 5f
+        const val DEFAULT_WEIGHT = 2f
         const val PARAM_WEIGHT = "weight"
     }
 }

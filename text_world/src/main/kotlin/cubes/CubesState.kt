@@ -1,5 +1,7 @@
 package cubes
 
+import java.awt.Color
+
 data class CubesState constructor(
     var textList: TextList,
     var cubeList: CubeList,
@@ -8,7 +10,10 @@ data class CubesState constructor(
     var cubeRotationAxes: Triple<Boolean, Boolean, Boolean> = Triple(true, true, true),
     var info: PAppletInfo,
     var cubeScale: Float,
-    var cubeScaleDist: Float
+    var cubeScaleDist: Float,
+    var rotationOffset: Float,
+    var fillEndColor: Color,
+    var fillColor: Color
 )
 
 data class PAppletInfo(
