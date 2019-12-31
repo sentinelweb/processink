@@ -1,8 +1,10 @@
 package cubes
 
 import cubes.CubesContract.ShaderType
-import cubes.TextList.Text
+import cubes.objects.TextList.Text
 import cubes.gui.Controls
+import cubes.objects.CubeList
+import cubes.objects.TextList
 import cubes.shaders.FlameShader
 import cubes.shaders.LineShader
 import cubes.shaders.ShaderWrapper

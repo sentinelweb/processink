@@ -1,9 +1,8 @@
 package cubes.motion
 
-import cubes.Cube
-import cubes.CubeList
+import cubes.objects.Cube
+import cubes.objects.CubeList
 import provider.TimeProvider
-import kotlin.math.abs
 
 class CubeRotationAlignMotion constructor(
     private val cubeList: CubeList,

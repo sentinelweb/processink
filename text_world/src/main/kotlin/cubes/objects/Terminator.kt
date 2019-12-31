@@ -1,5 +1,6 @@
-package cubes
+package cubes.objects
 
+import cubes.CubesProcessingView
 import processing.core.PApplet
 import processing.core.PShape
 

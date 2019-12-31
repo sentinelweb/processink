@@ -1,4 +1,4 @@
-package cubes
+package cubes.objects
 
 import cubes.motion.Motion
 import cubes.motion.VelocityRotationMotion

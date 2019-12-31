@@ -1,5 +1,7 @@
 package cubes
 
+import cubes.objects.CubeList
+import cubes.objects.TextList
 import java.awt.Color
 
 data class CubesState constructor(

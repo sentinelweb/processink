@@ -1,14 +1,14 @@
 package cubes.motion
 
 import com.nhaarman.mockitokotlin2.whenever
-import cubes.CubeList
+import cubes.objects.CubeList
 import org.junit.Before
 import org.junit.Test
 import cubes.CubesProcessingView
+import cubes.motion.Motion.Companion.interpolate
 import org.hamcrest.Matchers.closeTo
 import org.hamcrest.core.Is.`is`
 import org.junit.Assert.*
-import org.junit.Ignore
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import processing.core.PConstants
@@ -69,11 +69,11 @@ class CubeRotationAlignMotionTest {
     @Test
     fun interpolate() {// takinf 6s to run? why?
         sut = createSut()
-        assertEquals(0.0f, sut.interpolate(sut.wrapTo2Pi(20f), 0f, FIXT_RATIO_END))
-        assertEquals(2 * PI, sut.interpolate(2 * PI, 0f, FIXT_RATIO_START))
-        assertEquals(PI, sut.interpolate(2 * PI, 0f, 0.5f))
-        assertThat(sut.interpolate(2 * PI, 0f, 0.75f).toDouble(), `is`(closeTo((PI / 2).toDouble(), 0.0001)))
-        assertThat(sut.interpolate(2 * PI, 0f, 0.25f).toDouble(), `is`(closeTo((3 * PI / 2).toDouble(), 0.0001)))
+        assertEquals(0.0f, interpolate(sut.wrapTo2Pi(20f), 0f, FIXT_RATIO_END))
+        assertEquals(2 * PI, interpolate(2 * PI, 0f, FIXT_RATIO_START))
+        assertEquals(PI, interpolate(2 * PI, 0f, 0.5f))
+        assertThat(interpolate(2 * PI, 0f, 0.75f).toDouble(), `is`(closeTo((PI / 2).toDouble(), 0.0001)))
+        assertThat(interpolate(2 * PI, 0f, 0.25f).toDouble(), `is`(closeTo((3 * PI / 2).toDouble(), 0.0001)))
     }
 
     @Test

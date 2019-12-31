@@ -10,9 +10,11 @@ class LineShader constructor(
 ): ShaderWrapper(p,
     "${CubesProcessingView.BASE_RESOURCES}/cubes/linefrag.glsl",
     "${CubesProcessingView.BASE_RESOURCES}/cubes/linevert.glsl") {
+
     init {
         setWeight(DEFAULT_WEIGHT)
     }
+
     fun setWeight(weight:Float) {
         set(PARAM_WEIGHT, weight)
     }

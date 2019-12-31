@@ -1,10 +1,9 @@
-package cubes
+package cubes.objects
 
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
 import processing.core.PVector
-import java.awt.Point
 
 class TextList constructor(
     private val p: PApplet,

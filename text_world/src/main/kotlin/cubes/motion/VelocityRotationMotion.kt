@@ -1,6 +1,6 @@
 package cubes.motion
 
-import cubes.Cube
+import cubes.objects.Cube
 import cubes.CubesState
 
 class VelocityRotationMotion(

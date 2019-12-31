@@ -1,4 +1,4 @@
-package cubes
+package cubes.objects
 
 import cubes.gui.toProcessing
 import processing.core.PApplet

@@ -1,7 +1,7 @@
 package cubes.motion
 
-import cubes.Cube
-import cubes.CubeList
+import cubes.objects.Cube
+import cubes.objects.CubeList
 import processing.core.PVector
 import provider.TimeProvider
 
