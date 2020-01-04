@@ -60,7 +60,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
         cubesState = CubesState(
             textList = textList,
-            cubeList = CubeList(this, textList.texts.size, 50f, 400f),
+            cubeList = CubeList(this, textList.texts.size, 50f, 400f).apply { visible = false },
             rotationSpeed = 0.001f,
             animationTime = 2000f,
             info = getInfo(),
@@ -82,18 +82,20 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     }
 
     // make a algo to send different cubes to catch each other up.
+
+    //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         noStroke()
         // noFill()
-        nebulaShader.set("time", millis())
+        nebulaShader.set("time", millis() / 250f)
         nebulaShader.engage()
         rect(0f, 0f, width.toFloat(), height.toFloat())
 
         // currentShader?.engage() ?: resetShader()
         // alignTexts()
-//        cubesState.cubeList.draw()
+        cubesState.cubeList.draw()
 //
 //        // terminator.draw()
         cubesState.textList.draw()

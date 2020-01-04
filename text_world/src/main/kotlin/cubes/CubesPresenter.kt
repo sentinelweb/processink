@@ -4,7 +4,6 @@ import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
 import cubes.motion.*
 import java.awt.Color
-import java.awt.Color.WHITE
 import java.awt.Font
 
 class CubesPresenter constructor(
@@ -160,16 +159,34 @@ class CubesPresenter constructor(
 
     }
 
+    private val transparent = Color(0f, 0f, 0f, 0f)
+
     override fun textRandom(selected: Boolean) {
+
+        val c = Color.decode("#3949ab")
         if (selected) {
-            state.textList.scatterText(-500f, 300f)
-            state.textList.fill(true)
-            state.textList.visible = true
-            state.textList.motion = TextColorMotion(
-                state.textList, 2000f, Color(1f, 0f, 0f, 0f), WHITE
-            )
+            state.textList.apply {
+                visible(true)
+                scatterText(-200f, 100f)
+                timeMs = 4000f
+                motion = TextColorMotion(state.textList, 2000f, transparent, fillColor) {
+                    state.textList.motion = TextColorMotion(state.textList, 2000f, fillColor, transparent)
+                }
+                endFunction = fun() {
+                    textRandom(true)
+                }
+                start()
+            }
+
+//            state.textList.scatterText(-500f, 300f)
+//            state.textList.fill(true)
+//            state.textList.visible = true
+//            state.textList.motion = TextColorMotion(
+//                state.textList, 2000f, Color(1f, 0f, 0f, 0f), WHITE
+//            )
         } else {
             state.textList.visible = false
+            state.textList.stop()
         }
     }
 
@@ -194,7 +211,10 @@ class CubesPresenter constructor(
     }
 
     override fun textFillColor(color: Color) {
-
+        state.textList.fillColor = color
+        state.textList.texts.forEach {
+            it.fillColor = color
+        }
     }
 
     override fun textFillEndColor(color: Color) {
@@ -202,27 +222,48 @@ class CubesPresenter constructor(
     }
 
     override fun textFill(selected: Boolean) {
-
+        state.textList.fill = selected
+        state.textList.texts.forEach {
+            it.fill = selected
+        }
     }
 
     override fun textFillAlpha(alpha: Float) {
-
+        val old = state.textList.fillColor
+        state.textList.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
+        state.textList.texts.forEach {
+            val old = it.fillColor
+            it.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
+        }
     }
 
     override fun textStrokeColor(color: Color) {
-
+        state.textList.strokeColor = color
+        state.textList.texts.forEach {
+            it.strokeColor = color
+        }
     }
 
     override fun textStroke(selected: Boolean) {
-
+        state.textList.stroke = selected
+        state.textList.texts.forEach {
+            it.stroke = selected
+        }
     }
 
     override fun textStrokeWeight(weight: Float) {
-
+        state.textList.strokeWeight = weight
+        state.textList.texts.forEach {
+            it.strokeWeight = weight
+        }
     }
 
     override fun textFont(selectedFont: Font) {
+        state.textList.setFont(selectedFont)
+    }
 
+    override fun cubesVisible(selected: Boolean) {
+        state.cubeList.visible = selected
     }
 
     private fun cubeScaleMotion() = if (state.cubeScaleDist == 0f) {

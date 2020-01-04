@@ -18,7 +18,7 @@ class CubeTranslationMotion constructor(
 
     override fun ensureEndState() {
         cubeList.cubes.forEachIndexed { i, cube ->
-            cube.scale.set(target[i])
+            cube.position.set(target[i])
         }
     }
 

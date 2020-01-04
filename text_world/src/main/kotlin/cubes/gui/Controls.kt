@@ -51,7 +51,7 @@ class Controls {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            preferredSize = Dimension(800, 800)
+            preferredSize = Dimension(800, 600)
             layout = BorderLayout()
 
             // east panel - shader
@@ -108,6 +108,8 @@ class Controls {
                             add(JButton("0")
                                 .setup { listener.motionRotationReset() })
                             add(JButton("Align").setup { listener.motionAlignExecute() })
+                            add(JToggleButton("Visible")
+                                .setup(true) { ae -> listener.cubesVisible(isSelected(ae)) })
                         }.wrapWithLabel("Rotation", 100)
                     )
 
@@ -389,6 +391,7 @@ class Controls {
         fun textStroke(selected: Boolean)
         fun textStrokeWeight(weight: Float)
         fun textFont(selectedFont: Font)
+        fun cubesVisible(selected: Boolean)
     }
 
     // todo use this to map slider to log values
@@ -460,4 +463,5 @@ val printListener = object : Controls.Listener {
     override fun textStroke(selected: Boolean) = println("textStroke: $selected")
     override fun textStrokeWeight(weight: Float) = println("textStrokeWeight: $weight")
     override fun textFont(selectedFont: Font) = println("textFont: $selectedFont")
+    override fun cubesVisible(selected: Boolean) = println("cubesVisible: $selected")
 }
