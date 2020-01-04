@@ -3,8 +3,8 @@ package cubes
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
 import cubes.motion.*
-import processing.core.PVector
 import java.awt.Color
+import java.awt.Color.WHITE
 
 class CubesPresenter constructor(
     private val controls: Controls,
@@ -29,7 +29,7 @@ class CubesPresenter constructor(
     }
 
     override fun motionRotationReset() {
-        state.cubeList.cubes.forEach { it.angle = PVector(0f, 0f, 0f) }
+        state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
     }
 
     override fun shaderButtonNone() {
@@ -138,25 +138,7 @@ class CubesPresenter constructor(
 
     override fun fillEndColor(color: Color) {
         state.fillEndColor = color
-        state.cubeList.cubes.forEachIndexed { i, cube ->
-            cube.fillColor = Color(
-                Motion.interpolate(
-                    state.fillColor.red.toFloat(),
-                    state.fillEndColor.red.toFloat(),
-                    i.toFloat() / state.cubeList.cubes.size
-                ).toInt(),
-                Motion.interpolate(
-                    state.fillColor.green.toFloat(),
-                    state.fillEndColor.green.toFloat(),
-                    i.toFloat() / state.cubeList.cubes.size
-                ).toInt(),
-                Motion.interpolate(
-                    state.fillColor.blue.toFloat(),
-                    state.fillEndColor.blue.toFloat(),
-                    i.toFloat() / state.cubeList.cubes.size
-                ).toInt()
-            )
-        }
+        ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
     }
 
     override fun strokeColor(color: Color) {
@@ -172,7 +154,15 @@ class CubesPresenter constructor(
     }
 
     override fun textRandom(selected: Boolean) {
-
+        if (selected) {
+            state.textList.scatterText(-500f, 300f)
+            view.setTextVisible(true)
+            state.textList.motion = TextColorMotion(
+                state.textList, 200000f, Color(1f, 0f, 0f, 0f), WHITE
+            )
+        } else {
+            view.setTextVisible(false)
+        }
     }
 
     override fun textNearRandom(selected: Boolean) {

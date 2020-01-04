@@ -1,7 +1,6 @@
 package cubes
 
 import cubes.CubesContract.ShaderType
-import cubes.objects.TextList.Text
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
@@ -26,6 +25,9 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     private var currentShader: ShaderWrapper? = null
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
+
+    private var textVisible = false
+
     lateinit var cubesState: CubesState
 
     var color = Color.BLACK
@@ -38,26 +40,24 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
     override fun setup() {
         //terminator = Terminator(this)
-        val textList = TextList(
-            this, mutableListOf(
-                Text("In every fact"),
-                Text("there is something"),
-                Text("that is true and false."),
-                Text("Every fact is true and false"),
-                Text("at the same time."),
-                Text("The truth is resonance."),
-                Text("All truth has a context"),
-                Text("and that context is us."),
-                Text("But this is at odds"),
-                Text("with the very definition of truth."),
-                Text("That truth is universal."),
-                Text("All truth is yours"),
-                Text("and yours alone"),
-                Text("and don't let anyone "),
-                Text("tell you differently."),
-                Text("Love without hope.")
-            )
-        )
+        val textList = TextList(this)
+            .addText("In every fact")
+            .addText("there is something")
+            .addText("that is true and false.")
+            .addText("Every fact is true and false")
+            .addText("at the same time.")
+            .addText("The truth is resonance.")
+            .addText("All truth has a context")
+            .addText("and that context is us.")
+            .addText("But this is at odds")
+            .addText("with the very definition of truth.")
+            .addText("That truth is universal.")
+            .addText("All truth is yours")
+            .addText("and yours alone")
+            .addText("and don't let anyone ")
+            .addText("tell you differently.")
+            .addText("Love without hope.")
+
         cubesState = CubesState(
             textList = textList,
             cubeList = CubeList(this, textList.texts.size, 50f, 400f),
@@ -88,7 +88,9 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         cubesState.cubeList.draw()
 
         //terminator.draw()
-        //textList.draw()
+        if (textVisible) {
+            cubesState.textList.draw()
+        }
         //text("Love without hope", 320f, 180f)
     }
 
@@ -106,6 +108,10 @@ class CubesProcessingView : PApplet(), CubesContract.View {
             ShaderType.LINES -> lineShader.set(param, value)
             ShaderType.NEON -> flameShader.set(param, value)
         }
+    }
+
+    override fun setTextVisible(visible: Boolean) {
+        textVisible = visible
     }
 
     fun run() {

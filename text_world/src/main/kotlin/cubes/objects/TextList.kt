@@ -1,33 +1,38 @@
 package cubes.objects
 
+import cubes.motion.Motion
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
-import processing.core.PVector
 
 class TextList constructor(
-    private val p: PApplet,
-    val texts: MutableList<Text>
+    private val p: PApplet
 ) {
     private val f: PFont
+    val texts: MutableList<Text> = mutableListOf()
+    var motion: Motion<Text>? = null
 
     init {
         f = p.createFont("ArialMT", 60f)
     }
 
-    data class Text constructor(
-        val text: CharSequence,
-        val point: PVector = PVector()
-    ) {
-        fun draw(p:PApplet){
-            p.text(text.toString(), point.x, point.y, point.z)
+    fun updateState() {
+        motion?.run {
+            texts.forEachIndexed { i, cube ->
+                if (!isEnded()) {
+                    updateState(i, cube)
+                } else {
+                    callEndOnce()
+                }
+            }
         }
     }
 
     fun draw() {
         setProps()
+        updateState()
         p.pushMatrix()
-        p.translate(p.width / 2f, p.height/2f)
+        p.translate(p.width / 2f, p.height / 2f)
         texts.forEach {
             it.draw(p)
         }
@@ -41,7 +46,37 @@ class TextList constructor(
         //textMode(PConstants.SHAPE)
     }
 
-    companion object {
+    fun addText(s: String): TextList {
+        texts.add(Text(s))
+        return this
+    }
 
+    inner class Text constructor(
+        val text: CharSequence
+    ) : Shape(p) {
+
+        fun draw(p: PApplet) {
+            p.pushMatrix()
+            p.translate(position.x, position.y, position.z)
+            p.pushMatrix()
+            p.rotateX(angle.x)
+            p.rotateY(angle.y)
+            p.rotateZ(angle.z)
+            updateColors()
+            p.scale(scale.x, scale.y, scale.z)
+            p.text(text.toString(), 0f, 0f, 0f)
+            p.popMatrix()
+            p.popMatrix()
+        }
+    }
+
+    fun scatterText(low: Float, high: Float) {
+        texts.forEach {
+            it.position.set(
+                p.random(low, high),
+                p.random(low, high),
+                0f
+            )
+        }
     }
 }

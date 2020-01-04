@@ -15,7 +15,7 @@ class CubeRotationAlignMotion constructor(
 
     override fun ensureEndState() {
         cubeList.cubes.forEachIndexed { i, cube ->
-            cube.angle = target[i]
+            cube.angle.set(target[i])
         }
     }
 
