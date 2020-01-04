@@ -36,6 +36,9 @@ dependencies {
 //    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
 //    implementationementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
 
+    // https://gitlab.com/dheid/fontchooser
+    implementation 'org.drjekyll:fontchooser:2.4'
+
     // native lib path
     runtime files("$processing_native_lib_path")
 

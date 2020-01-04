@@ -4,7 +4,6 @@ import cubes.CubesProcessingView
 import processing.core.PApplet
 import processing.core.PConstants
 
-// doesnt work
 class FlameShader constructor(
     p:PApplet,
     override val type: Int = PConstants.POINTS

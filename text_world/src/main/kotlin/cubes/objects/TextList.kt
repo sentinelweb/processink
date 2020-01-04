@@ -8,7 +8,7 @@ import processing.core.PFont
 
 class TextList constructor(
     private val p: PApplet
-) {
+) : Shape(p) {
     private val f: PFont
     val texts: MutableList<Text> = mutableListOf()
     var motion: Motion<Text>? = null
@@ -76,7 +76,7 @@ class TextList constructor(
         }
     }
 
-    fun setFill(fill: Boolean) {
+    fun fill(fill: Boolean) {
         texts.forEach { it.fill = fill }
     }
 

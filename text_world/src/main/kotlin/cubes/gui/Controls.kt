@@ -5,13 +5,12 @@ package cubes.gui
 //Home Page http://guigenie.cjb.net - Check often for new versions!
 
 import cubes.shaders.LineShader
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.GridLayout
+import org.drjekyll.fontchooser.FontDialog
+import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
 import kotlin.math.ln
+
 
 fun main() {
     Controls()
@@ -52,7 +51,7 @@ class Controls {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            preferredSize = Dimension(800, 600)
+            preferredSize = Dimension(800, 800)
             layout = BorderLayout()
 
             // east panel - shader
@@ -84,6 +83,7 @@ class Controls {
                                     val source = it.source as JSlider
                                     listener.motionSliderRotationSpeed(source.value.toFloat())
                                 })
+                            add(JButton("0ffest").setup { listener.motionRotationOffsetReset() })
                             add(
                                 JSlider(-100, 100)
                                     .setup(0, 1, 50, false) {
@@ -91,7 +91,6 @@ class Controls {
                                         listener.motionSliderRotationOffset(source.value.toFloat())
                                     }
                                     .apply { value = 1 }
-                                    .wrapWithLabel("Offset")
                             )
                         }.wrapWithLabel("Speed", 100)
                     )
@@ -240,8 +239,21 @@ class Controls {
                                 .setup { ae -> listener.textNearRandom(isSelectedDeselectOthers(ae)) })
                             add(JToggleButton("In order")
                                 .setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
+                            add(JButton("Font").apply {
+                                addActionListener {
+                                    val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
+                                    dialog.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+                                    dialog.isVisible = true
+                                    if (!dialog.isCancelSelected) {
+                                        System.out.printf("Selected font is: %s%n", dialog.selectedFont)
+                                        listener.textFont(dialog.selectedFont)
+                                    }
+                                }
+                                isOpaque = true
+                            })
                         }.wrapWithLabel("Ordering")
                     )
+
 
                     // motion
                     add(
@@ -255,6 +267,67 @@ class Controls {
                                 .setup { ae -> listener.textMotionFade(isSelectedDeselectOthers(ae)) })
                         }.wrapWithLabel("Motion")
                     )
+
+                    // fill
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(JButton("Start").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Fill Start Color", Color.WHITE)
+                                color?.let {
+                                    listener.textFillColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JButton("End").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Fill End Color", Color.WHITE)
+                                color?.let {
+                                    listener.textFillEndColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JToggleButton("Fill")
+                            .setup { ae -> listener.textFill(isSelected(ae)) })
+                        add(
+                            JSlider(0, 255)
+                                .setup(0, 1, 64, false) {
+                                    val source = it.source as JSlider
+                                    listener.textFillAlpha(source.value.toFloat())
+                                }.wrapWithLabel("Alpha")
+                        )
+                    }.wrapWithLabel("Fill"))
+
+                    // stroke
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(JButton("Color").apply {
+                            addActionListener {
+                                val color = JColorChooser.showDialog(this, "Stroke Color", Color.WHITE)
+                                color?.let {
+                                    listener.textStrokeColor(it)
+                                    @Suppress("LABEL_NAME_CLASH")
+                                    this@apply.background = it
+                                }
+                            }
+                            isOpaque = true
+                        })
+                        add(JToggleButton("Stroke")
+                            .setup { ae -> listener.textStroke(isSelected(ae)) })
+                        add(
+                            JSlider(0, 20)
+                                .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false) {
+                                    val source = it.source as JSlider
+                                    listener.textStrokeWeight(source.value.toFloat())
+                                }
+                        )
+                    }.wrapWithLabel("Stroke"))
 
                 })
             }, BorderLayout.CENTER)
@@ -307,6 +380,15 @@ class Controls {
         fun strokeColor(color: Color)
         fun stroke(selected: Boolean)
         fun fillAlpha(alpha: Float)
+        fun motionRotationOffsetReset()
+        fun textFillColor(color: Color)
+        fun textFillEndColor(color: Color)
+        fun textFill(selected: Boolean)
+        fun textFillAlpha(alpha: Float)
+        fun textStrokeColor(color: Color)
+        fun textStroke(selected: Boolean)
+        fun textStrokeWeight(weight: Float)
+        fun textFont(selectedFont: Font)
     }
 
     // todo use this to map slider to log values
@@ -349,12 +431,6 @@ val printListener = object : Controls.Listener {
     override fun motionAlignExecute() = println("motionAlignExecute")
     override fun motionSliderAnimationTime(alignTime: Float) = println("motionSliderAlignTime: $alignTime")
     override fun motionSliderRotationOffset(offset: Float) = println("motionSliderRotationOffset: $offset")
-    override fun textRandom(selected: Boolean) = println("textRandom: $selected")
-    override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
-    override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
-    override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
-    override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
-    override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
     override fun motionRotationReset() = println("motionResetRotation")
     override fun motionGrid() = println("motionGrid")
     override fun motionLine() = println("motionLine")
@@ -363,10 +439,25 @@ val printListener = object : Controls.Listener {
     override fun motionSliderScale(scale: Float) = println("motionSliderScale: $scale")
     override fun motionApplyScale() = println("motionApplyScale")
     override fun motionSliderScaleDist(dist: Float) = println("motionSliderScaleDist: $dist")
+    override fun motionRotationOffsetReset() = println("motionRotationOffsetReset")
     override fun fillColor(color: Color) = println("fillColor: $color")
     override fun fill(selected: Boolean) = println("fill: $selected")
     override fun fillEndColor(color: Color) = println("fillEndColor: $color")
     override fun strokeColor(color: Color) = println("strokeColor: $color")
     override fun stroke(selected: Boolean) = println("stroke: $selected")
+    override fun textRandom(selected: Boolean) = println("textRandom: $selected")
+    override fun textNearRandom(selected: Boolean) = println("textNearRandom: $selected")
+    override fun textInOrder(selected: Boolean) = println("textInOrder: $selected")
+    override fun textMotionCube(selected: Boolean) = println("textMotionCube: $selected")
+    override fun textMotionAround(selected: Boolean) = println("textMotionAround: $selected")
+    override fun textMotionFade(selected: Boolean) = println("textMotionFade: $selected")
     override fun fillAlpha(alpha: Float) = println("fillAlpha: $alpha")
+    override fun textFillColor(color: Color) = println("textFillColor: $color")
+    override fun textFillEndColor(color: Color) = println("textFillEndColor: $color")
+    override fun textFill(selected: Boolean) = println("textFill: $selected")
+    override fun textFillAlpha(alpha: Float) = println("textFillAlpha: $alpha")
+    override fun textStrokeColor(color: Color) = println("textStrokeColor: $color")
+    override fun textStroke(selected: Boolean) = println("textStroke: $selected")
+    override fun textStrokeWeight(weight: Float) = println("textStrokeWeight: $weight")
+    override fun textFont(selectedFont: Font) = println("textFont: $selectedFont")
 }

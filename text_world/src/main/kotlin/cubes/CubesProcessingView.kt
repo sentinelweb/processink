@@ -6,6 +6,7 @@ import cubes.objects.CubeList
 import cubes.objects.TextList
 import cubes.shaders.FlameShader
 import cubes.shaders.LineShader
+import cubes.shaders.NebulaShader
 import cubes.shaders.ShaderWrapper
 import processing.core.PApplet
 import processing.core.PConstants
@@ -21,12 +22,11 @@ fun main() {
 
 class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
+    private lateinit var nebulaShader: NebulaShader
     private lateinit var flameShader: FlameShader
     private var currentShader: ShaderWrapper? = null
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
-
-    private var textVisible = false
 
     lateinit var cubesState: CubesState
 
@@ -74,6 +74,8 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         lineShader = LineShader(this)
         lineShader.set("weight", 5f)
         flameShader = FlameShader(this)
+        nebulaShader = NebulaShader(this)
+
         hint(PConstants.DISABLE_DEPTH_MASK)
         //currentShader = lineShader
         cubesPresenter.setup()
@@ -82,16 +84,20 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     // make a algo to send different cubes to catch each other up.
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
-        currentShader?.engage() ?: resetShader()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
-        // alignTexts()
-        cubesState.cubeList.draw()
+        noStroke()
+        // noFill()
+        nebulaShader.set("time", millis())
+        nebulaShader.engage()
+        rect(0f, 0f, width.toFloat(), height.toFloat())
 
-        //terminator.draw()
-        if (textVisible) {
-            cubesState.textList.draw()
-        }
-        //text("Love without hope", 320f, 180f)
+        // currentShader?.engage() ?: resetShader()
+        // alignTexts()
+//        cubesState.cubeList.draw()
+//
+//        // terminator.draw()
+        cubesState.textList.draw()
+        // text("Love without hope", 320f, 180f)
     }
 
     override fun setShaderType(type: ShaderType) {
@@ -108,10 +114,6 @@ class CubesProcessingView : PApplet(), CubesContract.View {
             ShaderType.LINES -> lineShader.set(param, value)
             ShaderType.NEON -> flameShader.set(param, value)
         }
-    }
-
-    override fun setTextVisible(visible: Boolean) {
-        textVisible = visible
     }
 
     fun run() {

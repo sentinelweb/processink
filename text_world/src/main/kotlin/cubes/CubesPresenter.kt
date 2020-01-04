@@ -5,6 +5,7 @@ import cubes.gui.Controls
 import cubes.motion.*
 import java.awt.Color
 import java.awt.Color.WHITE
+import java.awt.Font
 
 class CubesPresenter constructor(
     private val controls: Controls,
@@ -155,16 +156,20 @@ class CubesPresenter constructor(
         }
     }
 
+    override fun motionRotationOffsetReset() {
+
+    }
+
     override fun textRandom(selected: Boolean) {
         if (selected) {
             state.textList.scatterText(-500f, 300f)
-            state.textList.setFill(true)
-            view.setTextVisible(true)
+            state.textList.fill(true)
+            state.textList.visible = true
             state.textList.motion = TextColorMotion(
                 state.textList, 2000f, Color(1f, 0f, 0f, 0f), WHITE
             )
         } else {
-            view.setTextVisible(false)
+            state.textList.visible = false
         }
     }
 
@@ -185,6 +190,38 @@ class CubesPresenter constructor(
     }
 
     override fun textMotionFade(selected: Boolean) {
+
+    }
+
+    override fun textFillColor(color: Color) {
+
+    }
+
+    override fun textFillEndColor(color: Color) {
+
+    }
+
+    override fun textFill(selected: Boolean) {
+
+    }
+
+    override fun textFillAlpha(alpha: Float) {
+
+    }
+
+    override fun textStrokeColor(color: Color) {
+
+    }
+
+    override fun textStroke(selected: Boolean) {
+
+    }
+
+    override fun textStrokeWeight(weight: Float) {
+
+    }
+
+    override fun textFont(selectedFont: Font) {
 
     }
 
