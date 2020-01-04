@@ -1,5 +1,6 @@
 package cubes.motion
 
+
 import cubes.objects.Cube
 import cubes.objects.CubeList
 import processing.core.PVector
@@ -7,28 +8,13 @@ import provider.TimeProvider
 
 class CubeTranslationMotion constructor(
     private val cubeList: CubeList,
-    private val timeMs: Float,
-    private val target: List<PVector> = cubeList.cubes.map { PVector() },
-    private val timeProvider: TimeProvider = TimeProvider(),
+    timeMs: Float,
+    target: List<PVector> = cubeList.cubes.map { PVector() },
+    timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<Cube>(endFunction) {
+) : TranslationMotion<Cube>(timeMs, target, timeProvider, endFunction) {
 
-    private val start = cubeList.cubes.map { cube -> cube.position.copy() }
-    private val startTime = timeProvider.getTime()
-
-    override fun updateState(i: Int, shape: Cube) {
-        if (isEnded()) return
-        val currentTime = timeProvider.getTime()
-        val ratio = (currentTime - startTime) / timeMs
-
-        shape.position.set(
-            interpolate(start[i].x, target[i].x, ratio),
-            interpolate(start[i].y, target[i].y, ratio),
-            interpolate(start[i].z, target[i].z, ratio)
-        )
-    }
-
-    override fun isEnded() = timeProvider.getTime() - startTime > timeMs
+    override fun getStartData() = cubeList.cubes.map { cube -> cube.position.copy() }
 
     override fun ensureEndState() {
         cubeList.cubes.forEachIndexed { i, cube ->
@@ -60,14 +46,13 @@ class CubeTranslationMotion constructor(
                 timeMs,
                 cubeList.cubes.mapIndexed { i, cube ->
                     PVector(
-                        -spacing / 2 + (i) * spacing/cubeList.cubes.size,
+                        -spacing / 2 + (i) * spacing / cubeList.cubes.size,
                         0f,
                         0f
                     )
                 },
                 endFunction = endFunction
             )
-
 
     }
 }

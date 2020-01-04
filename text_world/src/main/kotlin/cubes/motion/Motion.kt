@@ -1,6 +1,8 @@
 package cubes.motion
 
-abstract class Motion<T> constructor(
+import cubes.objects.Shape
+
+abstract class Motion<out T : Shape> constructor(
     private val endFunction: () -> Unit = {}
 ) {
     private var wasEndFunctionCalled = false
@@ -9,7 +11,7 @@ abstract class Motion<T> constructor(
 
     abstract fun ensureEndState()
 
-    abstract fun updateState(i:Int, shape:T)
+    abstract fun <T : Shape> updateState(i: Int, shape: T)
 
     fun callEndOnce() {
         if (isEnded() && !wasEndFunctionCalled) {

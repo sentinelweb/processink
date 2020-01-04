@@ -4,18 +4,14 @@ import cubes.gui.toProcessing
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
-import processing.core.PVector
 import java.awt.Color
 
 class Cube constructor(
     private val p: PApplet,
     val width: Float,
     height: Float = width,
-    depth: Float = width,
-    var angle: Triple<Float, Float, Float> = Triple(0f, 0f, 0f),
-    val position: PVector = PVector(),
-    val scale: PVector = PVector()
-) {
+    depth: Float = width
+) : Shape() {
     private var cubeShape: PShape
 
     var fill: Boolean = false
@@ -34,14 +30,15 @@ class Cube constructor(
         }
 
     init {
+        // todo this is killing the test - export to a factory?
         cubeShape = p.createShape(PConstants.BOX, width, height, depth).apply {
-            disableStyle()
+            this?.disableStyle()
         }
     }
 
     private fun updateColors() {
         if (fill) {
-            p.fill(fillColor.toProcessing(fillAlpha,p))
+            p.fill(fillColor.toProcessing(fillAlpha, p))
         } else {
             p.noFill()
         }
@@ -60,9 +57,9 @@ class Cube constructor(
         p.pushMatrix()
         p.translate(position.x, position.y, position.z)
         p.pushMatrix()
-        p.rotateX(angle.first)
-        p.rotateY(angle.second)
-        p.rotateZ(angle.third)
+        p.rotateX(angle.x)
+        p.rotateY(angle.y)
+        p.rotateZ(angle.z)
         updateColors()
         p.scale(scale.x, scale.y, scale.z)
         p.shape(cubeShape)

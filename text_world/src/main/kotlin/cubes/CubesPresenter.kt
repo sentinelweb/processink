@@ -3,6 +3,7 @@ package cubes
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
 import cubes.motion.*
+import processing.core.PVector
 import java.awt.Color
 
 class CubesPresenter constructor(
@@ -25,11 +26,10 @@ class CubesPresenter constructor(
     override fun motionSliderRotationSpeed(value: Float) {
         state.rotationSpeed = value / 10000f
         setCubeVelocity()
-
     }
 
     override fun motionRotationReset() {
-        state.cubeList.cubes.forEach { it.angle = Triple(0f, 0f, 0f) }
+        state.cubeList.cubes.forEach { it.angle = PVector(0f, 0f, 0f) }
     }
 
     override fun shaderButtonNone() {

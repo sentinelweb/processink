@@ -1,6 +1,8 @@
 package cubes.motion
 
-class CompositeMotion<T> constructor(
+import cubes.objects.Shape
+
+class CompositeMotion<T:Shape> constructor(
     private val motions: List<Motion<T>>, // todo make some object class/interface to limit types - separate model from render code first
     endFunction: () -> Unit = {}
 ) : Motion<T>(endFunction) {
@@ -9,6 +11,6 @@ class CompositeMotion<T> constructor(
 
     override fun ensureEndState() = motions.forEach { it.ensureEndState() }
 
-    override fun updateState(i: Int, shape: T) = motions.forEach { it.updateState(i, shape) }
+    override fun <T:Shape> updateState(i: Int, shape: T) = motions.forEach { it.updateState(i, shape) }
 
 }

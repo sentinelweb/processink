@@ -2,28 +2,34 @@ package cubes.motion
 
 import cubes.objects.Cube
 import cubes.CubesState
+import cubes.objects.Shape
+import processing.core.PVector
+import provider.TimeProvider
 
 class VelocityRotationMotion(
     private val rotationSpeed: Float,
     private val rotationOffset: Float,
     private val motionRotation: Triple<Boolean, Boolean, Boolean> = Triple(true, true, true),
-    val endFunction: () -> Unit = {}
-) : Motion<Cube>() {
+    timeProvider: TimeProvider = TimeProvider(),
+    endFunction: () -> Unit = {}
+) : RotationMotion<Cube>(0f, listOf(), timeProvider, endFunction) {
 
     override fun isEnded() = false
 
     override fun ensureEndState() = Unit
 
-    override fun updateState(i: Int, shape: Cube) {
+    override fun <T : Shape> updateState(i: Int, shape: T) {
         val increment = rotationSpeed + rotationOffset * (i + 1)
-        shape.angle = Triple(
-            shape.angle.first + if (motionRotation.first) increment else 0f,
-            shape.angle.second + if (motionRotation.second) increment else 0f,
-            shape.angle.third + if (motionRotation.third) increment else 0f
+        shape.angle.set(
+            shape.angle.x + if (motionRotation.first) increment else 0f,
+            shape.angle.y + if (motionRotation.second) increment else 0f,
+            shape.angle.z + if (motionRotation.third) increment else 0f
         )
     }
 
     companion object {
         fun make(state:CubesState) = VelocityRotationMotion(state.rotationSpeed, state.rotationOffset, state.cubeRotationAxes)
     }
+
+    override fun getStartData(): List<PVector> = listOf()
 }
