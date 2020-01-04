@@ -1,5 +1,6 @@
 package cubes.objects
 
+import cubes.gui.toProcessing
 import cubes.motion.Motion
 import processing.core.PApplet
 import processing.core.PConstants
@@ -56,18 +57,27 @@ class TextList constructor(
     ) : Shape(p) {
 
         fun draw(p: PApplet) {
-            p.pushMatrix()
-            p.translate(position.x, position.y, position.z)
-            p.pushMatrix()
-            p.rotateX(angle.x)
-            p.rotateY(angle.y)
-            p.rotateZ(angle.z)
-            updateColors()
-            p.scale(scale.x, scale.y, scale.z)
-            p.text(text.toString(), 0f, 0f, 0f)
-            p.popMatrix()
-            p.popMatrix()
+            if (visible) {
+                p.pushMatrix()
+                p.translate(position.x, position.y, position.z)
+                p.pushMatrix()
+                p.rotateX(angle.x)
+                p.rotateY(angle.y)
+                p.rotateZ(angle.z)
+                updateColors()
+                val pc = fillColor.toProcessing(p)
+                println("textfill: $fillColor -> ${p.red(pc)},${p.green(pc)},${p.blue(pc)},${p.alpha(pc)} $fill")
+                //p.fill(255f,0f,255f,255f)
+                p.scale(scale.x, scale.y, scale.z)
+                p.text(text.toString(), 0f, 0f, 0f)
+                p.popMatrix()
+                p.popMatrix()
+            }
         }
+    }
+
+    fun setFill(fill: Boolean) {
+        texts.forEach { it.fill = fill }
     }
 
     fun scatterText(low: Float, high: Float) {

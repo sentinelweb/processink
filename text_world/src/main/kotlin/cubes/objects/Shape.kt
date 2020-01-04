@@ -13,7 +13,6 @@ open class Shape constructor(
 ) {
     var fill: Boolean = false
     var fillColor: Color = Color.BLUE
-    var fillAlpha: Float = 255f
     var stroke: Boolean = true
     var strokeColor: Color = Color.WHITE
     var strokeWeight: Float = 20f
@@ -25,10 +24,12 @@ open class Shape constructor(
                 this.stroke = false
             }
         }
+    var visible = true
 
     protected fun updateColors() {
         if (fill) {
-            p.fill(fillColor.toProcessing(fillAlpha, p))
+            val fc = fillColor.toProcessing(p)
+            p.fill(p.red(fc), p.green(fc), p.blue(fc), p.alpha(fc))
         } else {
             p.noFill()
         }

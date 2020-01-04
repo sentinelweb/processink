@@ -13,6 +13,10 @@ class TextColorMotion constructor(
     endFunction: () -> Unit = {}
 ) : ColorMotion<TextList.Text>(timeMs, textList.texts.map { target }, timeProvider, endFunction) {
 
+    init {
+        textList.texts.forEach { it.fill = true }
+    }
+
     override fun ensureEndState() {
         textList.texts.forEachIndexed { i, cube ->
             cube.fillColor = target[i] // parent target

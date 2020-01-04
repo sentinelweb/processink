@@ -1,7 +1,8 @@
 package cubes.gui
 
 import processing.core.PApplet
-import java.awt.*
+import java.awt.Color
+import java.awt.Dimension
 import java.awt.event.ActionEvent
 import javax.swing.*
 import javax.swing.border.EmptyBorder
@@ -56,5 +57,5 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
         return this
     }
 
-fun Color.toProcessing(p: PApplet) = p.color(red, green, blue)
-fun Color.toProcessing(alpha:Float, p: PApplet) = p.color(red, green, blue, alpha.toInt())
+fun Color.toProcessing(p: PApplet) = p.color(red, green, blue, alpha)
+fun Color.toProcessing(alpha: Float, p: PApplet) = p.color(red, green, blue, alpha.toInt())

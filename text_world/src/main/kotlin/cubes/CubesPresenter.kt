@@ -150,15 +150,18 @@ class CubesPresenter constructor(
     }
 
     override fun fillAlpha(alpha: Float) {
-        state.cubeList.cubes.forEach { it.fillAlpha = alpha }
+        state.cubeList.cubes.forEach {
+            it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha.toInt())
+        }
     }
 
     override fun textRandom(selected: Boolean) {
         if (selected) {
             state.textList.scatterText(-500f, 300f)
+            state.textList.setFill(true)
             view.setTextVisible(true)
             state.textList.motion = TextColorMotion(
-                state.textList, 200000f, Color(1f, 0f, 0f, 0f), WHITE
+                state.textList, 2000f, Color(1f, 0f, 0f, 0f), WHITE
             )
         } else {
             view.setTextVisible(false)
