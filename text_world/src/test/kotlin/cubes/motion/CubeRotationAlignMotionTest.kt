@@ -2,14 +2,14 @@ package cubes.motion
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import cubes.objects.CubeList
-import org.junit.Before
-import org.junit.Test
 import cubes.CubesProcessingView
 import cubes.motion.Motion.Companion.interpolate
+import cubes.objects.CubeList
 import org.hamcrest.Matchers.closeTo
 import org.hamcrest.core.Is.`is`
 import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import processing.core.PConstants
@@ -39,7 +39,7 @@ class CubeRotationAlignMotionTest {
 
     @Test
     fun isEnded() {
-        whenever(mockTimeProvider.getTime()).thenReturn(0, (FIXT_TIME / 2), FIXT_TIME-1, FIXT_TIME, FIXT_TIME+1)
+        whenever(mockTimeProvider.getTime()).thenReturn(0, (FIXT_TIME / 2), FIXT_TIME - 1, FIXT_TIME, FIXT_TIME + 1)
         sut = createSut()
         assertFalse(sut.isEnded())
         assertFalse(sut.isEnded())
@@ -51,7 +51,7 @@ class CubeRotationAlignMotionTest {
     fun updateState() {
         whenever(mockTimeProvider.getTime()).thenReturn(0, 0, (FIXT_TIME / 2), FIXT_TIME)
         val initial = PVector(0f, PI, 3f * PI / 2)
-        fixtCubeList.cubes[0].angle = initial
+        fixtCubeList.cubes[0].angle.set(initial)
         sut = createSut()
         // time ratio 0
         sut.updateState(0, fixtCubeList.cubes[0])
@@ -59,7 +59,7 @@ class CubeRotationAlignMotionTest {
         // time ratio 0.5
         sut.updateState(0, fixtCubeList.cubes[0])
         assertEquals(
-            PVector(initial.x, initial.y * 0.5f,initial.z * 0.5f),
+            PVector(initial.x, initial.y * 0.5f, initial.z * 0.5f),
             fixtCubeList.cubes[0].angle
         )
         // time ratio 1
@@ -89,8 +89,8 @@ class CubeRotationAlignMotionTest {
     private fun createSut() =
         CubeRotationAlignMotion(fixtCubeList, FIXT_TIME.toFloat(), timeProvider = mockTimeProvider)
 
-    private fun generateCubes(length: Int):CubeList {
-        val shape:PShape = mock()
+    private fun generateCubes(length: Int): CubeList {
+        val shape: PShape = mock()
         whenever(mockApplet.createShape(PConstants.BOX, 1f, 1f, 1f)).thenReturn(shape)
         return CubeList(mockApplet, length, FIXT_SIZE, FIXT_SIZE + (length - 1f * FIXT_SIZE))
     }

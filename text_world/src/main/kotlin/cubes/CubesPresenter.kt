@@ -8,115 +8,156 @@ import cubes.motion.*
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import java.awt.Color
 import java.awt.Font
 
 class CubesPresenter constructor(
     private val controls: Controls,
     private val view: CubesContract.View,
-    private val disposables: Disposable = CompositeDisposable()
-) : CubesContract.Presenter, Controls.Listener {
+    private val disposables: CompositeDisposable = CompositeDisposable()
+) : CubesContract.Presenter {
 
     private lateinit var state: CubesState
 
     override fun setup() {
+
+        disposables.add(
+            controls.events().subscribe({
+                when (it.uiObject) {
+                    SHADER_LINE_NONE -> shaderButtonNone()
+                    SHADER_LINE_LINE -> shaderButtonLine()
+                    SHADER_LINE_NEON -> shaderButtonNeon()
+                    SHADER_BG_NEBULA -> shaderButtonNebula()
+                    SHADER_BG_FLAME -> shaderButtonColdFlame()
+                    SHADER_BG_REFRACT -> shaderButtonRefraction()
+                    MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
+                    CUBES_ROTATION_SLIDER -> motionSliderRotationSpeed(it.data as Float)
+                    CUBES_ROTATION_OFFEST_SLIDER -> motionSliderRotationOffset(it.data as Float)
+                    CUBES_ROTATION_OFFEST_RESET -> motionRotationOffsetReset()
+                    CUBES_ROTATION_X -> motionRotX(it.data as Boolean)
+                    CUBES_ROTATION_Y -> motionRotY(it.data as Boolean)
+                    CUBES_ROTATION_Z -> motionRotZ(it.data as Boolean)
+                    CUBES_ROTATION_RESET -> motionRotationReset()
+                    CUBES_ROTATION_ALIGN -> motionAlignExecute()
+                    CUBES_VISIBLE -> cubesVisible(it.data as Boolean)
+                    CUBES_GRID -> motionGrid()
+                    CUBES_LINE -> motionLine()
+                    CUBES_SQUARE -> motionSquare()
+                    CUBES_TRANSLATION_RESET -> motionTranslationReset()
+                    CUBES_SCALE_BASE_SLIDER -> motionSliderScale(it.data as Float)
+                    CUBES_SCALE_OFFSET_SLIDER -> motionSliderScaleDist(it.data as Float)
+                    CUBES_SCALE_APPLY -> motionApplyScale()
+                    CUBES_COLOR_FILL_START -> fillColor(it.data as Color)
+                    CUBES_COLOR_FILL_END -> fillEndColor(it.data as Color)
+                    CUBES_FILL -> fill(it.data as Boolean)
+                    CUBES_COLOR_FILL_ALPHA -> fillAlpha(it.data as Float)
+                    CUBES_COLOR_STROKE -> strokeColor(it.data as Color)
+                    CUBES_STROKE -> stroke(it.data as Boolean)
+                    CUBES_STROKE_WEIGHT -> strokeWeight(it.data as Float)
+                    TEXT_ORDER_RANDOM -> textRandom(it.data as Boolean)
+                    TEXT_ORDER_NEAR_RANDOM -> textNearRandom(it.data as Boolean)
+                    TEXT_ORDER_INORDER -> textInOrder(it.data as Boolean)
+                    TEXT_FONT -> textFont(it.data as Font)
+                    TEXT_MOTION_CUBE -> textMotionCube(it.data as Boolean)
+                    TEXT_MOTION_AROUND -> textMotionAround(it.data as Boolean)
+                    TEXT_MOTION_FADE -> textMotionFade(it.data as Boolean)
+                    TEXT_COLOR_FILL -> textFillColor(it.data as Color)
+                    TEXT_COLOR_FILL_END -> textFillEndColor(it.data as Color)
+                    TEXT_FILL -> textFill(it.data as Boolean)
+                    TEXT_FILL_ALPHA -> textFillAlpha(it.data as Float)
+                    TEXT_COLOR_STROKE -> textStrokeColor(it.data as Color)
+                    TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
+                    TEXT_STROKE -> textStroke(it.data as Boolean)
+                    else -> println("Couldnt handle : ${it.uiObject} ")
+                }
+            }, {
+                println("Exception from UI : ${it.message} ")
+                it.printStackTrace()
+            })
+        )
         controls
-            .setListener(this)
             .showWindow()
-        controls.events().subscribe({
-            when (it.uiObject) {
-                SHADER_LINE_NONE -> shaderButtonNone()
-                SHADER_BG_NEBULA -> shaderButtonNebula()
-                SHADER_BG_FLAME -> shaderButtonColdFlame()
-                SHADER_BG_REFRACT -> shaderButtonRefraction()
-                else -> println("Couldnt handle : ${it.uiObject} ")
-            }
-        }, {
-            println("Exception from UI : ${it.message} ")
-            it.printStackTrace()
-        })
     }
 
     fun updateBeforeDraw() {
         state.cubeList.updateState()
     }
 
-    override fun motionSliderRotationSpeed(value: Float) {
+    fun motionSliderRotationSpeed(value: Float) {
         state.rotationSpeed = value / 10000f
         setCubeVelocity()
     }
 
 
-    override fun motionSliderRotationOffset(offset: Float) {
+    fun motionSliderRotationOffset(offset: Float) {
         state.rotationOffset = offset / 10000f
         setCubeVelocity()
     }
 
-    override fun motionRotationReset() {
+    fun motionRotationReset() {
         state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
     }
 
-    override fun motionRotationOffsetReset() {
+    fun motionRotationOffsetReset() {
         state.rotationOffset = 0f
         setCubeVelocity()
     }
 
-    override fun shaderButtonNone() {
+    fun shaderButtonNone() {
         view.setShaderType(NONE)
     }
 
-    override fun shaderButtonLine() {
+    fun shaderButtonLine() {
         view.setShaderType(LINES)
     }
 
-    override fun shaderButtonNeon() {
+    fun shaderButtonNeon() {
         view.setShaderType(NEON)
     }
 
-    override fun shaderButtonNebula() {
+    fun shaderButtonNebula() {
         view.setBackgroundShaderType(NEBULA)
     }
 
-    override fun shaderButtonColdFlame() {
+    fun shaderButtonColdFlame() {
         view.setBackgroundShaderType(COLDFLAME)
     }
 
-    override fun shaderButtonRefraction() {
+    fun shaderButtonRefraction() {
         view.setBackgroundShaderType(REFRACTION_PATTERN)
     }
 
-    override fun strokeWeight(value: Float) {
+    fun strokeWeight(value: Float) {
         view.setShaderParam(LINES, "weight", value)
         state.cubeList.cubes.forEach { it.strokeWeight = value }
     }
 
-    override fun motionRotX(selected: Boolean) {
+    fun motionRotX(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(first = selected)
         setCubeVelocity()
     }
 
-    override fun motionRotY(selected: Boolean) {
+    fun motionRotY(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(second = selected)
         setCubeVelocity()
     }
 
-    override fun motionRotZ(selected: Boolean) {
+    fun motionRotZ(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(third = selected)
         setCubeVelocity()
     }
 
-    override fun motionAlignExecute() {
+    fun motionAlignExecute() {
         state.cubeList.cubeListMotion = CubeRotationAlignMotion(state.cubeList, state.animationTime) {
             state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
         }
     }
 
-    override fun motionSliderAnimationTime(alignTime: Float) {
+    fun motionSliderAnimationTime(alignTime: Float) {
         state.animationTime = alignTime
     }
 
-    override fun motionGrid() {
+    fun motionGrid() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
@@ -127,7 +168,7 @@ class CubesPresenter constructor(
             )
     }
 
-    override fun motionLine() {
+    fun motionLine() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
@@ -138,37 +179,37 @@ class CubesPresenter constructor(
             )
     }
 
-    override fun motionSquare() {
+    fun motionSquare() {
 
     }
 
-    override fun motionTranslationReset() {
+    fun motionTranslationReset() {
         state.cubeList.cubes.forEach { it.position.set(0f, 0f, 0f) }
     }
 
-    override fun motionSliderScale(scale: Float) {
+    fun motionSliderScale(scale: Float) {
         state.cubeScale = scale
     }
 
-    override fun motionSliderScaleDist(dist: Float) {
+    fun motionSliderScaleDist(dist: Float) {
         state.cubeScaleDist = dist
     }
 
-    override fun fill(selected: Boolean) {
+    fun fill(selected: Boolean) {
         state.cubeList.cubes.forEach { it.fill = selected }
     }
 
-    override fun fillColor(color: Color) {
+    fun fillColor(color: Color) {
         state.fillColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
         state.cubeList.cubes.forEach { it.fillColor = state.fillColor }
     }
 
-    override fun fillEndColor(color: Color) {
+    fun fillEndColor(color: Color) {
         state.fillEndColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
         ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
     }
 
-    override fun motionApplyScale() {
+    fun motionApplyScale() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
@@ -178,22 +219,22 @@ class CubesPresenter constructor(
             )
     }
 
-    override fun strokeColor(color: Color) {
+    fun strokeColor(color: Color) {
         state.cubeList.cubes.forEach { it.strokeColor = color }
     }
 
-    override fun stroke(selected: Boolean) {
+    fun stroke(selected: Boolean) {
         state.cubeList.cubes.forEach { it.stroke = selected }
     }
 
-    override fun fillAlpha(alpha: Float) {
+    fun fillAlpha(alpha: Float) {
         state.fillAlpha = alpha
         state.cubeList.cubes.forEach {
             it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha.toInt())
         }
     }
 
-    override fun textRandom(selected: Boolean) {
+    fun textRandom(selected: Boolean) {
         if (selected) {
             startText(RANDOM, state.animationTime)
         } else {
@@ -218,7 +259,7 @@ class CubesPresenter constructor(
         }
     }
 
-    override fun textNearRandom(selected: Boolean) {
+    fun textNearRandom(selected: Boolean) {
         if (selected) {
             startText(NEAR_RANDOM, state.animationTime)
         } else {
@@ -227,7 +268,7 @@ class CubesPresenter constructor(
         }
     }
 
-    override fun textInOrder(selected: Boolean) {
+    fun textInOrder(selected: Boolean) {
         if (selected) {
             startText(INORDER, state.animationTime)
         } else {
@@ -235,37 +276,37 @@ class CubesPresenter constructor(
         }
     }
 
-    override fun textMotionCube(selected: Boolean) {
+    fun textMotionCube(selected: Boolean) {
 
     }
 
-    override fun textMotionAround(selected: Boolean) {
+    fun textMotionAround(selected: Boolean) {
 
     }
 
-    override fun textMotionFade(selected: Boolean) {
+    fun textMotionFade(selected: Boolean) {
 
     }
 
-    override fun textFillColor(color: Color) {
+    fun textFillColor(color: Color) {
         state.textList.fillColor = color
         state.textList.texts.forEach {
             it.fillColor = color
         }
     }
 
-    override fun textFillEndColor(color: Color) {
+    fun textFillEndColor(color: Color) {
 
     }
 
-    override fun textFill(selected: Boolean) {
+    fun textFill(selected: Boolean) {
         state.textList.fill = selected
         state.textList.texts.forEach {
             it.fill = selected
         }
     }
 
-    override fun textFillAlpha(alpha: Float) {
+    fun textFillAlpha(alpha: Float) {
         val old = state.textList.fillColor
         state.textList.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
         state.textList.texts.forEach {
@@ -274,32 +315,32 @@ class CubesPresenter constructor(
         }
     }
 
-    override fun textStrokeColor(color: Color) {
+    fun textStrokeColor(color: Color) {
         state.textList.strokeColor = color
         state.textList.texts.forEach {
             it.strokeColor = color
         }
     }
 
-    override fun textStroke(selected: Boolean) {
+    fun textStroke(selected: Boolean) {
         state.textList.stroke = selected
         state.textList.texts.forEach {
             it.stroke = selected
         }
     }
 
-    override fun textStrokeWeight(weight: Float) {
+    fun textStrokeWeight(weight: Float) {
         state.textList.strokeWeight = weight
         state.textList.texts.forEach {
             it.strokeWeight = weight
         }
     }
 
-    override fun textFont(selectedFont: Font) {
+    fun textFont(selectedFont: Font) {
         state.textList.setFont(selectedFont)
     }
 
-    override fun cubesVisible(selected: Boolean) {
+    fun cubesVisible(selected: Boolean) {
         state.cubeList.visible = selected
     }
 
