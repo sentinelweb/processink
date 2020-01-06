@@ -3,15 +3,19 @@ package cubes
 import cubes.CubesContract.BackgroundShaderType.*
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
+import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import java.awt.Color
 import java.awt.Font
 
 class CubesPresenter constructor(
     private val controls: Controls,
-    private val view: CubesContract.View
+    private val view: CubesContract.View,
+    private val disposables: Disposable = CompositeDisposable()
 ) : CubesContract.Presenter, Controls.Listener {
 
     private lateinit var state: CubesState
@@ -20,6 +24,18 @@ class CubesPresenter constructor(
         controls
             .setListener(this)
             .showWindow()
+        controls.events().subscribe({
+            when (it.uiObject) {
+                SHADER_LINE_NONE -> shaderButtonNone()
+                SHADER_BG_NEBULA -> shaderButtonNebula()
+                SHADER_BG_FLAME -> shaderButtonColdFlame()
+                SHADER_BG_REFRACT -> shaderButtonRefraction()
+                else -> println("Couldnt handle : ${it.uiObject} ")
+            }
+        }, {
+            println("Exception from UI : ${it.message} ")
+            it.printStackTrace()
+        })
     }
 
     fun updateBeforeDraw() {
