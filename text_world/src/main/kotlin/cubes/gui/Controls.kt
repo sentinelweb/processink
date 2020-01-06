@@ -51,7 +51,7 @@ class Controls {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            preferredSize = Dimension(800, 600)
+            preferredSize = Dimension(800, 700)
             layout = BorderLayout()
 
             // east panel - shader
@@ -63,13 +63,33 @@ class Controls {
                 add(JButton("None").setup { listener.shaderButtonNone() })
                 add(JButton("Line").setup { listener.shaderButtonLine() })
                 add(JButton("Neon").setup { listener.shaderButtonNeon() })
+                add(JPanel().apply { preferredSize = Dimension(10, 20) })
+                add(JButton("Nebula").setup { listener.shaderButtonNebula() })
+                add(JButton("ColdFlame").setup { listener.shaderButtonColdFlame() })
+                add(JButton("Refraction").setup { listener.shaderButtonRefraction() })
 
             }, BorderLayout.EAST)
 
             // center panel - motion, text
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                // motion panel
+                // cubes panel
+                add(JPanel().apply {
+                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    titledBorder("Animation")
+                    // animation
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        add(
+                            JSlider(0, 5000)
+                                .setup(0, 1, 500, false) {
+                                    val source = it.source as JSlider
+                                    listener.motionSliderAnimationTime(source.value.toFloat())
+                                }
+                                .apply { value = 3000 }
+                        )
+                    })
+                })
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
                     titledBorder("Cubes")
@@ -78,11 +98,12 @@ class Controls {
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JSlider(-400, 400)
-                                .setup(0, 1, 200, false) {
-                                    val source = it.source as JSlider
-                                    listener.motionSliderRotationSpeed(source.value.toFloat())
-                                })
+                            add(
+                                JSlider(-400, 400)
+                                    .setup(0, 1, 200, false) {
+                                        val source = it.source as JSlider
+                                        listener.motionSliderRotationSpeed(source.value.toFloat())
+                                    })
                             add(JButton("0ffest").setup { listener.motionRotationOffsetReset() })
                             add(
                                 JSlider(-100, 100)
@@ -152,19 +173,6 @@ class Controls {
                         }.wrapWithLabel("Scale", 100)
                     )
 
-                    // animation
-                    add(JPanel().apply {
-                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                        add(
-                            JSlider(0, 2000)
-                                .setup(0, 1, 500, false) {
-                                    val source = it.source as JSlider
-                                    listener.motionSliderAnimationTime(source.value.toFloat())
-                                }
-                                .apply { value = 1000 }
-                        )
-                    }.wrapWithLabel("Anim time"))
-
                     // fill
                     add(JPanel().apply {
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
@@ -197,7 +205,9 @@ class Controls {
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
                                     listener.fillAlpha(source.value.toFloat())
-                                }.wrapWithLabel("Alpha")
+                                }
+                                .apply { value = 3000 }
+                                .wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
 
@@ -242,12 +252,15 @@ class Controls {
                             add(JToggleButton("In order")
                                 .setup { ae -> listener.textInOrder(isSelectedDeselectOthers(ae)) })
                             add(JButton("Font").apply {
+                                var selectedFont: Font? = null
                                 addActionListener {
                                     val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
+                                    dialog.selectedFont = selectedFont
                                     dialog.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
                                     dialog.isVisible = true
                                     if (!dialog.isCancelSelected) {
                                         System.out.printf("Selected font is: %s%n", dialog.selectedFont)
+                                        selectedFont = dialog.selectedFont
                                         listener.textFont(dialog.selectedFont)
                                     }
                                 }
@@ -302,7 +315,9 @@ class Controls {
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
                                     listener.textFillAlpha(source.value.toFloat())
-                                }.wrapWithLabel("Alpha")
+                                }
+                                .apply { value = 255 }
+                                .wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
 
@@ -355,6 +370,9 @@ class Controls {
         fun shaderButtonNone()
         fun shaderButtonLine()
         fun shaderButtonNeon()
+        fun shaderButtonNebula()
+        fun shaderButtonColdFlame()
+        fun shaderButtonRefraction()
         fun strokeWeight(value: Float)
         fun motionRotZ(selected: Boolean)
         fun motionRotY(selected: Boolean)
@@ -427,6 +445,9 @@ val printListener = object : Controls.Listener {
     override fun shaderButtonNone() = println("shader button none")
     override fun shaderButtonLine() = println("shader button line")
     override fun shaderButtonNeon() = println("shader button neon")
+    override fun shaderButtonNebula() = println("shader button nebula")
+    override fun shaderButtonColdFlame() = println("shader button coldflame")
+    override fun shaderButtonRefraction() = println("shader button refract")
     override fun strokeWeight(value: Float) = println("sliderWeight: $value")
     override fun motionRotZ(selected: Boolean) = println("motionRotZ: $selected")
     override fun motionRotY(selected: Boolean) = println("motionRotY: $selected")
@@ -464,4 +485,5 @@ val printListener = object : Controls.Listener {
     override fun textStrokeWeight(weight: Float) = println("textStrokeWeight: $weight")
     override fun textFont(selectedFont: Font) = println("textFont: $selectedFont")
     override fun cubesVisible(selected: Boolean) = println("cubesVisible: $selected")
+
 }

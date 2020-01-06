@@ -15,8 +15,11 @@ data class CubesState constructor(
     var cubeScaleDist: Float,
     var rotationOffset: Float,
     var fillEndColor: Color,
-    var fillColor: Color
-)
+    var fillColor: Color,
+    var fillAlpha: Float = 255f
+) {
+
+}
 
 data class PAppletInfo(
     val width: Int,

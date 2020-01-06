@@ -4,10 +4,7 @@ import cubes.CubesContract.ShaderType
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
-import cubes.shaders.FlameShader
-import cubes.shaders.LineShader
-import cubes.shaders.NebulaShader
-import cubes.shaders.ShaderWrapper
+import cubes.shaders.*
 import processing.core.PApplet
 import processing.core.PConstants
 import java.awt.Color
@@ -24,7 +21,9 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var nebulaShader: NebulaShader
     private lateinit var flameShader: FlameShader
+    private lateinit var refractShader: RefractionPatternShader
     private var currentShader: ShaderWrapper? = null
+    private lateinit var currentBackground: ShaderWrapper
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
 
@@ -57,6 +56,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
             .addText("and don't let anyone ")
             .addText("tell you differently.")
             .addText("Love without hope.")
+            .apply { fillColor = Color.YELLOW; visible = false }
 
         cubesState = CubesState(
             textList = textList,
@@ -72,14 +72,16 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
-        lineShader.set("weight", 5f)
+        lineShader.setWeight(5f)
         flameShader = FlameShader(this)
         nebulaShader = NebulaShader(this)
-
+        refractShader = RefractionPatternShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
         //currentShader = lineShader
+        currentBackground = nebulaShader
         cubesPresenter.setup()
     }
+
 
     // make a algo to send different cubes to catch each other up.
 
@@ -88,12 +90,11 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         cubesPresenter.updateBeforeDraw()
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         noStroke()
-        // noFill()
-        nebulaShader.set("time", millis() / 250f)
-        nebulaShader.engage()
+        currentBackground.setDefaultShaderParams()
+        currentBackground.engage()
         rect(0f, 0f, width.toFloat(), height.toFloat())
 
-        // currentShader?.engage() ?: resetShader()
+        currentShader?.engage() ?: resetShader()
         // alignTexts()
         cubesState.cubeList.draw()
 //
@@ -107,6 +108,15 @@ class CubesProcessingView : PApplet(), CubesContract.View {
             ShaderType.NONE -> currentShader = null
             ShaderType.LINES -> currentShader = lineShader
             ShaderType.NEON -> currentShader = flameShader
+        }
+    }
+
+    override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
+        when (type) {
+            CubesContract.BackgroundShaderType.NEBULA -> currentBackground = nebulaShader
+            CubesContract.BackgroundShaderType.COLDFLAME -> currentBackground = flameShader
+            CubesContract.BackgroundShaderType.REFRACTION_PATTERN -> currentBackground = refractShader
+
         }
     }
 

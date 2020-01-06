@@ -33,8 +33,8 @@ dependencies {
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
 // use coroutines
-//    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
-//    implementationementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
+    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
 
     // https://gitlab.com/dheid/fontchooser
     implementation 'org.drjekyll:fontchooser:2.4'

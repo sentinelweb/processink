@@ -1,8 +1,11 @@
 package cubes
 
+import cubes.CubesContract.BackgroundShaderType.*
 import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
 import cubes.motion.*
+import cubes.objects.TextList
+import cubes.objects.TextList.Ordering.*
 import java.awt.Color
 import java.awt.Font
 
@@ -28,8 +31,19 @@ class CubesPresenter constructor(
         setCubeVelocity()
     }
 
+
+    override fun motionSliderRotationOffset(offset: Float) {
+        state.rotationOffset = offset / 10000f
+        setCubeVelocity()
+    }
+
     override fun motionRotationReset() {
         state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
+    }
+
+    override fun motionRotationOffsetReset() {
+        state.rotationOffset = 0f
+        setCubeVelocity()
     }
 
     override fun shaderButtonNone() {
@@ -42,6 +56,18 @@ class CubesPresenter constructor(
 
     override fun shaderButtonNeon() {
         view.setShaderType(NEON)
+    }
+
+    override fun shaderButtonNebula() {
+        view.setBackgroundShaderType(NEBULA)
+    }
+
+    override fun shaderButtonColdFlame() {
+        view.setBackgroundShaderType(COLDFLAME)
+    }
+
+    override fun shaderButtonRefraction() {
+        view.setBackgroundShaderType(REFRACTION_PATTERN)
     }
 
     override fun strokeWeight(value: Float) {
@@ -72,11 +98,6 @@ class CubesPresenter constructor(
 
     override fun motionSliderAnimationTime(alignTime: Float) {
         state.animationTime = alignTime
-    }
-
-    override fun motionSliderRotationOffset(offset: Float) {
-        state.rotationOffset = offset / 10000f
-        setCubeVelocity()
     }
 
     override fun motionGrid() {
@@ -117,9 +138,18 @@ class CubesPresenter constructor(
         state.cubeScaleDist = dist
     }
 
+    override fun fill(selected: Boolean) {
+        state.cubeList.cubes.forEach { it.fill = selected }
+    }
+
     override fun fillColor(color: Color) {
-        state.fillColor = color
-        state.cubeList.cubes.forEach { it.fillColor = color }
+        state.fillColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
+        state.cubeList.cubes.forEach { it.fillColor = state.fillColor }
+    }
+
+    override fun fillEndColor(color: Color) {
+        state.fillEndColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
+        ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
     }
 
     override fun motionApplyScale() {
@@ -132,15 +162,6 @@ class CubesPresenter constructor(
             )
     }
 
-    override fun fill(selected: Boolean) {
-        state.cubeList.cubes.forEach { it.fill = selected }
-    }
-
-    override fun fillEndColor(color: Color) {
-        state.fillEndColor = color
-        ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
-    }
-
     override fun strokeColor(color: Color) {
         state.cubeList.cubes.forEach { it.strokeColor = color }
     }
@@ -150,52 +171,52 @@ class CubesPresenter constructor(
     }
 
     override fun fillAlpha(alpha: Float) {
+        state.fillAlpha = alpha
         state.cubeList.cubes.forEach {
             it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha.toInt())
         }
     }
 
-    override fun motionRotationOffsetReset() {
-
-    }
-
-    private val transparent = Color(0f, 0f, 0f, 0f)
-
     override fun textRandom(selected: Boolean) {
-
-        val c = Color.decode("#3949ab")
         if (selected) {
-            state.textList.apply {
-                visible(true)
-                scatterText(-200f, 100f)
-                timeMs = 4000f
-                motion = TextColorMotion(state.textList, 2000f, transparent, fillColor) {
-                    state.textList.motion = TextColorMotion(state.textList, 2000f, fillColor, transparent)
-                }
-                endFunction = fun() {
-                    textRandom(true)
-                }
-                start()
-            }
-
-//            state.textList.scatterText(-500f, 300f)
-//            state.textList.fill(true)
-//            state.textList.visible = true
-//            state.textList.motion = TextColorMotion(
-//                state.textList, 2000f, Color(1f, 0f, 0f, 0f), WHITE
-//            )
+            startText(RANDOM, state.animationTime)
         } else {
             state.textList.visible = false
             state.textList.stop()
         }
     }
 
-    override fun textNearRandom(selected: Boolean) {
+    private fun startText(ordering: TextList.Ordering, timeMs: Float) {
+        state.textList.apply {
+            this.ordering = ordering
+            visible(true)
+            this.timeMs = timeMs
+            texts.forEach { it.fillColor = TRANSPARENT }
+            motion = TextColorMotion(state.textList, timeMs / 2, TRANSPARENT, fillColor) {
+                state.textList.motion = TextColorMotion(state.textList, timeMs / 2, fillColor, TRANSPARENT)
+            }
+            endFunction = fun() {
+                startText(ordering, timeMs)
+            }
+            start()
+        }
+    }
 
+    override fun textNearRandom(selected: Boolean) {
+        if (selected) {
+            startText(NEAR_RANDOM, state.animationTime)
+        } else {
+            state.textList.visible(false)
+            state.textList.stop()
+        }
     }
 
     override fun textInOrder(selected: Boolean) {
-
+        if (selected) {
+            startText(INORDER, state.animationTime)
+        } else {
+            startText(REVERSE, state.animationTime)
+        }
     }
 
     override fun textMotionCube(selected: Boolean) {
@@ -232,8 +253,8 @@ class CubesPresenter constructor(
         val old = state.textList.fillColor
         state.textList.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
         state.textList.texts.forEach {
-            val old = it.fillColor
-            it.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
+            val oldt = it.fillColor
+            it.fillColor = Color(oldt.red, oldt.green, oldt.blue, alpha.toInt())
         }
     }
 
@@ -278,5 +299,9 @@ class CubesPresenter constructor(
 
     private fun setCubeVelocity() {
         state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
+    }
+
+    companion object {
+        private val TRANSPARENT = Color(0f, 0f, 0f, 0f)
     }
 }

@@ -12,10 +12,10 @@ open class Shape constructor(
     val scale: PVector = PVector(1f, 1f, 1f)
 ) {
     var fill: Boolean = false
-    var fillColor: Color = Color.BLUE
+    var fillColor: Color = Color.WHITE
     var stroke: Boolean = true
-    var strokeColor: Color = Color.WHITE
-    var strokeWeight: Float = 20f
+    var strokeColor: Color = Color.GRAY
+    var strokeWeight: Float = 2f
         set(value) {
             field = if (value > 0) value else 1f
             if (value > 0) {// shape seems to die after hitting zero

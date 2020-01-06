@@ -1,6 +1,5 @@
 package cubes.objects
 
-import cubes.gui.toProcessing
 import cubes.motion.Motion
 import processing.core.PApplet
 import processing.core.PConstants
@@ -61,29 +60,31 @@ class TextList constructor(
     private fun selectNextIndex() {
         currentIndex = when (ordering) {
             Ordering.INORDER -> ++currentIndex % texts.size
-            Ordering.REVERSE -> --currentIndex % texts.size // todo check
+            Ordering.REVERSE -> if (--currentIndex > -1) currentIndex else texts.size - 1
             Ordering.RANDOM -> p.random(texts.size.toFloat()).toInt()
             Ordering.NEAR_RANDOM -> (currentIndex + (p.random(5f) - 2f).toInt()) % texts.size
         }
     }
 
-    fun isEnded() = startTime?.let { System.currentTimeMillis() - it > timeMs } ?: true
+    fun isEnded() = startTime?.let { System.currentTimeMillis() - it > timeMs } ?: false
 
     private fun thisTextVisible(i: Int): Boolean {
         return mode == Mode.ALL || (mode == Mode.SINGLE && currentIndex == i)
     }
 
     fun draw() {
-        setProps()
-        updateState()
-        p.pushMatrix()
-        p.translate(p.width / 2f, p.height / 2f)
-        texts.forEachIndexed { i, text ->
-            if (thisTextVisible(i)) {
-                text.draw(p)
+        if (visible) {
+            setProps()
+            updateState()
+            p.pushMatrix()
+            p.translate(p.width / 2f, p.height / 2f)
+            texts.forEachIndexed { i, text ->
+                if (thisTextVisible(i)) {
+                    text.draw(p)
+                }
             }
+            p.popMatrix()
         }
-        p.popMatrix()
     }
 
     fun setProps() {
@@ -99,6 +100,7 @@ class TextList constructor(
     }
 
     fun visible(v: Boolean) {
+        visible = v
         texts.forEach { it.visible = v }
     }
 
@@ -138,11 +140,8 @@ class TextList constructor(
                 p.rotateY(angle.y)
                 p.rotateZ(angle.z)
                 updateColors()
-                val pc = fillColor.toProcessing(p)
-                //println("textfill: $fillColor -> ${p.red(pc)},${p.green(pc)},${p.blue(pc)},${p.alpha(pc)} $fill")
-                //p.fill(255f,0f,255f,255f)
                 p.scale(scale.x, scale.y, scale.z)
-                p.text(text.toString(), 0f, 0f, 0f)
+                p.text("${texts.indexOf(this)}. $text", 0f, 0f, 0f)
                 p.popMatrix()
                 p.popMatrix()
             }
