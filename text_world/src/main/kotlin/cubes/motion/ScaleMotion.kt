@@ -5,21 +5,14 @@ import processing.core.PVector
 import provider.TimeProvider
 
 abstract class ScaleMotion<out T : Shape> constructor(
-    val timeMs: Float,
-    val target: List<PVector>,
-    val timeProvider: TimeProvider = TimeProvider(),
+    protected val timeMs: Float,
+    protected val target: List<PVector>,
+    private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T>(endFunction) {
-
-    private val start by lazy {
-        getStartData()
-    }
-    private val startTime = timeProvider.getTime()
-
-    abstract fun getStartData(): List<PVector>
+) : Motion<T, PVector>(timeProvider, endFunction) {
 
     override fun <T : Shape> updateState(i: Int, shape: T) {
-        if (isEnded()) return
+        if (!isStarted() || isEnded()) return
         val currentTime = timeProvider.getTime()
         val ratio = (currentTime - startTime) / timeMs
 
@@ -30,7 +23,6 @@ abstract class ScaleMotion<out T : Shape> constructor(
         )
     }
 
-    override fun isEnded() = timeProvider.getTime() - startTime > timeMs
-
+    override fun isEnded(): Boolean = isStarted() && (timeProvider.getTime() - startTime >= timeMs)
 
 }

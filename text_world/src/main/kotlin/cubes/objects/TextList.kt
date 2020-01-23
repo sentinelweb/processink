@@ -1,6 +1,7 @@
 package cubes.objects
 
 import cubes.motion.Motion
+import cubes.util.pushMatrix
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
@@ -19,7 +20,7 @@ class TextList constructor(
     }
 
     val texts: MutableList<Text> = mutableListOf()
-    var motion: Motion<Text>? = null
+    var motion: Motion<Text, Any>? = null
     var endFunction: () -> Unit = {}
 
     var mode: Mode = Mode.SINGLE
@@ -41,8 +42,6 @@ class TextList constructor(
                 if (thisTextVisible(i)) {
                     if (!isEnded()) {
                         updateState(i, text)
-                    } else {
-                        callEndOnce()
                     }
                 }
             }
@@ -76,14 +75,14 @@ class TextList constructor(
         if (visible) {
             setProps()
             updateState()
-            p.pushMatrix()
-            p.translate(p.width / 2f, p.height / 2f)
-            texts.forEachIndexed { i, text ->
-                if (thisTextVisible(i)) {
-                    text.draw(p)
+            p.pushMatrix {
+                p.translate(p.width / 2f, p.height / 2f)
+                texts.forEachIndexed { i, text ->
+                    if (thisTextVisible(i)) {
+                        text.draw(p)
+                    }
                 }
             }
-            p.popMatrix()
         }
     }
 
@@ -133,17 +132,18 @@ class TextList constructor(
 
         fun draw(p: PApplet) {
             if (visible) {
-                p.pushMatrix()
-                p.translate(position.x, position.y, position.z)
-                p.pushMatrix()
-                p.rotateX(angle.x)
-                p.rotateY(angle.y)
-                p.rotateZ(angle.z)
-                updateColors()
-                p.scale(scale.x, scale.y, scale.z)
-                p.text("${texts.indexOf(this)}. $text", 0f, 0f, 0f)
-                p.popMatrix()
-                p.popMatrix()
+                p.pushMatrix {
+                    p.translate(position.x, position.y, position.z)
+                    p.pushMatrix {
+                        p.rotateX(angle.x)
+                        p.rotateY(angle.y)
+                        p.rotateZ(angle.z)
+                        updateColors()
+                        p.scale(scale.x, scale.y, scale.z)
+                        //p.text("${texts.indexOf(this)}. $text", 0f, 0f, 0f)
+                        p.text("$text", 0f, 0f, 0f)
+                    }
+                }
             }
         }
     }

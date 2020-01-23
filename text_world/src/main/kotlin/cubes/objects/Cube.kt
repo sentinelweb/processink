@@ -1,5 +1,6 @@
 package cubes.objects
 
+import cubes.util.pushMatrix
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
@@ -20,20 +21,17 @@ class Cube constructor(
     }
 
     fun draw() {
-        p.pushMatrix()
-        p.translate(position.x, position.y, position.z)
-        p.pushMatrix()
-        p.rotateX(angle.x)
-        p.rotateY(angle.y)
-        p.rotateZ(angle.z)
-        updateColors()
-        p.scale(scale.x, scale.y, scale.z)
-        p.shape(cubeShape)
-        p.popMatrix()
-        p.popMatrix()
+        p.pushMatrix {
+            p.translate(position.x, position.y, position.z)
+            p.pushMatrix {
+                p.rotateX(angle.x)
+                p.rotateY(angle.y)
+                p.rotateZ(angle.z)
+                updateColors()
+                p.scale(scale.x, scale.y, scale.z)
+                p.shape(cubeShape)
+            }
+        }
     }
 
-    companion object {
-
-    }
 }

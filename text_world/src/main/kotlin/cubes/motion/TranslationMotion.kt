@@ -9,17 +9,10 @@ abstract class TranslationMotion<out T : Shape> constructor(
     val target: List<PVector>,
     val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T>(endFunction) {
-
-    private val start by lazy {
-        getStartData()
-    }
-    private val startTime = timeProvider.getTime()
-
-    abstract fun getStartData(): List<PVector>
+) : Motion<T, PVector>(timeProvider, endFunction) {
 
     override fun <T : Shape> updateState(i: Int, shape: T) {
-        if (isEnded()) return
+        if (!isStarted() || isEnded()) return
         val currentTime = timeProvider.getTime()
         val ratio = (currentTime - startTime) / timeMs
 
@@ -30,7 +23,6 @@ abstract class TranslationMotion<out T : Shape> constructor(
         )
     }
 
-    override fun isEnded() = timeProvider.getTime() - startTime > timeMs
-
+    override fun isEnded(): Boolean = isStarted() && (timeProvider.getTime() - startTime >= timeMs)
 
 }

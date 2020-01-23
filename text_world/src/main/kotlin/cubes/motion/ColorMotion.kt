@@ -5,22 +5,14 @@ import provider.TimeProvider
 import java.awt.Color
 
 abstract class ColorMotion<out T : Shape> constructor(
-    val timeMs: Float,
-    val target: List<Color>,
-    val timeProvider: TimeProvider = TimeProvider(),
+    protected val timeMs: Float,
+    protected val target: List<Color>,
+    private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T>(endFunction) {
-
-    private val start by lazy {
-        getStartData()
-    }
-
-    private val startTime = timeProvider.getTime()
-
-    abstract fun getStartData(): List<Color>
+) : Motion<T, Color>(timeProvider, endFunction) {
 
     override fun <T : Shape> updateState(i: Int, shape: T) {
-        if (isEnded()) return
+        if (!isStarted() || isEnded()) return
         val currentTime = timeProvider.getTime()
         val ratio = (currentTime - startTime) / timeMs
 
@@ -32,5 +24,6 @@ abstract class ColorMotion<out T : Shape> constructor(
         )
     }
 
-    override fun isEnded() = timeProvider.getTime() - startTime > timeMs
+    override fun isEnded(): Boolean = isStarted() && (timeProvider.getTime() - startTime >= timeMs)
+
 }

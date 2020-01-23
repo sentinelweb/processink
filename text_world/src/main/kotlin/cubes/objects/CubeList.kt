@@ -12,7 +12,7 @@ class CubeList constructor(
 ) : Shape(p) {
     val cubes: List<Cube>
     val increment = (endSisze - startSize) / length
-    var cubeListMotion: Motion<Cube> = DEFAULT_MOTION_UPDATER
+    var cubeListMotion: Motion<Cube, Any> = DEFAULT_MOTION_UPDATER
 
     init {
         cubes = (0..length - 1).map {
@@ -27,8 +27,6 @@ class CubeList constructor(
         cubes.forEachIndexed { i, cube ->
             if (!cubeListMotion.isEnded()) {
                 cubeListMotion.updateState(i, cube)
-            } else {
-                cubeListMotion.callEndOnce()
             }
         }
     }

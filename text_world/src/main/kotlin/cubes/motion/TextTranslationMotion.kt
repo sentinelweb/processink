@@ -17,7 +17,7 @@ class TextTranslationMotion constructor(
 
     override fun ensureEndState() {
         textList.texts.forEachIndexed { i, text ->
-            text.scale.set(target[i])
+            text.position.set(target[i])
         }
     }
 

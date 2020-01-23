@@ -7,7 +7,7 @@ import java.awt.Color
 class TextColorMotion constructor(
     private val textList: TextList,
     timeMs: Float,
-    val start: Color? = null,
+    val startColor: Color? = null,
     target: Color = Color.WHITE,
     timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
@@ -18,12 +18,12 @@ class TextColorMotion constructor(
     }
 
     override fun ensureEndState() {
-        textList.texts.forEachIndexed { i, cube ->
-            cube.fillColor = target[i] // parent target
+        textList.texts.forEachIndexed { i, text ->
+            text.fillColor = target[i] // parent target
         }
     }
 
     override fun getStartData(): List<Color> =
-        textList.texts.map { text -> start ?: text.fillColor }
+        textList.texts.map { text -> startColor ?: text.fillColor }
 
 }

@@ -39,30 +39,37 @@ class CubeRotationAlignMotionTest {
 
     @Test
     fun isEnded() {
-        whenever(mockTimeProvider.getTime()).thenReturn(0, (FIXT_TIME / 2), FIXT_TIME - 1, FIXT_TIME, FIXT_TIME + 1)
+        whenever(mockTimeProvider.getTime()).thenReturn(0)
         sut = createSut()
+        sut.start()
         assertFalse(sut.isEnded())
+        whenever(mockTimeProvider.getTime()).thenReturn((FIXT_TIME / 2))
         assertFalse(sut.isEnded())
+        whenever(mockTimeProvider.getTime()).thenReturn(FIXT_TIME - 1)
         assertFalse(sut.isEnded())
+        whenever(mockTimeProvider.getTime()).thenReturn(FIXT_TIME)
         assertTrue(sut.isEnded())
     }
 
     @Test
     fun updateState() {
-        whenever(mockTimeProvider.getTime()).thenReturn(0, 0, (FIXT_TIME / 2), FIXT_TIME)
+        whenever(mockTimeProvider.getTime()).thenReturn(0)
         val initial = PVector(0f, PI, 3f * PI / 2)
         fixtCubeList.cubes[0].angle.set(initial)
         sut = createSut()
+        sut.start()
         // time ratio 0
         sut.updateState(0, fixtCubeList.cubes[0])
         assertEquals(initial, fixtCubeList.cubes[0].angle)
         // time ratio 0.5
+        whenever(mockTimeProvider.getTime()).thenReturn((FIXT_TIME / 2))
         sut.updateState(0, fixtCubeList.cubes[0])
         assertEquals(
             PVector(initial.x, initial.y * 0.5f, initial.z * 0.5f),
             fixtCubeList.cubes[0].angle
         )
         // time ratio 1
+        whenever(mockTimeProvider.getTime()).thenReturn(FIXT_TIME)
         sut.updateState(0, fixtCubeList.cubes[0])
         assertEquals(PVector(0f, 0f, 0f), fixtCubeList.cubes[0].angle)
     }

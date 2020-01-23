@@ -14,14 +14,18 @@ data class CubesState constructor(
     var cubeScale: Float,
     var cubeScaleDist: Float,
     var rotationOffset: Float,
-    var fillEndColor: Color,
-    var fillColor: Color,
-    var fillAlpha: Float = 255f
-) {
-
-}
+    var fillEndColor: Color = Color.ORANGE,
+    var fillColor: Color = Color.YELLOW,
+    var fillAlpha: Float = 255f,
+    var textTransition: TextTransition = TextTransition.FADE,
+    var textOrder: TextList.Ordering = TextList.Ordering.INORDER
+)
 
 data class PAppletInfo(
     val width: Int,
     val height: Int
 )
+
+enum class TextTransition {
+    FADE, FADE_ZOOM, ZOOM
+}

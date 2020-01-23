@@ -8,6 +8,7 @@ import cubes.motion.*
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
 import io.reactivex.disposables.CompositeDisposable
+import processing.core.PVector
 import java.awt.Color
 import java.awt.Font
 
@@ -23,6 +24,7 @@ class CubesPresenter constructor(
 
         disposables.add(
             controls.events().subscribe({
+                println("receive : ${it.uiObject} : ${it.data} ")
                 when (it.uiObject) {
                     SHADER_LINE_NONE -> shaderButtonNone()
                     SHADER_LINE_LINE -> shaderButtonLine()
@@ -166,6 +168,7 @@ class CubesPresenter constructor(
                     VelocityRotationMotion.make(state)
                 )
             )
+        state.cubeList.cubeListMotion.start()
     }
 
     fun motionLine() {
@@ -177,6 +180,7 @@ class CubesPresenter constructor(
                     VelocityRotationMotion.make(state)
                 )
             )
+        state.cubeList.cubeListMotion.start()
     }
 
     fun motionSquare() {
@@ -217,6 +221,7 @@ class CubesPresenter constructor(
                     VelocityRotationMotion.make(state)
                 )
             )
+        state.cubeList.cubeListMotion.start()
     }
 
     fun strokeColor(color: Color) {
@@ -236,32 +241,61 @@ class CubesPresenter constructor(
 
     fun textRandom(selected: Boolean) {
         if (selected) {
-            startText(RANDOM, state.animationTime)
+            state.textOrder = RANDOM
+            startText(state.animationTime)
         } else {
             state.textList.visible = false
             state.textList.stop()
         }
     }
 
-    private fun startText(ordering: TextList.Ordering, timeMs: Float) {
+    private fun startText(timeMs: Float) {
         state.textList.apply {
-            this.ordering = ordering
+            this.ordering = state.textOrder
             visible(true)
             this.timeMs = timeMs
             texts.forEach { it.fillColor = TRANSPARENT }
-            motion = TextColorMotion(state.textList, timeMs / 2, TRANSPARENT, fillColor) {
-                state.textList.motion = TextColorMotion(state.textList, timeMs / 2, fillColor, TRANSPARENT)
+            val motionToUse: Motion<TextList.Text, Any> = when (state.textTransition) {
+                TextTransition.FADE -> textColorMotion(timeMs)
+                TextTransition.FADE_ZOOM -> CompositeMotion(
+                    listOf(
+                        textColorMotion(timeMs),
+                        textTransitionMotion(timeMs)
+                    )
+                )
+                TextTransition.ZOOM -> textTransitionMotion(timeMs)
             }
+            motion = motionToUse
+            motionToUse.start()
             endFunction = fun() {
-                startText(ordering, timeMs)
+                startText(timeMs)
             }
             start()
         }
     }
 
+    private fun TextList.textColorMotion(timeMs: Float): Motion<TextList.Text, Any> {
+        return SeriesMotion(
+            listOf(
+                TextColorMotion(state.textList, timeMs / 2, TRANSPARENT, fillColor),
+                TextColorMotion(state.textList, timeMs / 2, fillColor, TRANSPARENT)
+            )
+        )
+    }
+
+    private fun TextList.textTransitionMotion(timeMs: Float): Motion<TextList.Text, Any> {
+        return SeriesMotion(
+            listOf(
+                TextTranslationMotion(this, timeMs / 2, this.texts.map { PVector(0f, 0f, 0f) }),
+                TextTranslationMotion(this, timeMs / 2, this.texts.map { PVector(0f, 0f, -10000f) })
+            )
+        )
+    }
+
     fun textNearRandom(selected: Boolean) {
         if (selected) {
-            startText(NEAR_RANDOM, state.animationTime)
+            state.textOrder = NEAR_RANDOM
+            startText(state.animationTime)
         } else {
             state.textList.visible(false)
             state.textList.stop()
@@ -270,22 +304,26 @@ class CubesPresenter constructor(
 
     fun textInOrder(selected: Boolean) {
         if (selected) {
-            startText(INORDER, state.animationTime)
+            state.textOrder = INORDER
         } else {
-            startText(REVERSE, state.animationTime)
+            state.textOrder = REVERSE
         }
+        startText(state.animationTime)
     }
 
     fun textMotionCube(selected: Boolean) {
-
+        state.textTransition = TextTransition.ZOOM
+        startText(state.animationTime)
     }
 
     fun textMotionAround(selected: Boolean) {
-
+        state.textTransition = TextTransition.FADE_ZOOM
+        startText(state.animationTime)
     }
 
     fun textMotionFade(selected: Boolean) {
-
+        state.textTransition = TextTransition.FADE
+        startText(state.animationTime)
     }
 
     fun textFillColor(color: Color) {
