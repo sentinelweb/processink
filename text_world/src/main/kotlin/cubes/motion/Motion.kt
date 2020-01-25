@@ -1,10 +1,12 @@
 package cubes.motion
 
+import cubes.motion.interpolator.Interpolator
 import cubes.objects.Shape
 import provider.TimeProvider
 
 abstract class Motion<out T : Shape, out D : Any> constructor(
     private val timeProvider: TimeProvider,
+    protected val interpolator: Interpolator? = null,
     private val endFunction: () -> Unit = {}
 ) {
     protected var startTime = NOT_STARTED

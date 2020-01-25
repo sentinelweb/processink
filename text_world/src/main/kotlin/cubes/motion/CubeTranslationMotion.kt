@@ -1,6 +1,7 @@
 package cubes.motion
 
 
+import cubes.motion.interpolator.Interpolator
 import cubes.objects.Cube
 import cubes.objects.CubeList
 import processing.core.PVector
@@ -11,8 +12,9 @@ class CubeTranslationMotion constructor(
     timeMs: Float,
     target: List<PVector> = cubeList.cubes.map { PVector() },
     timeProvider: TimeProvider = TimeProvider(),
+    interp: Interpolator? = null,
     endFunction: () -> Unit = {}
-) : TranslationMotion<Cube>(timeMs, target, timeProvider, endFunction) {
+) : TranslationMotion<Cube>(timeMs, target, timeProvider, interp, endFunction) {
 
     override fun getStartData() = cubeList.cubes.map { cube -> cube.position.copy() }
 

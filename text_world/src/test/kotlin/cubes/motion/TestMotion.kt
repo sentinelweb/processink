@@ -7,7 +7,7 @@ class TestMotion constructor(
     val timeMs: Float,
     val timeProvider: TimeProvider,
     end: () -> Unit
-) : Motion<Shape, Any>(timeProvider, end) {
+) : Motion<Shape, Any>(timeProvider, endFunction = end) {
     override fun getStartData(): List<Any> = listOf()
 
     override fun isEnded(): Boolean = isStarted() && (timeProvider.getTime() - startTime >= timeMs)

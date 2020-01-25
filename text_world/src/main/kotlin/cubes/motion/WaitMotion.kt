@@ -3,11 +3,11 @@ package cubes.motion
 import cubes.objects.Shape
 import provider.TimeProvider
 
-class WaitMotion constructor(
+class WaitMotion<out T : Shape> constructor(
     val timeMs: Float,
     private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<Shape, Any>(timeProvider, endFunction) {
+) : Motion<T, Any>(timeProvider, endFunction = endFunction) {
 
     override fun isEnded() = isStarted() && (timeProvider.getTime() - startTime >= timeMs)
 

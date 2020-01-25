@@ -9,7 +9,7 @@ abstract class ColorMotion<out T : Shape> constructor(
     protected val target: List<Color>,
     private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T, Color>(timeProvider, endFunction) {
+) : Motion<T, Color>(timeProvider, endFunction = endFunction) {
 
     override fun <T : Shape> updateState(i: Int, shape: T) {
         if (!isStarted() || isEnded()) return

@@ -9,7 +9,7 @@ abstract class RotationMotion<out T : Shape> constructor(
     protected val target: List<PVector>,
     private val timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T, PVector>(timeProvider, endFunction) {
+) : Motion<T, PVector>(timeProvider, endFunction = endFunction) {
 
     override fun <T : Shape> updateState(i: Int, shape: T) {
         if (!isStarted() || isEnded()) return

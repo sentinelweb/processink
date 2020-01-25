@@ -5,6 +5,8 @@ import cubes.CubesContract.ShaderType.*
 import cubes.gui.Controls
 import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
+import cubes.motion.interpolator.EasingType
+import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
 import cubes.util.ColorUtils.Companion.TRANSPARENT
@@ -270,24 +272,31 @@ class CubesPresenter constructor(
     }
 
     private fun TextList.textColorMotion(timeMs: Float): Motion<TextList.Text, Any> {
+        val animTimeEdge = (timeMs - 1000f) / 2
         return SeriesMotion(
             listOf(
-                TextColorMotion(state.textList, timeMs / 2, TRANSPARENT, fillColor),
-                TextColorMotion(state.textList, timeMs / 2, fillColor, TRANSPARENT)
+                TextColorMotion(state.textList, animTimeEdge, TRANSPARENT, fillColor),
+                WaitMotion(1000f),
+                TextColorMotion(state.textList, animTimeEdge, fillColor, TRANSPARENT)
             )
         )
     }
 
     private fun TextList.textTransitionMotion(timeMs: Float): Motion<TextList.Text, Any> {
+        val animTimeEdge = (timeMs - 1000f) / 2
         return SeriesMotion(
             listOf(
                 TextTranslationMotion(
-                    this, timeMs / 2,
-                    target = PVector(0f, 0f, 0f), startPosition = PVector(0f, 0f, -10000f)
+                    this, animTimeEdge,
+                    target = PVector(0f, 0f, 0f),
+                    startPosition = PVector(0f, 0f, -1000f),
+                    interp = QuadInterpolator(EasingType.IN)
                 ),
+                WaitMotion(1000f),
                 TextTranslationMotion(
-                    this, timeMs / 2,
-                    target = PVector(0f, 0f, -10000f)
+                    this, animTimeEdge,
+                    target = PVector(0f, 0f, -1000f),
+                    interp = QuadInterpolator(EasingType.OUT)
                 )
             )
         )

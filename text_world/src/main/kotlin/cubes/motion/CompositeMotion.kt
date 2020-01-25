@@ -7,7 +7,7 @@ class CompositeMotion<T : Shape> constructor(
     private val motions: List<Motion<T, Any>>, // todo make some object class/interface to limit types - separate model from render code first
     timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : Motion<T, Any>(timeProvider, endFunction) {
+) : Motion<T, Any>(timeProvider, endFunction = endFunction) {
 
     override fun start() {
         motions.forEach { it.start() }
