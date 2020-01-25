@@ -7,6 +7,7 @@ import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
+import cubes.util.ColorUtils.Companion.TRANSPARENT
 import io.reactivex.disposables.CompositeDisposable
 import processing.core.PVector
 import java.awt.Color
@@ -21,7 +22,6 @@ class CubesPresenter constructor(
     private lateinit var state: CubesState
 
     override fun setup() {
-
         disposables.add(
             controls.events().subscribe({
                 println("receive : ${it.uiObject} : ${it.data} ")
@@ -85,81 +85,81 @@ class CubesPresenter constructor(
         state.cubeList.updateState()
     }
 
-    fun motionSliderRotationSpeed(value: Float) {
+    private fun motionSliderRotationSpeed(value: Float) {
         state.rotationSpeed = value / 10000f
         setCubeVelocity()
     }
 
 
-    fun motionSliderRotationOffset(offset: Float) {
+    private fun motionSliderRotationOffset(offset: Float) {
         state.rotationOffset = offset / 10000f
         setCubeVelocity()
     }
 
-    fun motionRotationReset() {
+    private fun motionRotationReset() {
         state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
     }
 
-    fun motionRotationOffsetReset() {
+    private fun motionRotationOffsetReset() {
         state.rotationOffset = 0f
         setCubeVelocity()
     }
 
-    fun shaderButtonNone() {
+    private fun shaderButtonNone() {
         view.setShaderType(NONE)
     }
 
-    fun shaderButtonLine() {
+    private fun shaderButtonLine() {
         view.setShaderType(LINES)
     }
 
-    fun shaderButtonNeon() {
+    private fun shaderButtonNeon() {
         view.setShaderType(NEON)
     }
 
-    fun shaderButtonNebula() {
+    private fun shaderButtonNebula() {
         view.setBackgroundShaderType(NEBULA)
     }
 
-    fun shaderButtonColdFlame() {
+    private fun shaderButtonColdFlame() {
         view.setBackgroundShaderType(COLDFLAME)
     }
 
-    fun shaderButtonRefraction() {
+    private fun shaderButtonRefraction() {
         view.setBackgroundShaderType(REFRACTION_PATTERN)
     }
 
-    fun strokeWeight(value: Float) {
+    private fun strokeWeight(value: Float) {
         view.setShaderParam(LINES, "weight", value)
         state.cubeList.cubes.forEach { it.strokeWeight = value }
     }
 
-    fun motionRotX(selected: Boolean) {
+    private fun motionRotX(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(first = selected)
         setCubeVelocity()
     }
 
-    fun motionRotY(selected: Boolean) {
+    private fun motionRotY(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(second = selected)
         setCubeVelocity()
     }
 
-    fun motionRotZ(selected: Boolean) {
+    private fun motionRotZ(selected: Boolean) {
         state.cubeRotationAxes = state.cubeRotationAxes.copy(third = selected)
         setCubeVelocity()
     }
 
-    fun motionAlignExecute() {
+    private fun motionAlignExecute() {
         state.cubeList.cubeListMotion = CubeRotationAlignMotion(state.cubeList, state.animationTime) {
             state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
-        }
+        }.apply { start() }
     }
 
-    fun motionSliderAnimationTime(alignTime: Float) {
+    private fun motionSliderAnimationTime(alignTime: Float) {
         state.animationTime = alignTime
     }
 
-    fun motionGrid() {
+    private fun motionGrid() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
@@ -167,11 +167,10 @@ class CubesPresenter constructor(
                     cubeScaleMotion(),
                     VelocityRotationMotion.make(state)
                 )
-            )
-        state.cubeList.cubeListMotion.start()
+            ).apply { start() }
     }
 
-    fun motionLine() {
+    private fun motionLine() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
@@ -179,67 +178,65 @@ class CubesPresenter constructor(
                     cubeScaleMotion(),
                     VelocityRotationMotion.make(state)
                 )
-            )
-        state.cubeList.cubeListMotion.start()
+            ).apply { start() }
     }
 
-    fun motionSquare() {
+    private fun motionSquare() {
 
     }
 
-    fun motionTranslationReset() {
+    private fun motionTranslationReset() {
         state.cubeList.cubes.forEach { it.position.set(0f, 0f, 0f) }
     }
 
-    fun motionSliderScale(scale: Float) {
+    private fun motionSliderScale(scale: Float) {
         state.cubeScale = scale
     }
 
-    fun motionSliderScaleDist(dist: Float) {
+    private fun motionSliderScaleDist(dist: Float) {
         state.cubeScaleDist = dist
     }
 
-    fun fill(selected: Boolean) {
+    private fun fill(selected: Boolean) {
         state.cubeList.cubes.forEach { it.fill = selected }
     }
 
-    fun fillColor(color: Color) {
+    private fun fillColor(color: Color) {
         state.fillColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
         state.cubeList.cubes.forEach { it.fillColor = state.fillColor }
     }
 
-    fun fillEndColor(color: Color) {
+    private fun fillEndColor(color: Color) {
         state.fillEndColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
         ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
     }
 
-    fun motionApplyScale() {
+    private fun motionApplyScale() {
         state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
                     cubeScaleMotion(),
                     VelocityRotationMotion.make(state)
                 )
-            )
-        state.cubeList.cubeListMotion.start()
+            ).apply { start() }
     }
 
-    fun strokeColor(color: Color) {
+    private fun strokeColor(color: Color) {
         state.cubeList.cubes.forEach { it.strokeColor = color }
     }
 
-    fun stroke(selected: Boolean) {
+    private fun stroke(selected: Boolean) {
         state.cubeList.cubes.forEach { it.stroke = selected }
     }
 
-    fun fillAlpha(alpha: Float) {
+    private fun fillAlpha(alpha: Float) {
         state.fillAlpha = alpha
         state.cubeList.cubes.forEach {
             it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha.toInt())
         }
     }
 
-    fun textRandom(selected: Boolean) {
+    private fun textRandom(selected: Boolean) {
         if (selected) {
             state.textOrder = RANDOM
             startText(state.animationTime)
@@ -255,7 +252,7 @@ class CubesPresenter constructor(
             visible(true)
             this.timeMs = timeMs
             texts.forEach { it.fillColor = TRANSPARENT }
-            val motionToUse: Motion<TextList.Text, Any> = when (state.textTransition) {
+            motion = when (state.textTransition) {
                 TextTransition.FADE -> textColorMotion(timeMs)
                 TextTransition.FADE_ZOOM -> CompositeMotion(
                     listOf(
@@ -264,9 +261,7 @@ class CubesPresenter constructor(
                     )
                 )
                 TextTransition.ZOOM -> textTransitionMotion(timeMs)
-            }
-            motion = motionToUse
-            motionToUse.start()
+            }.apply { start() }
             endFunction = fun() {
                 startText(timeMs)
             }
@@ -286,13 +281,19 @@ class CubesPresenter constructor(
     private fun TextList.textTransitionMotion(timeMs: Float): Motion<TextList.Text, Any> {
         return SeriesMotion(
             listOf(
-                TextTranslationMotion(this, timeMs / 2, this.texts.map { PVector(0f, 0f, 0f) }),
-                TextTranslationMotion(this, timeMs / 2, this.texts.map { PVector(0f, 0f, -10000f) })
+                TextTranslationMotion(
+                    this, timeMs / 2,
+                    target = PVector(0f, 0f, 0f), startPosition = PVector(0f, 0f, -10000f)
+                ),
+                TextTranslationMotion(
+                    this, timeMs / 2,
+                    target = PVector(0f, 0f, -10000f)
+                )
             )
         )
     }
 
-    fun textNearRandom(selected: Boolean) {
+    private fun textNearRandom(selected: Boolean) {
         if (selected) {
             state.textOrder = NEAR_RANDOM
             startText(state.animationTime)
@@ -302,7 +303,7 @@ class CubesPresenter constructor(
         }
     }
 
-    fun textInOrder(selected: Boolean) {
+    private fun textInOrder(selected: Boolean) {
         if (selected) {
             state.textOrder = INORDER
         } else {
@@ -311,40 +312,40 @@ class CubesPresenter constructor(
         startText(state.animationTime)
     }
 
-    fun textMotionCube(selected: Boolean) {
+    private fun textMotionCube(selected: Boolean) {
         state.textTransition = TextTransition.ZOOM
         startText(state.animationTime)
     }
 
-    fun textMotionAround(selected: Boolean) {
+    private fun textMotionAround(selected: Boolean) {
         state.textTransition = TextTransition.FADE_ZOOM
         startText(state.animationTime)
     }
 
-    fun textMotionFade(selected: Boolean) {
+    private fun textMotionFade(selected: Boolean) {
         state.textTransition = TextTransition.FADE
         startText(state.animationTime)
     }
 
-    fun textFillColor(color: Color) {
+    private fun textFillColor(color: Color) {
         state.textList.fillColor = color
         state.textList.texts.forEach {
             it.fillColor = color
         }
     }
 
-    fun textFillEndColor(color: Color) {
+    private fun textFillEndColor(color: Color) {
 
     }
 
-    fun textFill(selected: Boolean) {
+    private fun textFill(selected: Boolean) {
         state.textList.fill = selected
         state.textList.texts.forEach {
             it.fill = selected
         }
     }
 
-    fun textFillAlpha(alpha: Float) {
+    private fun textFillAlpha(alpha: Float) {
         val old = state.textList.fillColor
         state.textList.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
         state.textList.texts.forEach {
@@ -353,32 +354,32 @@ class CubesPresenter constructor(
         }
     }
 
-    fun textStrokeColor(color: Color) {
+    private fun textStrokeColor(color: Color) {
         state.textList.strokeColor = color
         state.textList.texts.forEach {
             it.strokeColor = color
         }
     }
 
-    fun textStroke(selected: Boolean) {
+    private fun textStroke(selected: Boolean) {
         state.textList.stroke = selected
         state.textList.texts.forEach {
             it.stroke = selected
         }
     }
 
-    fun textStrokeWeight(weight: Float) {
+    private fun textStrokeWeight(weight: Float) {
         state.textList.strokeWeight = weight
         state.textList.texts.forEach {
             it.strokeWeight = weight
         }
     }
 
-    fun textFont(selectedFont: Font) {
+    private fun textFont(selectedFont: Font) {
         state.textList.setFont(selectedFont)
     }
 
-    fun cubesVisible(selected: Boolean) {
+    private fun cubesVisible(selected: Boolean) {
         state.cubeList.visible = selected
     }
 
@@ -393,10 +394,8 @@ class CubesPresenter constructor(
     }
 
     private fun setCubeVelocity() {
-        state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
+        state.cubeList.cubeListMotion = VelocityRotationMotion.make(state).apply { start() }
     }
 
-    companion object {
-        private val TRANSPARENT = Color(0f, 0f, 0f, 0f)
-    }
+
 }

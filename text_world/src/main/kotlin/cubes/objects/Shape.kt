@@ -1,6 +1,6 @@
 package cubes.objects
 
-import cubes.gui.toProcessing
+import cubes.util.toProcessing
 import processing.core.PApplet
 import processing.core.PVector
 import java.awt.Color

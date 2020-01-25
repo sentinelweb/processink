@@ -10,6 +10,7 @@ class CubeList constructor(
     private val startSize: Float,
     endSisze: Float
 ) : Shape(p) {
+
     val cubes: List<Cube>
     val increment = (endSisze - startSize) / length
     var cubeListMotion: Motion<Cube, Any> = DEFAULT_MOTION_UPDATER
@@ -25,13 +26,10 @@ class CubeList constructor(
 
     fun updateState() {
         cubes.forEachIndexed { i, cube ->
-            if (!cubeListMotion.isEnded()) {
-                cubeListMotion.updateState(i, cube)
-            }
+            cubeListMotion.execute(i, cube)
         }
     }
 
-    // make a algo to send different cubes to catch each other up.
     fun draw(contextFunction: ((i: Int, cube: Cube) -> Unit)? = null) {
         if (visible) {
             p.pushMatrix()

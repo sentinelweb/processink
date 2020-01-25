@@ -40,9 +40,7 @@ class TextList constructor(
         motion?.run {
             texts.forEachIndexed { i, text ->
                 if (thisTextVisible(i)) {
-                    if (!isEnded()) {
-                        updateState(i, text)
-                    }
+                    execute(i, text)
                 }
             }
         }

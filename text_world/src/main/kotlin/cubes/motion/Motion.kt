@@ -27,6 +27,14 @@ abstract class Motion<out T : Shape, out D : Any> constructor(
 
     abstract fun ensureEndState()
 
+    fun <T : Shape> execute(i: Int, shape: T) {
+        if (!isEnded()) {
+            updateState(i, shape)
+        } else {
+            callEndOnce()
+        }
+    }
+
     abstract fun <T : Shape> updateState(i: Int, shape: T)
 
     fun callEndOnce() {
