@@ -18,7 +18,8 @@ data class CubesState constructor(
     var fillColor: Color = Color.YELLOW,
     var fillAlpha: Float = 255f,
     var textTransition: TextTransition = TextTransition.FADE,
-    var textOrder: TextList.Ordering = TextList.Ordering.INORDER
+    var textOrder: TextList.Ordering = TextList.Ordering.INORDER,
+    var backgroundColor: Color = Color.BLACK
 )
 
 data class PAppletInfo(

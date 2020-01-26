@@ -1,7 +1,8 @@
 package cubes
 
 import cubes.CubesContract.BackgroundShaderType.*
-import cubes.CubesContract.ShaderType.*
+import cubes.CubesContract.ShaderType.LINES
+import cubes.CubesContract.ShaderType.NEON
 import cubes.gui.Controls
 import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
@@ -31,9 +32,12 @@ class CubesPresenter constructor(
                     SHADER_LINE_NONE -> shaderButtonNone()
                     SHADER_LINE_LINE -> shaderButtonLine()
                     SHADER_LINE_NEON -> shaderButtonNeon()
+                    SHADER_BG_NONE -> shaderButtonBgNone(it.data as Color)
                     SHADER_BG_NEBULA -> shaderButtonNebula()
                     SHADER_BG_FLAME -> shaderButtonColdFlame()
                     SHADER_BG_REFRACT -> shaderButtonRefraction()
+                    SHADER_BG_DEFORM -> shaderButtonDeform()
+                    SHADER_BG_MONJORI -> shaderButtonMonjori()
                     MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
                     CUBES_ROTATION_SLIDER -> motionSliderRotationSpeed(it.data as Float)
                     CUBES_ROTATION_OFFEST_SLIDER -> motionSliderRotationOffset(it.data as Float)
@@ -108,7 +112,7 @@ class CubesPresenter constructor(
     }
 
     private fun shaderButtonNone() {
-        view.setShaderType(NONE)
+        view.setShaderType(CubesContract.ShaderType.NONE)
     }
 
     private fun shaderButtonLine() {
@@ -117,6 +121,19 @@ class CubesPresenter constructor(
 
     private fun shaderButtonNeon() {
         view.setShaderType(NEON)
+    }
+
+    private fun shaderButtonDeform() {
+        view.setBackgroundShaderType(DEFORM)
+    }
+
+    private fun shaderButtonMonjori() {
+        view.setBackgroundShaderType(MONJORI)
+    }
+
+    private fun shaderButtonBgNone(color: Color) {
+        state.backgroundColor = color
+        view.setBackgroundShaderType(NONE)
     }
 
     private fun shaderButtonNebula() {
@@ -284,18 +301,19 @@ class CubesPresenter constructor(
 
     private fun TextList.textTransitionMotion(timeMs: Float): Motion<TextList.Text, Any> {
         val animTimeEdge = (timeMs - 1000f) / 2
+        val startZPos = -1000f
         return SeriesMotion(
             listOf(
                 TextTranslationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, 0f),
-                    startPosition = PVector(0f, 0f, -1000f),
+                    startPosition = PVector(0f, 0f, startZPos),
                     interp = QuadInterpolator(EasingType.IN)
                 ),
                 WaitMotion(1000f),
                 TextTranslationMotion(
                     this, animTimeEdge,
-                    target = PVector(0f, 0f, -1000f),
+                    target = PVector(0f, 0f, startZPos),
                     interp = QuadInterpolator(EasingType.OUT)
                 )
             )

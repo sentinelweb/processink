@@ -39,6 +39,7 @@ class Controls {
     enum class UiObject {
         SHADER_LINE_NONE, SHADER_LINE_LINE, SHADER_LINE_NEON,
         SHADER_BG_NEBULA, SHADER_BG_FLAME, SHADER_BG_REFRACT,
+        SHADER_BG_NONE, SHADER_BG_DEFORM, SHADER_BG_MONJORI,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SLIDER,
         CUBES_ROTATION_OFFEST_RESET,
@@ -115,10 +116,21 @@ class Controls {
                 add(JButton("Line").setup { events.onNext(Event(SHADER_LINE_LINE)) })
                 add(JButton("Neon").setup { events.onNext(Event(SHADER_LINE_NEON)) })
                 add(JPanel().apply { preferredSize = Dimension(10, 20) })
+                add(JButton("None").apply {
+                    addActionListener {
+                        val color = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
+                        color?.let {
+                            events.onNext(Event(SHADER_BG_NONE, it))
+                            @Suppress("LABEL_NAME_CLASH")
+                            this@apply.background = it
+                        }
+                    }
+                })
                 add(JButton("Nebula").setup { events.onNext(Event(SHADER_BG_NEBULA)) })
                 add(JButton("ColdFlame").setup { events.onNext(Event(SHADER_BG_FLAME)) })
                 add(JButton("Refraction").setup { events.onNext(Event(SHADER_BG_REFRACT)) })
-
+                add(JButton("Deform").setup { events.onNext(Event(SHADER_BG_DEFORM)) })
+                add(JButton("Monjori").setup { events.onNext(Event(SHADER_BG_MONJORI)) })
             }, BorderLayout.EAST)
 
             // center panel - motion, text

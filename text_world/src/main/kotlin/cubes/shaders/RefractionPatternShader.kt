@@ -1,13 +1,13 @@
 package cubes.shaders
 
-import cubes.CubesProcessingView
+import cubes.CubesProcessingView.Companion.BASE_RESOURCES
 import processing.core.PApplet
 
 class RefractionPatternShader constructor(
     p: PApplet
 ) : ShaderWrapper(
     p,
-    "${CubesProcessingView.BASE_RESOURCES}/cubes/st_refractionPatternFrag.glsl"
+    "$BASE_RESOURCES/cubes/st_refractionPatternFrag.glsl"
 ) {
 
     fun setResolution(p: PApplet) {

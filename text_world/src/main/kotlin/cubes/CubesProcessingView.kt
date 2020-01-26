@@ -22,14 +22,14 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var nebulaShader: NebulaShader
     private lateinit var flameShader: FlameShader
     private lateinit var refractShader: RefractionPatternShader
+    private lateinit var deformShader: DeformShader
+    private lateinit var monjoriShader: MonjoriShader
     private var currentShader: ShaderWrapper? = null
-    private lateinit var currentBackground: ShaderWrapper
+    private var currentBackground: ShaderWrapper? = null
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
 
     lateinit var cubesState: CubesState
-
-    var color = Color.BLACK
 
     fun getInfo() = PAppletInfo(width, height)
 
@@ -76,31 +76,29 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         flameShader = FlameShader(this)
         nebulaShader = NebulaShader(this)
         refractShader = RefractionPatternShader(this)
+        deformShader = DeformShader(this)
+        monjoriShader = MonjoriShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
-        //currentShader = lineShader
         currentBackground = nebulaShader
         cubesPresenter.setup()
     }
 
 
     // make a algo to send different cubes to catch each other up.
-
     //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
+        val color = cubesState.backgroundColor
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         noStroke()
-        currentBackground.setDefaultShaderParams()
-        currentBackground.engage()
-        rect(0f, 0f, width.toFloat(), height.toFloat())
+        currentBackground?.setDefaultShaderParams()
+        currentBackground?.engage()
 
         currentShader?.engage() ?: resetShader()
-        // alignTexts()
+
         cubesState.cubeList.draw()
-//
-//        // terminator.draw()
+
         cubesState.textList.draw()
-        // text("Love without hope", 320f, 180f)
     }
 
     override fun setShaderType(type: ShaderType) {
@@ -113,10 +111,12 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
     override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         when (type) {
+            CubesContract.BackgroundShaderType.NONE -> currentBackground = null
             CubesContract.BackgroundShaderType.NEBULA -> currentBackground = nebulaShader
             CubesContract.BackgroundShaderType.COLDFLAME -> currentBackground = flameShader
             CubesContract.BackgroundShaderType.REFRACTION_PATTERN -> currentBackground = refractShader
-
+            CubesContract.BackgroundShaderType.DEFORM -> currentBackground = deformShader
+            CubesContract.BackgroundShaderType.MONJORI -> currentBackground = monjoriShader
         }
     }
 

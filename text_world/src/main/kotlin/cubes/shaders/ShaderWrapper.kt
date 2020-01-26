@@ -8,7 +8,7 @@ abstract class ShaderWrapper(
     fragPath: String,
     vertPath: String? = null
 ) {
-    open protected val type: Int = PConstants.TRIANGLES // POINTS, LINES, or TRIANGLES
+    open protected val type: Int? = PConstants.TRIANGLES // POINTS, LINES, or TRIANGLES
 
     protected val shader: PShader =
         vertPath
@@ -51,7 +51,8 @@ abstract class ShaderWrapper(
         return this
     }
 
-    fun engage() {
-        p.shader(shader, type)
+    open fun engage() {
+        type?.let { p.shader(shader, it) } ?: p.shader(shader)
+        p.rect(0f, 0f, p.width.toFloat(), p.height.toFloat())
     }
 }
