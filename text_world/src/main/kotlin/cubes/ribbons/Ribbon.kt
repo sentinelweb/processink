@@ -1,26 +1,33 @@
 package cubes.ribbons
 
 import processing.core.PApplet
-import java.util.*
+import processing.core.PApplet.lerp
+import processing.core.PVector
 
 class Ribbon(
     private val p: PApplet,
     private val ribbonColor: Float,
     private val ribbonWidth: Float,
-    private var ribbonTarget: Point3D
+    private var ribbonTarget: PVector
 ) {
+    // todo parameterise
     private val NUMCURVES = 15 //number of ribbonCurves per ribbon
     private val CURVERESOLUTION = 25 //lower -> faster
-    private val pts: Vector<Point3D> = Vector()
-    private val curves: LinkedList<RibbonCurve> = LinkedList()
-    lateinit var currentCurve: RibbonCurve
-    var stepId: Int
-    var ribbonSeparation = 0f
+    private var NOISESTEP = 0.005f
+    private var MAXSEPARATION = 500f
+
+    private val pts: MutableList<PVector> = mutableListOf()
+    private val curves: MutableList<RibbonCurve> = mutableListOf()
+    private lateinit var currentCurve: RibbonCurve
+    private var stepId: Int
+    private var ribbonSeparation = 0f
+    private var noisePosn: Float = 0f
 
     init {
-        pts.addElement(randPt)
-        pts.addElement(randPt)
-        pts.addElement(randPt)
+        pts.add(randPt)
+        pts.add(randPt)
+        pts.add(randPt)
+
         stepId = 0
         addRibbonCurve()
     }
@@ -31,6 +38,7 @@ class Ribbon(
         if (size > NUMCURVES - 1) {
             curves[0].removeSegment()
         }
+        ribbonSeparation = lerp(-MAXSEPARATION, MAXSEPARATION, p.noise(NOISESTEP.let { noisePosn += it; noisePosn }))
         stepId++
         if (stepId > CURVERESOLUTION) addRibbonCurve()
         //draw curves
@@ -40,16 +48,16 @@ class Ribbon(
     }
 
     fun addRibbonCurve() { //add new point
-        pts.addElement(randPt)
-        val nextPt = pts.elementAt(pts.size - 1) as Point3D
-        val curPt = pts.elementAt(pts.size - 2) as Point3D
-        val lastPt = pts.elementAt(pts.size - 3) as Point3D
-        val lastMidPt = Point3D(
+        pts.add(randPt)
+        val nextPt = pts.elementAt(pts.size - 1)
+        val curPt = pts.elementAt(pts.size - 2)
+        val lastPt = pts.elementAt(pts.size - 3)
+        val lastMidPt = PVector(
             (curPt.x + lastPt.x) / 2,
             (curPt.y + lastPt.y) / 2,
             (curPt.z + lastPt.z) / 2
         )
-        val midPt = Point3D(
+        val midPt = PVector(
             (curPt.x + nextPt.x) / 2,
             (curPt.y + nextPt.y) / 2,
             (curPt.z + nextPt.z) / 2
@@ -61,13 +69,13 @@ class Ribbon(
 
         //remove old curves
         if (curves.size > NUMCURVES) {
-            curves.removeFirst()
+            curves.removeAt(0)
         }
         stepId = 0
     }
 
-    val randPt: Point3D
-        get() = Point3D(
+    val randPt: PVector
+        get() = PVector(
             ribbonTarget.x + p.random(-ribbonSeparation, ribbonSeparation),
             ribbonTarget.y + p.random(-ribbonSeparation, ribbonSeparation),
             ribbonTarget.z + p.random(-ribbonSeparation, ribbonSeparation)

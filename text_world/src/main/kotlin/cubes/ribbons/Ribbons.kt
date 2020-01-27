@@ -1,18 +1,19 @@
 package cubes.ribbons
-
 /**
- * BASED ON
+ * BASED ON:
  * BezierRibbons by Felix Turner
  * www.airtightinteractive.com
  * Randomly moving bezier ribbons. Ribbon separation is determined by noise(). Uses OpenGL additive blending.
- * Press 'S' key to toggle saving images. Use mouse to move camera.
- * Uses the Obsessive Camera Direction Library for Processing: http://www.cise.ufl.edu/~kdamkjer/processing/libraries/ocd/
+ * -----------------
+ * convert to kotlin by rob munro
  */
+import com.jogamp.opengl.GL
 import cubes.util.pushMatrix
 import processing.core.PApplet
-import processing.core.PApplet.lerp
 import processing.core.PApplet.map
 import processing.core.PConstants.HSB
+import processing.core.PVector
+import processing.opengl.PJOGL
 
 
 class Ribbons constructor(
@@ -20,19 +21,13 @@ class Ribbons constructor(
 ) {
     var RIBBONCOUNT = 10
     var RIBBONWIDTH = 5f
-    var NOISESTEP = 0.005f
-    var MAXSEPARATION = 500f
 
-    var ribbonSeparation = 0f
-    var noisePosn: Float = 0f
     lateinit var ribbons: MutableList<Ribbon>
 
     fun setup() {
         val stageHeight = p.height.toFloat()
         val stageWidth = p.width.toFloat()
         val stageDepth = p.width.toFloat()
-        noisePosn = 0f
-        ribbonSeparation = 0f
 
         p.colorMode(HSB, 100f)
 
@@ -44,10 +39,10 @@ class Ribbons constructor(
                     p,
                     map(i.toFloat(), 0f, RIBBONCOUNT.toFloat(), 0f, 100f),
                     RIBBONWIDTH,
-                    Point3D(
-                        p.random(-stageWidth, stageWidth),
-                        p.random(-stageHeight, stageHeight),
-                        p.random(-stageDepth, stageDepth)
+                    PVector(
+                        p.random(-stageWidth / 2, stageWidth / 2),
+                        p.random(-stageHeight / 2, stageHeight / 2),
+                        p.random(-stageDepth / 2, 0f)
                     )
                 )
             )
@@ -55,12 +50,16 @@ class Ribbons constructor(
     }
 
     fun draw() {
+        val pgl = p.g.beginPGL() as PJOGL
+        pgl.gl.glDisable(GL.GL_DEPTH_TEST)
+        pgl.gl.glEnable(GL.GL_BLEND)
+        pgl.gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE)
+        p.g.endPGL()
+
         p.pushMatrix {
             p.translate(p.width / 2f, p.height / 2f)
             for (i in 0 until RIBBONCOUNT) {
                 val r = ribbons.elementAt(i)
-                r.ribbonSeparation =
-                    lerp(-MAXSEPARATION, MAXSEPARATION, p.noise(NOISESTEP.let { noisePosn += it; noisePosn }))
                 r.draw()
             }
         }

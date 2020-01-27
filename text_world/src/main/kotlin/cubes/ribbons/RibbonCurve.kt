@@ -1,6 +1,7 @@
 package cubes.ribbons
 
 import processing.core.PApplet
+import processing.core.PVector
 import java.util.*
 
 /**
@@ -8,9 +9,9 @@ import java.util.*
  */
 class RibbonCurve internal constructor(
     p: PApplet,
-    var startPt: Point3D,
-    var endPt: Point3D,
-    var controlPt: Point3D,
+    var startPt: PVector,
+    var endPt: PVector,
+    var controlPt: PVector,
     var ribbonWidth: Float,
     var resolution: Float,
     pcolor: Float
@@ -48,7 +49,7 @@ class RibbonCurve internal constructor(
     /**
      * Given a bezier curve defined by 3 points, an offset distance (k) and a time (t), returns a Point3D
      */
-    fun getOffsetPoint(t: Float, k: Float): Point3D {
+    fun getOffsetPoint(t: Float, k: Float): PVector {
         val p0 = startPt
         val p1 = controlPt
         val p2 = endPt
@@ -61,7 +62,7 @@ class RibbonCurve internal constructor(
         val yd = t * (p0.y - 2 * p1.y + p2.y) - p0.y + p1.y
         val zd = t * (p0.z - 2 * p1.z + p2.z) - p0.z + p1.z
         val dd = PApplet.pow(xd * xd + yd * yd + zd * zd, 1 / 3.toFloat())
-        return Point3D(xt + k * yd / dd, yt - k * xd / dd, zt - k * xd / dd)
+        return PVector(xt + k * yd / dd, yt - k * xd / dd, zt - k * xd / dd)
     }
 
     init {
