@@ -1,6 +1,6 @@
 package cubes.motion.interpolator
 
-class QuadInterpolator(private val type: EasingType) : Interpolator {
+class QuartInterpolator(private val type: EasingType) : Interpolator {
 
     override fun getInterpolation(t: Float): Float {
         return when (type) {
@@ -11,20 +11,21 @@ class QuadInterpolator(private val type: EasingType) : Interpolator {
     }
 
     private fun `in`(t: Float): Float {
-        return t * t
+        return t * t * t * t
     }
 
     private fun out(t: Float): Float {
-        return -t * (t - 2)
+        var t = t
+        return -(1.let { t -= it; t } * t * t * t - 1)
     }
 
     private fun inout(t: Float): Float {
         var t = t
         t *= 2f
         return if (t < 1) {
-            0.5f * t * t
+            0.5f * t * t * t * t
         } else {
-            -0.5f * (--t * (t - 2) - 1)
+            -0.5f * (2.let { t -= it; t } * t * t * t - 2)
         }
     }
 

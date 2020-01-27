@@ -101,15 +101,16 @@ class CubesProcessingView : PApplet(), CubesContract.View {
 
         cubesState.cubeList.draw()
 
-        cubesState.textList.draw()
         ribbons.draw()
+
+        cubesState.textList.draw()
     }
 
     override fun setShaderType(type: ShaderType) {
         when (type) {
             ShaderType.NONE -> currentShader = null
             ShaderType.LINES -> currentShader = lineShader
-            ShaderType.NEON -> currentShader = flameShader
+            ShaderType.NEON -> currentShader = null // TODO glow shader
         }
     }
 

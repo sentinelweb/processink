@@ -12,6 +12,7 @@ import cubes.util.pushMatrix
 import processing.core.PApplet
 import processing.core.PApplet.map
 import processing.core.PConstants.HSB
+import processing.core.PConstants.RGB
 import processing.core.PVector
 import processing.opengl.PJOGL
 
@@ -28,8 +29,6 @@ class Ribbons constructor(
         val stageHeight = p.height.toFloat()
         val stageWidth = p.width.toFloat()
         val stageDepth = p.width.toFloat()
-
-        p.colorMode(HSB, 100f)
 
         //create ribbons
         ribbons = mutableListOf()
@@ -50,6 +49,7 @@ class Ribbons constructor(
     }
 
     fun draw() {
+        p.colorMode(HSB, 100f)
         val pgl = p.g.beginPGL() as PJOGL
         pgl.gl.glDisable(GL.GL_DEPTH_TEST)
         pgl.gl.glEnable(GL.GL_BLEND)
@@ -63,5 +63,6 @@ class Ribbons constructor(
                 r.draw()
             }
         }
+        p.colorMode(RGB)
     }
 }

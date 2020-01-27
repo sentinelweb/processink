@@ -125,7 +125,7 @@ class TextList constructor(
     }
 
     inner class Text constructor(
-        val text: CharSequence
+        private val text: CharSequence
     ) : Shape(p) {
 
         fun draw(p: PApplet) {

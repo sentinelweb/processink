@@ -6,7 +6,8 @@ import cubes.CubesContract.ShaderType.NEON
 import cubes.gui.Controls
 import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
-import cubes.motion.interpolator.EasingType
+import cubes.motion.interpolator.EasingType.IN
+import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
@@ -308,13 +309,17 @@ class CubesPresenter constructor(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, 0f),
                     startPosition = PVector(0f, 0f, startZPos),
-                    interp = QuadInterpolator(EasingType.IN)
+                    interp = QuadInterpolator(IN)
+//                    interp = BounceInterpolator(OUT)
+//                    interp = ElasticInterpolator(IN, 5f, 10f)
                 ),
                 WaitMotion(1000f),
                 TextTranslationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, startZPos),
-                    interp = QuadInterpolator(EasingType.OUT)
+                    interp = QuadInterpolator(OUT)
+//                    interp = BounceInterpolator(IN)
+//                    interp = ElasticInterpolator(OUT, 5f, 10f)
                 )
             )
         )

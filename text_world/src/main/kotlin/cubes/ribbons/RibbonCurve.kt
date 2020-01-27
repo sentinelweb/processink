@@ -20,6 +20,13 @@ class RibbonCurve internal constructor(
     var ribbonColor = 0f
     var quads: LinkedList<Quad3D>
     var p: PApplet
+
+    init {
+        ribbonColor = pcolor
+        this.p = p
+        quads = LinkedList()
+    }
+
     fun draw() {
         val size = quads.size
         for (i in 0 until size) {
@@ -63,11 +70,5 @@ class RibbonCurve internal constructor(
         val zd = t * (p0.z - 2 * p1.z + p2.z) - p0.z + p1.z
         val dd = PApplet.pow(xd * xd + yd * yd + zd * zd, 1 / 3.toFloat())
         return PVector(xt + k * yd / dd, yt - k * xd / dd, zt - k * xd / dd)
-    }
-
-    init {
-        ribbonColor = pcolor
-        this.p = p
-        quads = LinkedList()
     }
 }
