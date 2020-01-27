@@ -4,6 +4,7 @@ import cubes.CubesContract.ShaderType
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
+import cubes.ribbons.Ribbons
 import cubes.shaders.*
 import processing.core.PApplet
 import processing.core.PConstants
@@ -28,6 +29,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     private var currentBackground: ShaderWrapper? = null
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
+    private lateinit var ribbons: Ribbons
 
     lateinit var cubesState: CubesState
 
@@ -80,9 +82,10 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         monjoriShader = MonjoriShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
+        ribbons = Ribbons(this)
+        ribbons.setup()
         cubesPresenter.setup()
     }
-
 
     // make a algo to send different cubes to catch each other up.
     //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
@@ -99,6 +102,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         cubesState.cubeList.draw()
 
         cubesState.textList.draw()
+        ribbons.draw()
     }
 
     override fun setShaderType(type: ShaderType) {

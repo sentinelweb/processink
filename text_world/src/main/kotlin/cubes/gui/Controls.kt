@@ -22,7 +22,7 @@ fun main() {
 }
 
 /**
- * TODO make a model object to hold data and an observable with an enum to send event to the presenter (presenter subscribes)
+ * TODO make a model object to hold data
  */
 class Controls {
 
