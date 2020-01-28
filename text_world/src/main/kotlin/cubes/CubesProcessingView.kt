@@ -9,6 +9,7 @@ import cubes.objects.TextList
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
 import cubes.util.pushMatrix
+import cubes.util.webc
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
@@ -35,6 +36,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
     private lateinit var buddah: PShape
+    private lateinit var lotus: PShape
 
     lateinit var cubesState: CubesState
 
@@ -90,10 +92,14 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         ribbons = Ribbons(this)
         ribbons.setup()
         cubesPresenter.setup()
-        buddah = loadShape("${BASE_RESOURCES}/cubes/buddha.svg")
-        //buddah.disableStyle()
-//        buddah.setStroke(255)
-//        buddah.setFill(255)
+        buddah = loadShape("${BASE_RESOURCES}/cubes/faith.svg")
+        buddah.setStroke(webc("#FAC103"))
+        buddah.setFill(webc("#FFF63E"))
+        buddah.setStroke(true)
+        lotus = loadShape("${BASE_RESOURCES}/cubes/lotus.svg")
+        lotus.setStroke(webc("#384FA0"))
+        lotus.setFill(webc("#6C8DFF"))
+        lotus.setStroke(true)
     }
 
     // make a algo to send different cubes to catch each other up.
@@ -109,17 +115,26 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         currentShader?.engage() ?: resetShader()
 
         cubesState.cubeList.draw()
+        resetShader() // doesn't work?
 
         ribbons.draw()
 
         cubesState.textList.draw()
+
         pushMatrix {
-            stroke(255)
-            fill(255)
-            translate(width / 2f, height / 2f)
-            val size = 400f
-            shape(buddah, -size / 2f, -size / 2f, size, size)
+            translate(width / 3f, height / 2f)
+            draw(buddah)
         }
+        pushMatrix {
+            translate(width / 3f * 2, height / 2f)
+            draw(lotus)
+        }
+    }
+
+    private fun draw(buddah1: PShape) {
+        val size = 100f
+        (buddah1.getWidth() / buddah1.getHeight() * size)
+            .let { shape(buddah1, -it / 2f, -size / 2f, it, size) }
     }
 
     override fun setShaderType(type: ShaderType) {
@@ -130,23 +145,23 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         }
     }
 
-    override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
-        when (type) {
-            CubesContract.BackgroundShaderType.NONE -> currentBackground = null
-            NEBULA -> currentBackground = nebulaShader
-            COLDFLAME -> currentBackground = flameShader
-            REFRACTION_PATTERN -> currentBackground = refractShader
-            DEFORM -> currentBackground = deformShader
-            MONJORI -> currentBackground = monjoriShader
-        }
-    }
-
     override fun setShaderParam(type: ShaderType, param: String, value: Any) {
         when (type) {
             ShaderType.NONE -> {
             }
             ShaderType.LINES -> lineShader.set(param, value)
             NEON -> flameShader.set(param, value)
+        }
+    }
+
+    override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
+        when (type) {
+            NONE -> currentBackground = null
+            NEBULA -> currentBackground = nebulaShader
+            COLDFLAME -> currentBackground = flameShader
+            REFRACTION_PATTERN -> currentBackground = refractShader
+            DEFORM -> currentBackground = deformShader
+            MONJORI -> currentBackground = monjoriShader
         }
     }
 

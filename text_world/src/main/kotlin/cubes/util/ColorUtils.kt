@@ -12,3 +12,4 @@ class ColorUtils {
 
 fun Color.toProcessing(p: PApplet) = p.color(red, green, blue, alpha)
 fun Color.toProcessing(alpha: Float, p: PApplet) = p.color(red, green, blue, alpha.toInt())
+fun PApplet.webc(webColor: String) = Color.decode(webColor).toProcessing(this)

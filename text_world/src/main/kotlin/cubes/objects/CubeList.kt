@@ -40,6 +40,7 @@ class CubeList constructor(
                     cube.draw()
                 }
             }
+            p.noStroke()
         }
     }
 

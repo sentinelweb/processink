@@ -16,7 +16,7 @@ class Cube constructor(
     init {
         // todo export to a factory?
         cubeShape = p.createShape(PConstants.BOX, width, height, depth).apply {
-            this?.disableStyle()
+            this.disableStyle()
         }
     }
 
