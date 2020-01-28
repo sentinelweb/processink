@@ -1,13 +1,17 @@
 package cubes
 
+import cubes.CubesContract.BackgroundShaderType.*
 import cubes.CubesContract.ShaderType
+import cubes.CubesContract.ShaderType.NEON
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
+import cubes.util.pushMatrix
 import processing.core.PApplet
 import processing.core.PConstants
+import processing.core.PShape
 import java.awt.Color
 
 fun main() {
@@ -30,6 +34,7 @@ class CubesProcessingView : PApplet(), CubesContract.View {
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
+    private lateinit var buddah: PShape
 
     lateinit var cubesState: CubesState
 
@@ -85,6 +90,10 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         ribbons = Ribbons(this)
         ribbons.setup()
         cubesPresenter.setup()
+        buddah = loadShape("${BASE_RESOURCES}/cubes/buddha.svg")
+        //buddah.disableStyle()
+//        buddah.setStroke(255)
+//        buddah.setFill(255)
     }
 
     // make a algo to send different cubes to catch each other up.
@@ -104,32 +113,40 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         ribbons.draw()
 
         cubesState.textList.draw()
+        pushMatrix {
+            stroke(255)
+            fill(255)
+            translate(width / 2f, height / 2f)
+            val size = 400f
+            shape(buddah, -size / 2f, -size / 2f, size, size)
+        }
     }
 
     override fun setShaderType(type: ShaderType) {
         when (type) {
             ShaderType.NONE -> currentShader = null
             ShaderType.LINES -> currentShader = lineShader
-            ShaderType.NEON -> currentShader = null // TODO glow shader
+            NEON -> currentShader = null // TODO glow shader
         }
     }
 
     override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         when (type) {
             CubesContract.BackgroundShaderType.NONE -> currentBackground = null
-            CubesContract.BackgroundShaderType.NEBULA -> currentBackground = nebulaShader
-            CubesContract.BackgroundShaderType.COLDFLAME -> currentBackground = flameShader
-            CubesContract.BackgroundShaderType.REFRACTION_PATTERN -> currentBackground = refractShader
-            CubesContract.BackgroundShaderType.DEFORM -> currentBackground = deformShader
-            CubesContract.BackgroundShaderType.MONJORI -> currentBackground = monjoriShader
+            NEBULA -> currentBackground = nebulaShader
+            COLDFLAME -> currentBackground = flameShader
+            REFRACTION_PATTERN -> currentBackground = refractShader
+            DEFORM -> currentBackground = deformShader
+            MONJORI -> currentBackground = monjoriShader
         }
     }
 
     override fun setShaderParam(type: ShaderType, param: String, value: Any) {
         when (type) {
-            ShaderType.NONE -> currentShader = null
+            ShaderType.NONE -> {
+            }
             ShaderType.LINES -> lineShader.set(param, value)
-            ShaderType.NEON -> flameShader.set(param, value)
+            NEON -> flameShader.set(param, value)
         }
     }
 
