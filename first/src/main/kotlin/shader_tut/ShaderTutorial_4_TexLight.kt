@@ -6,13 +6,18 @@ import processing.core.PImage
 import processing.core.PShape
 import processing.opengl.PShader
 
-// https://processing.org/tutorials/pshader/ (Texture shaders)
+// https://processing.org/tutorials/pshader/ (Texture+Light shaders)
+
+// combines last 2 examples
+
+// Note that a texlight cannot be used to render a scene only with textures or only with lights,
+// in those cases either a texture or light shader will be needed.
 
 fun main(args: Array<String>) {
-    ShaderTutorial_2_Tex().run()
+    ShaderTutorial_4_TexLight().run()
 }
 
-class ShaderTutorial_2_Tex : PApplet() {
+class ShaderTutorial_4_TexLight : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)
@@ -20,22 +25,28 @@ class ShaderTutorial_2_Tex : PApplet() {
 
     lateinit var can: PShape
     var angle: Float = 0f
-    lateinit var texShader: PShader
+    lateinit var vertTexLightShader: PShader
+    lateinit var pixTexLightShader: PShader
     lateinit var label: PImage
-
+    lateinit var currentTexLightShader: PShader
     override fun setup() {
         size(640, 360, P3D)
-        texShader = loadShader(
-            "${BASE_RESOURCES}/shader_tut/textFrag_2.glsl",
-            "${BASE_RESOURCES}/shader_tut/textVert_2.glsl"
+        vertTexLightShader = loadShader(
+            "${BASE_RESOURCES}/shader_tut/vertTexLightFrag_4.glsl",
+            "${BASE_RESOURCES}/shader_tut/vertTexLightVert_4.glsl"
         )
-        label = loadImage("${BASE_RESOURCES}/shader_tut/tex_2.jpg")
-        can = createCan(100f, 200f, 32)
+        pixTexLightShader = loadShader(
+            "${BASE_RESOURCES}/shader_tut/pixelTexLightFrag_4.glsl",
+            "${BASE_RESOURCES}/shader_tut/pixelTexLightVert_4.glsl"
+        )
+        currentTexLightShader = vertTexLightShader
+        label = loadImage("${BASE_RESOURCES}/shader_tut/tex_4.jpg")
+        can = createCan(100f, 200f, 8)
     }
 
     override fun draw() {
         background(0)
-        shader(texShader)
+        shader(currentTexLightShader)
         translate(width / 2f, height / 2f)
         rotateY(angle)
 
@@ -60,6 +71,16 @@ class ShaderTutorial_2_Tex : PApplet() {
         }
         sh.endShape()
         return sh
+    }
+
+    override fun keyPressed() {
+        if (currentTexLightShader == vertTexLightShader) {
+            currentTexLightShader = pixTexLightShader
+            println("Using pixLightShader")
+        } else {
+            currentTexLightShader = vertTexLightShader
+            println("Using vertLightShader")
+        }
     }
 
     companion object {

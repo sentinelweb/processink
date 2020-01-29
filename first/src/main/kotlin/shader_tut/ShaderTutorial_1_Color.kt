@@ -47,7 +47,7 @@ class ShaderTutorial : PApplet() {
         sh.beginShape(QUAD_STRIP)
         sh.fill(255f, 255f, 0f)
         sh.noStroke()
-        for (i in 0..detail - 1) {
+        for (i in 0..detail) {
             angle = TWO_PI / detail
             val x = sin(i * angle)
             val z = cos(i * angle)
