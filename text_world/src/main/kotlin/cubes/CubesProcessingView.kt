@@ -131,10 +131,10 @@ class CubesProcessingView : PApplet(), CubesContract.View {
         }
     }
 
-    private fun draw(buddah1: PShape) {
+    private fun draw(shape: PShape) {
         val size = 100f
-        (buddah1.getWidth() / buddah1.getHeight() * size)
-            .let { shape(buddah1, -it / 2f, -size / 2f, it, size) }
+        (shape.getWidth() / shape.getHeight() * size)
+            .let { shape(shape, -it / 2f, -size / 2f, it, size) }
     }
 
     override fun setShaderType(type: ShaderType) {

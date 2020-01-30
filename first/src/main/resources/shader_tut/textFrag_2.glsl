@@ -11,6 +11,7 @@ varying vec4 vertTexCoord;
 //void main() {
 //    gl_FragColor = texture2D(texture, vertTexCoord.st) * vertColor;
 //}
+
 // Implementing a pixelate effect becomes very easy at the level of the fragment shader.
 // All we need to do is to modify the texture coordinate values, vertTexCoord.st, so that they
 // are binned within a given number of cells, in this case 50:
