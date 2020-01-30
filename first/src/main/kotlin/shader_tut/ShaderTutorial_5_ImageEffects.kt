@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
     ShaderTutorial_5_ImageEffects().run()
 }
 
-class ShaderTutorial_5_ImageEffects : PApplet() {
+private class ShaderTutorial_5_ImageEffects : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)

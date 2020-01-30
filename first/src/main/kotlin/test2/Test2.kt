@@ -10,12 +10,12 @@ fun main(args: Array<String>) {
     Test2().run()
 }
 
-class Test2 : PApplet() {
+private class Test2 : PApplet() {
 
     companion object {
-        val MOVIE_PATH  = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
-        val SPRITE_PATH  = "${System.getProperty("user.home")}/Documents/Processing/sketch_191031a/data/sprite.png"
-        val LIB_PATH  = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
+        val MOVIE_PATH = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
+        val SPRITE_PATH = "${System.getProperty("user.home")}/Documents/Processing/sketch_191031a/data/sprite.png"
+        val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
     }
 
     private lateinit var f: PFont

@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
     ShaderTutorial_6_AllTogether().run()
 }
 
-class ShaderTutorial_6_AllTogether : PApplet() {
+private class ShaderTutorial_6_AllTogether : PApplet() {
 
     override fun settings() {
         size(480, 480, PConstants.P3D)

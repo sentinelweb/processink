@@ -8,10 +8,10 @@ import processing.opengl.PShader
 // https://processing.org/tutorials/pshader/ (Color shaders)
 
 fun main(args: Array<String>) {
-    ShaderTutorial().run()
+    ShaderTutorial_1_Color().run()
 }
 
-class ShaderTutorial : PApplet() {
+private class ShaderTutorial_1_Color : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)

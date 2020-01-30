@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
     ShaderTutorial_4_TexLight().run()
 }
 
-class ShaderTutorial_4_TexLight : PApplet() {
+private class ShaderTutorial_4_TexLight : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)

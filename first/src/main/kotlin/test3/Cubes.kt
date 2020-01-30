@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
     Test3().run()
 }
 
-class Test3 : PApplet() {
+private class Test3 : PApplet() {
     lateinit var lineShader: PShader
     val cubes = mutableListOf<Cubey>()
 

@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
     ShaderTutorial_2_Tex().run()
 }
 
-class ShaderTutorial_2_Tex : PApplet() {
+private class ShaderTutorial_2_Tex : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)

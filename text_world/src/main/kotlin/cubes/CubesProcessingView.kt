@@ -23,7 +23,7 @@ fun main() {
     cubes.run()
 }
 
-class CubesProcessingView : PApplet(), CubesContract.View {
+private class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var nebulaShader: NebulaShader
     private lateinit var flameShader: FlameShader

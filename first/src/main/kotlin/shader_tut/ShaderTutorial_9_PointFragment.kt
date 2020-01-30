@@ -1,29 +1,30 @@
-package test4
+package shader_tut
 
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.opengl.PShader
-// https://processing.org/tutorials/pshader/ (2nd last)
+
+
+// https://processing.org/tutorials/pshader/ (Point and line shaders 10.3)
 
 fun main(args: Array<String>) {
-    Test4().run()
+    ShaderTutorial_9_PointFragment().run()
 }
 
-private class Test4 : PApplet() {
-    lateinit var pointShader: PShader
+private class ShaderTutorial_9_PointFragment : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)
     }
 
+    lateinit var pointShader: PShader
+
     override fun setup() {
 
-        pointShader = loadShader(
-            "$BASE_RESOURCES/test4/pointfrag.glsl",
-            "$BASE_RESOURCES/test4/pointvert.glsl"
-        )
+        pointShader = loadShader("${BASE}pointFrag_9.glsl", "${BASE}pointVert_9.glsl")
         pointShader.set("sharpness", 0.9f)
-        strokeCap(PConstants.SQUARE)
+
+        strokeCap(SQUARE)
         background(0)
     }
 
@@ -39,7 +40,7 @@ private class Test4 : PApplet() {
     }
 
     companion object {
-        private var BASE_RESOURCES = "${System.getProperty("user.dir")}/first/src/main/resources"
+        private var BASE = "${System.getProperty("user.dir")}/first/src/main/resources/shader_tut/"
     }
 
     fun run() {

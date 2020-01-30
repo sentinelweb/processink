@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
     ShaderTutorial_3_Light().run()
 }
 
-class ShaderTutorial_3_Light : PApplet() {
+private class ShaderTutorial_3_Light : PApplet() {
 
     override fun settings() {
         size(640, 360, PConstants.P3D)
