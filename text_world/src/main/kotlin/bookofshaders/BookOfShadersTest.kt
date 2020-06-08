@@ -13,13 +13,13 @@ class BookOfShadersTest : PApplet() {
     private lateinit var  shader: PShader
 
     override fun settings() {
-        size(720, 720, PConstants.P3D)
+        size(1280, 720, PConstants.P3D)
     }
 
     override fun setup() {
         noStroke()
 
-        shader = loadShader("$BASE_RESOURCES/shadertoy/st_neon.glsl")
+        shader = loadShader("$BASE_RESOURCES/shadertoy/st_spaceGif_orig.glsl")
     }
 
     override fun draw() {
