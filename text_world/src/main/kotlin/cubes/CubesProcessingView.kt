@@ -23,7 +23,7 @@ fun main() {
     cubes.run()
 }
 
-private class CubesProcessingView : PApplet(), CubesContract.View {
+/*private*/ class CubesProcessingView : PApplet(), CubesContract.View {
     private lateinit var lineShader: LineShader
     private lateinit var nebulaShader: NebulaShader
     private lateinit var flameShader: FlameShader
@@ -35,7 +35,7 @@ private class CubesProcessingView : PApplet(), CubesContract.View {
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
-    private lateinit var buddah: PShape
+    private lateinit var yinyang: PShape
     private lateinit var lotus: PShape
 
     lateinit var cubesState: CubesState
@@ -43,7 +43,7 @@ private class CubesProcessingView : PApplet(), CubesContract.View {
     fun getInfo() = PAppletInfo(width, height)
 
     override fun settings() {
-        size(1280, 720, PConstants.P3D)
+        size(1920, 1080, PConstants.P3D)
     }
 
     override fun setup() {
@@ -92,10 +92,10 @@ private class CubesProcessingView : PApplet(), CubesContract.View {
         ribbons = Ribbons(this)
         ribbons.setup()
         cubesPresenter.setup()
-        buddah = loadShape("${BASE_RESOURCES}/cubes/faith.svg")
-        buddah.setStroke(webc("#FAC103"))
-        buddah.setFill(webc("#FFF63E"))
-        buddah.setStroke(true)
+        yinyang = loadShape("${BASE_RESOURCES}/cubes/faith.svg")
+        yinyang.setStroke(webc("#aaaaaa"))
+        yinyang.setFill(webc("#dddddd"))
+        yinyang.setStroke(true)
         lotus = loadShape("${BASE_RESOURCES}/cubes/lotus.svg")
         lotus.setStroke(webc("#384FA0"))
         lotus.setFill(webc("#6C8DFF"))
@@ -117,16 +117,19 @@ private class CubesProcessingView : PApplet(), CubesContract.View {
         cubesState.cubeList.draw()
         resetShader() // doesn't work?
 
-        ribbons.draw()
+        // ribbons.draw()
 
         cubesState.textList.draw()
 
         pushMatrix {
-            translate(width / 3f, height / 2f)
-            draw(buddah)
+            translate(width / 5f, height / 2f)
+            scale(3f)
+
+            draw(yinyang)
         }
         pushMatrix {
-            translate(width / 3f * 2, height / 2f)
+            translate(width / 5f * 4, height / 2f)
+            scale(3f)
             draw(lotus)
         }
     }
