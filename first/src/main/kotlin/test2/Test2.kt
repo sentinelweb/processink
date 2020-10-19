@@ -10,11 +10,12 @@ fun main(args: Array<String>) {
     Test2().run()
 }
 
-private class Test2 : PApplet() {
+class Test2 : PApplet() {
 
     companion object {
-        val MOVIE_PATH = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
-        val SPRITE_PATH = "${System.getProperty("user.home")}/Documents/Processing/sketch_191031a/data/sprite.png"
+        private val BASE_RESOURCES = "${System.getProperty("user.dir")}/first/src/main/resources"
+        var MOVIE_PATH = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
+        private val SPRITE_PATH = "${BASE_RESOURCES}/test2/sprite.jpg"
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
     }
 
@@ -57,6 +58,7 @@ private class Test2 : PApplet() {
     override fun draw() {
         background(0)
         fill(255f, 204f, 0f)
+        myMovie.volume(0.0f)
         image(myMovie, 0f, 0f)
         ps.update()
         ps.display()
@@ -66,6 +68,7 @@ private class Test2 : PApplet() {
 
     // Called every time a new frame is available to read
     // setup via reflection .. tsk tsk
+    // needs class to be public to access method
     fun movieEvent(m: Movie) {
         m.read()
     }
@@ -73,4 +76,5 @@ private class Test2 : PApplet() {
     fun run() {
         runSketch(arrayOf(this::class.java.simpleName), this)
     }
+
 }

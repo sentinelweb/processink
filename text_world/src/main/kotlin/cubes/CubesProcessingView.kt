@@ -69,7 +69,7 @@ fun main() {
 
         cubesState = CubesState(
             textList = textList,
-            cubeList = CubeList(this, textList.texts.size, 50f, 400f).apply { visible = false },
+            cubeList = CubeList(this, textList.texts.size, 50f, 400f).apply { visible = true },
             rotationSpeed = 0.001f,
             animationTime = 2000f,
             info = getInfo(),
