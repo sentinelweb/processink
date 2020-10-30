@@ -35,6 +35,9 @@ dependencies {
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
 
+    // https://gitlab.com/dheid/fontchooser
+    implementation 'org.drjekyll:fontchooser:2.4'
+
     runtime files("$processing_native_lib_path")
 
     testCompile group: 'junit', name: 'junit', version: '4.12'

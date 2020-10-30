@@ -25,7 +25,7 @@ class Test2 : PApplet() {
     private lateinit var sprite: PImage
 
     init {
-        // https://forum.processing.org/two/discussion/7593/processing-2-2-1-in-maven
+         // https://forum.processing.org/two/discussion/7593/processing-2-2-1-in-maven
          System.setProperty("jna.library.path", "$LIB_PATH/")
          System.setProperty("gstreamer.library.path", "$LIB_PATH/")
          System.setProperty("gstreamer.plugin.path", "$LIB_PATH/plugins/")
