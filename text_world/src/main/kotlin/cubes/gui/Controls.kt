@@ -15,7 +15,6 @@ import java.awt.event.ActionEvent
 import javax.swing.*
 import kotlin.math.ln
 
-
 fun main() {
     Controls()
         .showWindow()

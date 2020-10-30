@@ -38,6 +38,10 @@ dependencies {
     // https://gitlab.com/dheid/fontchooser
     implementation 'org.drjekyll:fontchooser:2.4'
 
+    // use coroutines
+    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
+    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
+
     runtime files("$processing_native_lib_path")
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
