@@ -1,4 +1,5 @@
 rootProject.name = 'processink'
 include 'first'
 include 'text_world'
+include 'speecher'
 
