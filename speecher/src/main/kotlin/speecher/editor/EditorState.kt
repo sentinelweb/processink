@@ -12,5 +12,4 @@ data class EditorState(
     var srtWrite: Subtitles? = null,
     var movieDurationSec: Float? = null,
     var moviePositionSec: Float? = null
-
 )

@@ -15,6 +15,7 @@ import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import javax.swing.*
 
+
 fun main() {
     val view = TransportView()
     TransportPresenter(view, TransportState(), TimeFormatter())
@@ -60,9 +61,21 @@ class TransportView() : TransportContract.View {
                                 "Mute"
                             }
                         }
+                        VOLUME -> controlPanel.volumeSlider.value =
+                            (it.data as Float * controlPanel.volumeSlider.maximum).toInt()
                         SPEED -> controlPanel.speedLabel.text = "x ${it.data as Float}"
                         POSITION -> controlPanel.positionLabel.text = it.data as String
+                        POSITION_SLIDER -> {
+                            val listener = controlPanel.positionSlider.changeListeners[0]
+                            controlPanel.positionSlider.removeChangeListener(listener)
+                            controlPanel.positionSlider.value =
+                                (it.data as Float * controlPanel.positionSlider.maximum).toInt()
+                            controlPanel.positionSlider.addChangeListener(listener)
+                        }
                         DURATION -> controlPanel.durationLabel.text = it.data as String
+                        TITLE -> controlPanel.titleMovieLabel.text = it.data as String
+                        READ_SRT -> controlPanel.titleSrtReadLabel.text = it.data as String
+                        WRITE_SRT -> controlPanel.titleSrtWriteLabel.text = it.data as String
                         else -> println("Not implemented : ${it.uiDataType}")
                     }
                 }, {
@@ -89,6 +102,8 @@ class TransportView() : TransportContract.View {
         val muteButton: JToggleButton
         val positionLabel: JLabel
         val durationLabel: JLabel
+        val volumeSlider: JSlider
+        val positionSlider: JSlider
 
         init {
             preferredSize = Dimension(1024, 250)
@@ -102,7 +117,7 @@ class TransportView() : TransportContract.View {
                     preferredSize = Dimension(900, 80)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
 
-                    add(JButton("|<").setup { events.onNext(UiEvent(LAST)) })
+                    //add(JButton("|<").setup { events.onNext(UiEvent(LAST)) })
                     add(JButton("<<").setup { events.onNext(UiEvent(REW)) })
                     playButton = JButton(">")
                         .setup { events.onNext(UiEvent(PLAY)) }
@@ -112,22 +127,27 @@ class TransportView() : TransportContract.View {
                         .let { add(it); it }
                         .let { it.isVisible = false; it }
                     add(JButton(">>").setup { events.onNext(UiEvent(FWD)) })
-                    add(JButton(">|").setup { events.onNext(UiEvent(NEXT)) })
+                    //add(JButton(">|").setup { events.onNext(UiEvent(NEXT)) })
+
+                    add(JToggleButton("loop").setup {
+                        events.onNext(UiEvent(LOOP))
+                    })
                     speedLabel = JLabel("x 1")
                         .let { add(it); it }
                 })
 
-                add(
-                    JSlider(0, 1E6.toInt())
-                        .setup(0, -1, -1, false) {
-                            val source = it.source as JSlider
-                            events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
-                        }.wrapWithLabel("Position")
-                )
+                positionSlider = JSlider(0, 1E6.toInt())
+                    .setup(0, -1, -1, false) {
+                        val source = it.source as JSlider
+                        //if (!source.getValueIsAdjusting()) {
+                        events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
+                        //}
+                    }
+                    .let { add(it.wrapWithLabel("Position")); it }
 
                 add(
                     JSlider(-1000000, 1000000)
-                        .setup(0, -1, -1, false) {
+                        .setup(null, -1, -1, false) {
                             val source = it.source as JSlider
                             events.onNext(UiEvent(FINE_SEEK, source.value.toFloat() / source.maximum))
 
@@ -157,21 +177,21 @@ class TransportView() : TransportContract.View {
                 layout = GridLayout(1, -1)
                 titledBorder("VOLUME")
 
-                add(JSlider(JSlider.VERTICAL, 0, 100, 100)
-                    .setup(0, -1, -1, false) {
+                volumeSlider = JSlider(JSlider.VERTICAL, 0, 100, 100)
+                    .setup(null, -1, -1, false) {
                         val source = it.source as JSlider
                         source.orientation = JSlider.VERTICAL
                         //source.size = Dimension(20,200)
                         source.preferredSize = Dimension(20, 200)
                         events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
-                    })
+                    }.let { add(it); it }
 
                 muteButton = JToggleButton("Mute")
                     .setup {
                         val source = it.source as JToggleButton
                         events.onNext(UiEvent(MUTE, source.isSelected))
                     }
-                    .let { add(it) } as JToggleButton
+                    .let { add(it); it }
 
             }, BorderLayout.EAST)
         }

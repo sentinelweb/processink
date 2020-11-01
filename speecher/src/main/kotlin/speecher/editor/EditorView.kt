@@ -97,6 +97,7 @@ class EditorView() : PApplet(), EditorContract.View {
                 (width / movieAspect)
             )
             presenter.duration(movie.duration())
+            presenter.movieInitialised()
         }
         presenter.position(movie.time())
     }

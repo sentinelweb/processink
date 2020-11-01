@@ -38,8 +38,6 @@ class EditorPresenter constructor(
                 view.pause()
             }
             MUTE -> Unit
-            FWD -> Unit
-            REW -> Unit
             SEEK -> {
                 state.movieDurationSec?.apply { view.seekTo((uiEvent.data as Float) * this) }
             }
@@ -81,7 +79,6 @@ class EditorPresenter constructor(
     override fun speed(speed: Float) {
         view.setMovieSpeed(speed)
     }
-
     // endregion
 
     // region Presenter
@@ -97,6 +94,10 @@ class EditorPresenter constructor(
 
     override fun setPlayState(mode: TransportContract.UiDataType) {
         transport.setPlayState(mode)
+    }
+
+    override fun movieInitialised() {
+        transport.updateState()
     }
     // endregion
 

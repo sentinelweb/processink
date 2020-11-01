@@ -8,7 +8,7 @@ import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeEvent
 
 fun JSlider.setup(
-    initial: Int,
+    initial: Int?,
     minor: Int,
     major: Int,
     paintTicks: Boolean = false,
@@ -20,7 +20,7 @@ fun JSlider.setup(
     setPaintTicks(paintTicks)
     setPaintLabels(true)
     addChangeListener(change)
-    value = initial
+    initial?.let { value = it }
     return this
 }
 

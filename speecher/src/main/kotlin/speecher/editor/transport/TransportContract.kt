@@ -30,6 +30,8 @@ interface TransportContract {
         fun setDuration(dur: Float)
         fun setPosition(pos: Float)
         fun setPlayState(mode: UiDataType)
+        fun setVolume(volume: Float)
+        fun updateState()
     }
 
     interface StateListener {
@@ -48,6 +50,7 @@ interface TransportContract {
         REW,
         NEXT,
         LAST,
+        LOOP,
         SEEK,
         FINE_SEEK,
         VOLUME_CHANGED,
@@ -70,13 +73,16 @@ interface TransportContract {
 
     enum class UiDataType {
         TITLE, // String
+        READ_SRT,// String
+        WRITE_SRT,// String
         SPEED, // Int
         MODE_PLAYING, // boolean
         MODE_PAUSED, // boolean
-        VOLUME, // 0 .. 1
+        VOLUME, // 0f .. 1f
         MUTED, // boolean
         WORD, // String
         DURATION, // String
         POSITION, // String
+        POSITION_SLIDER // 0f .. 1f
     }
 }

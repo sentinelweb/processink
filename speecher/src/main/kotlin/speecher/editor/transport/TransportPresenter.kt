@@ -15,7 +15,6 @@ class TransportPresenter constructor(
     private val view: TransportContract.View,
     private val state: TransportState,
     private val timeFormatter: TimeFormatter
-
 ) : TransportContract.Presenter, TransportContract.External {
 
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -50,6 +49,7 @@ class TransportPresenter constructor(
         MUTE -> updates.onNext(UiData(MUTED, !(uiEvent.data as Boolean)))
         FWD -> speed *= 1.1f
         REW -> speed /= 1.1f
+        VOLUME_CHANGED -> state.volume = uiEvent.data as Float
         else -> println("event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
     }
 
@@ -65,17 +65,32 @@ class TransportPresenter constructor(
     }
 
     override fun setDuration(dur: Float) {
+        state.durSec = dur
         updates.onNext(UiData(DURATION, timeFormatter.formatTime(dur)))
     }
 
     override fun setPosition(pos: Float) {
+        state.posSec = pos
+        //if (System.currentTimeMillis() - state.positionLastUpdate > 250) {
         updates.onNext(UiData(POSITION, timeFormatter.formatTime(pos)))
+        updates.onNext(UiData(POSITION_SLIDER, state.posSec / state.durSec))
+        //    state.positionLastUpdate = System.currentTimeMillis()
+        //}
     }
 
     override fun setPlayState(mode: TransportContract.UiDataType) = when (mode) {
         MODE_PLAYING -> updates.onNext(UiData(MODE_PLAYING))
         MODE_PAUSED -> updates.onNext(UiData(MODE_PAUSED))
         else -> throw IllegalArgumentException("only MODE_PLAYING or MODE_PAUSED for setPlayState")
+    }
+
+    override fun setVolume(volume: Float) {
+        state.volume = volume
+    }
+
+    override fun updateState() {
+        listener.speed(state.speed)
+        updates.onNext(UiData(VOLUME, state.volume))
     }
 
     override fun setStateListener(listener: TransportContract.StateListener) {
