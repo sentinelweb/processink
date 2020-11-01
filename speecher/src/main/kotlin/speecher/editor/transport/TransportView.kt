@@ -6,6 +6,7 @@ import io.reactivex.subjects.Subject
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEvent
 import speecher.editor.transport.TransportContract.UiEventType.*
+import speecher.util.format.TimeFormatter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -16,19 +17,19 @@ import javax.swing.*
 
 fun main() {
     val view = TransportView()
-    view.presenter = TransportPresenter(view, TransportState())
-    view.showWindow()
+    TransportPresenter(view, TransportState(), TimeFormatter())
 }
 
 class TransportView() : TransportContract.View {
 
-    lateinit var presenter: TransportPresenter
+    override lateinit var presenter: TransportPresenter
     private lateinit var controlPanel: TransportPanel
     override val events: Subject<UiEvent> = BehaviorSubject.create()
+    override lateinit var component: JComponent
 
     private val disposables: CompositeDisposable = CompositeDisposable()
 
-    fun showWindow() {
+    override fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Controls")
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -59,9 +60,9 @@ class TransportView() : TransportContract.View {
                                 "Mute"
                             }
                         }
-                        SPEED -> {
-                            controlPanel.speedLabel.text = "x ${it.data as Int}"
-                        }
+                        SPEED -> controlPanel.speedLabel.text = "x ${it.data as Float}"
+                        POSITION -> controlPanel.positionLabel.text = it.data as String
+                        DURATION -> controlPanel.durationLabel.text = it.data as String
                         else -> println("Not implemented : ${it.uiDataType}")
                     }
                 }, {
@@ -73,18 +74,24 @@ class TransportView() : TransportContract.View {
             // Display the window.
             frame.pack()
             frame.isVisible = true
+
+            component = frame.rootPane
         }
     }
 
     inner class TransportPanel constructor() : JPanel() {
         val speedLabel: JLabel
-        val titleLabel: JLabel
+        val titleMovieLabel: JLabel
+        val titleSrtReadLabel: JLabel
+        val titleSrtWriteLabel: JLabel
         val playButton: JButton
         val pauseButton: JButton
         val muteButton: JToggleButton
+        val positionLabel: JLabel
+        val durationLabel: JLabel
 
         init {
-            preferredSize = Dimension(800, 150)
+            preferredSize = Dimension(1024, 250)
             layout = BorderLayout()
 
             add(JPanel().apply {
@@ -92,7 +99,7 @@ class TransportView() : TransportContract.View {
                 titledBorder("PLAY CONTROLS")
                 // east panel - shader
                 add(JPanel().apply {
-                    preferredSize = Dimension(400, 80)
+                    preferredSize = Dimension(900, 80)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
 
                     add(JButton("|<").setup { events.onNext(UiEvent(LAST)) })
@@ -110,30 +117,52 @@ class TransportView() : TransportContract.View {
                         .let { add(it); it }
                 })
 
-                add(JSlider(0, 1E6.toInt())
-                    .setup(0, -1, -1, false) {
-                        val source = it.source as JSlider
-                        events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
-                    })
+                add(
+                    JSlider(0, 1E6.toInt())
+                        .setup(0, -1, -1, false) {
+                            val source = it.source as JSlider
+                            events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
+                        }.wrapWithLabel("Position")
+                )
 
-                add(JSlider(-1000000, 1000000)
-                    .setup(0, -1, -1, false) {
-                        val source = it.source as JSlider
-                        events.onNext(UiEvent(FINE_SEEK, source.value.toFloat() / source.maximum))
+                add(
+                    JSlider(-1000000, 1000000)
+                        .setup(0, -1, -1, false) {
+                            val source = it.source as JSlider
+                            events.onNext(UiEvent(FINE_SEEK, source.value.toFloat() / source.maximum))
 
-                    })
-                titleLabel = JLabel("Title")
-                    .let { add(it); it }
+                        }.wrapWithLabel("Fine")
+                )
+
+                add(JPanel().apply {
+                    preferredSize = Dimension(900, 80)
+                    layout = BorderLayout()
+                    positionLabel = JLabel("00:00:00.000")
+                        .let { add(it, BorderLayout.WEST); it }
+                    durationLabel = JLabel("00:00:00.000")
+                        .let { add(it, BorderLayout.EAST); it }
+                })
+                titleMovieLabel = JLabel("Title")
+                    .let { add(it.wrapWithLabel("Movie")); it }
+
+                titleSrtReadLabel = JLabel("Read SRT")
+                    .let { add(it.wrapWithLabel("Read SRT")); it }
+
+                titleSrtWriteLabel = JLabel("Write SRT")
+                    .let { add(it.wrapWithLabel("Write SRT")); it }
 
             }, BorderLayout.CENTER)
 
             add(JPanel().apply {
-                layout = GridLayout(-1, 1)
+                layout = GridLayout(1, -1)
                 titledBorder("VOLUME")
 
                 add(JSlider(JSlider.VERTICAL, 0, 100, 100)
                     .setup(0, -1, -1, false) {
                         val source = it.source as JSlider
+                        source.orientation = JSlider.VERTICAL
+                        //source.size = Dimension(20,200)
+                        source.preferredSize = Dimension(20, 200)
                         events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
                     })
 
@@ -151,43 +180,62 @@ class TransportView() : TransportContract.View {
 
     fun addMenu(mainFrame: JFrame) {
         //create a menu bar
-        //create a menu bar
         val menuBar = JMenuBar()
 
         //create menus
-
-        //create menus
         val fileMenu = JMenu("File")
+        fileMenu.mnemonic = KeyEvent.VK_F
+        //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_DOWN_MASK)
         val editMenu = JMenu("Edit")
-
+        editMenu.mnemonic = KeyEvent.VK_E
+        //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
         //create menu items
-        val newMenuItem = JMenuItem("New")
-        newMenuItem.setMnemonic(KeyEvent.VK_N)
-        newMenuItem.actionCommand = "New"
+        val openMovieMenuItem = JMenuItem("Open Movie")
+        openMovieMenuItem.setMnemonic(KeyEvent.VK_M)
+        openMovieMenuItem.actionCommand = "Open"
 
-        val openMenuItem = JMenuItem("Open")
-        openMenuItem.actionCommand = "Open"
+        val openReadSrtMenuItem = JMenuItem("Open SRT Read")
+        openReadSrtMenuItem.setMnemonic(KeyEvent.VK_O)
+        openMovieMenuItem.actionCommand = "Open"
 
-        val saveMenuItem = JMenuItem("Save")
-        saveMenuItem.actionCommand = "Save"
+        val newSrtMenuItem = JMenuItem("New SRT Write")
+        newSrtMenuItem.setMnemonic(KeyEvent.VK_N)
+        newSrtMenuItem.actionCommand = "New"
+
+        val openWriteSrtMenuItem = JMenuItem("Open SRT Write")
+        openWriteSrtMenuItem.setMnemonic(KeyEvent.VK_W)
+        openMovieMenuItem.actionCommand = "Open"
+
+        val saveSrtMenuItem = JMenuItem("Save SRT")
+        saveSrtMenuItem.setMnemonic(KeyEvent.VK_S)
+        saveSrtMenuItem.actionCommand = "Save"
 
         val exitMenuItem = JMenuItem("Exit")
+        exitMenuItem.setMnemonic(KeyEvent.VK_X)
         exitMenuItem.actionCommand = "Exit"
 
         val cutMenuItem = JMenuItem("Cut")
+        cutMenuItem.setMnemonic(KeyEvent.VK_X)
+        cutMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK)
         cutMenuItem.actionCommand = "Cut"
 
         val copyMenuItem = JMenuItem("Copy")
+        copyMenuItem.setMnemonic(KeyEvent.VK_C)
+        copyMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK)
         copyMenuItem.actionCommand = "Copy"
 
         val pasteMenuItem = JMenuItem("Paste")
+        pasteMenuItem.setMnemonic(KeyEvent.VK_V)
+        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
         pasteMenuItem.actionCommand = "Paste"
 
         // val sysMenuItemListener = SysOutMenuItemListener()
 
-        newMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_NEW))
-        openMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN))
-        saveMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_SAVE))
+        openMovieMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_MOVIE))
+        newSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_NEW_SRT_WRITE))
+        openReadSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_SRT_READ))
+        openWriteSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_SRT_WRITE))
+        saveSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_SAVE_SRT))
         exitMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_EXIT))
 
         cutMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_CUT))
@@ -195,9 +243,13 @@ class TransportView() : TransportContract.View {
         pasteMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_PASTE))
 
         //add menu items to menus
-        fileMenu.add(newMenuItem)
-        fileMenu.add(openMenuItem)
-        fileMenu.add(saveMenuItem)
+        fileMenu.add(openMovieMenuItem)
+        fileMenu.addSeparator()
+        fileMenu.add(openReadSrtMenuItem)
+        fileMenu.addSeparator()
+        fileMenu.add(newSrtMenuItem)
+        fileMenu.add(openWriteSrtMenuItem)
+        fileMenu.add(saveSrtMenuItem)
         fileMenu.addSeparator()
         fileMenu.add(exitMenuItem)
 

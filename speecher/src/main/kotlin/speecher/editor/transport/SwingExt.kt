@@ -55,6 +55,8 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         add(JLabel(label).apply {
             preferredSize = Dimension(labelWidth, 20)
+            border = EmptyBorder(0, 0, 0, 10)
+
         })
         add(this@wrapWithLabel)
         return this
