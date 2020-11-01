@@ -10,6 +10,7 @@ interface EditorContract {
         fun position(pos: Float)
         fun setPlayState(mode: TransportContract.UiDataType)
         fun movieInitialised()
+        fun initialise()
     }
 
     interface View {

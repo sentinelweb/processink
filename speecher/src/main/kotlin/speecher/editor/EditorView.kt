@@ -1,39 +1,36 @@
 package speecher.editor
 
+import org.koin.core.KoinComponent
+import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+import org.koin.ext.getOrCreateScope
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
 import processing.video.Movie
+import speecher.di.Modules
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
 import speecher.editor.transport.TransportState
 import speecher.editor.transport.TransportView
-import speecher.interactor.srt.SrtFileReader
-import speecher.interactor.srt.SrtFileWriter
-import speecher.interactor.srt.SrtInteractor
-import speecher.interactor.srt.SrtMapper
-import speecher.util.format.TimeFormatter
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 import java.io.File
 
 fun main() {
-    val view = EditorView()
-    val transport = TransportPresenter(TransportView(), TransportState(), TimeFormatter())
-    view.presenter = EditorPresenter(
-        view,
-        EditorState(),
-        transport,
-        SrtInteractor(
-            SrtFileReader(SrtMapper()), SrtFileWriter(SrtMapper())
-        )
-    )
-    view.run()
+    startKoin {
+        modules(Modules.allModules)
+    }
+    EditorView().run()
 }
 
-class EditorView() : PApplet(), EditorContract.View {
+class EditorView() : PApplet(), EditorContract.View, KoinComponent {
 
-    lateinit var presenter: EditorPresenter
+    private val scope = this.getOrCreateScope()
+    private val presenter: EditorContract.Presenter =
+        scope.get() //by lazy{scope.get<EditorContract.Presenter>()} <-- lazy creates in Wrong thread
+
     private lateinit var f: PFont
     private lateinit var movie: Movie
     private var movieDimension: Dimension? = null
@@ -64,19 +61,16 @@ class EditorView() : PApplet(), EditorContract.View {
         textSize(24f)
         textAlign(PConstants.CENTER, PConstants.CENTER)
 
-        println("MOVIE_PATH : $MOVIE_PATH")
-
-        movie = Movie(this, MOVIE_PATH)
-        movie.play()
-        presenter.setPlayState(TransportContract.UiDataType.MODE_PLAYING)
-        println("FR: ${movie.frameRate} W:${movie.width} H:${movie.height}")
+        presenter.initialise()
     }
 
     override fun draw() {
         background(0)
         fill(255f, 255f, 255f)
-        screenRect?.apply {
-            image(movie, x, y, width, height)
+        if (this::movie.isInitialized) {
+            screenRect?.apply {
+                image(movie, x, y, width, height)
+            }
         }
         text("Subtitle", width / 2f, height - 50f)
     }
@@ -152,6 +146,18 @@ class EditorView() : PApplet(), EditorContract.View {
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
 
         //var MOVIE_PATH = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
+
+        @JvmStatic
+        val viewModule = module {
+            scope(named<EditorView>()) {
+                scoped<EditorContract.View> { getSource() }
+                scoped<EditorContract.Presenter> { EditorPresenter(get(), get(), get(), get()) }
+                scoped<TransportContract.External> { TransportPresenter(get(), get(), get()) }
+                scoped<TransportContract.View> { TransportView() }
+                scoped { TransportState() }
+                scoped { EditorState() }
+            }
+        }
     }
 
 
