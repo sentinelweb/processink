@@ -17,8 +17,7 @@ import javax.swing.*
 
 
 fun main() {
-    val view = TransportView()
-    TransportPresenter(view, TransportState(), TimeFormatter())
+    TransportPresenter(TransportView(), TransportState(), TimeFormatter())
 }
 
 class TransportView() : TransportContract.View {
@@ -32,7 +31,7 @@ class TransportView() : TransportContract.View {
 
     override fun showWindow() {
         SwingUtilities.invokeLater {
-            val frame = JFrame("Controls")
+            val frame = JFrame("Transport")
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
             controlPanel = TransportPanel()
@@ -92,7 +91,7 @@ class TransportView() : TransportContract.View {
         }
     }
 
-    inner class TransportPanel constructor() : JPanel() {
+    inner class TransportPanel : JPanel() {
         val speedLabel: JLabel
         val titleMovieLabel: JLabel
         val titleSrtReadLabel: JLabel
@@ -198,7 +197,7 @@ class TransportView() : TransportContract.View {
 
     }
 
-    fun addMenu(mainFrame: JFrame) {
+    private fun addMenu(mainFrame: JFrame) {
         //create a menu bar
         val menuBar = JMenuBar()
 
@@ -211,41 +210,41 @@ class TransportView() : TransportContract.View {
         //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
         //create menu items
         val openMovieMenuItem = JMenuItem("Open Movie")
-        openMovieMenuItem.setMnemonic(KeyEvent.VK_M)
+        openMovieMenuItem.mnemonic = KeyEvent.VK_M
         openMovieMenuItem.actionCommand = "Open"
 
         val openReadSrtMenuItem = JMenuItem("Open SRT Read")
-        openReadSrtMenuItem.setMnemonic(KeyEvent.VK_O)
+        openReadSrtMenuItem.mnemonic = KeyEvent.VK_O
         openMovieMenuItem.actionCommand = "Open"
 
         val newSrtMenuItem = JMenuItem("New SRT Write")
-        newSrtMenuItem.setMnemonic(KeyEvent.VK_N)
+        newSrtMenuItem.mnemonic = KeyEvent.VK_N
         newSrtMenuItem.actionCommand = "New"
 
         val openWriteSrtMenuItem = JMenuItem("Open SRT Write")
-        openWriteSrtMenuItem.setMnemonic(KeyEvent.VK_W)
+        openWriteSrtMenuItem.mnemonic = KeyEvent.VK_W
         openMovieMenuItem.actionCommand = "Open"
 
         val saveSrtMenuItem = JMenuItem("Save SRT")
-        saveSrtMenuItem.setMnemonic(KeyEvent.VK_S)
+        saveSrtMenuItem.mnemonic = KeyEvent.VK_S
         saveSrtMenuItem.actionCommand = "Save"
 
         val exitMenuItem = JMenuItem("Exit")
-        exitMenuItem.setMnemonic(KeyEvent.VK_X)
+        exitMenuItem.mnemonic = KeyEvent.VK_X
         exitMenuItem.actionCommand = "Exit"
 
         val cutMenuItem = JMenuItem("Cut")
-        cutMenuItem.setMnemonic(KeyEvent.VK_X)
+        cutMenuItem.mnemonic = KeyEvent.VK_X
         cutMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK)
         cutMenuItem.actionCommand = "Cut"
 
         val copyMenuItem = JMenuItem("Copy")
-        copyMenuItem.setMnemonic(KeyEvent.VK_C)
+        copyMenuItem.mnemonic = KeyEvent.VK_C
         copyMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK)
         copyMenuItem.actionCommand = "Copy"
 
         val pasteMenuItem = JMenuItem("Paste")
-        pasteMenuItem.setMnemonic(KeyEvent.VK_V)
+        pasteMenuItem.mnemonic = KeyEvent.VK_V
         pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
         pasteMenuItem.actionCommand = "Paste"
 
@@ -285,13 +284,16 @@ class TransportView() : TransportContract.View {
         mainFrame.setJMenuBar(menuBar)
     }
 
+    @Suppress("unused")
     internal class SysOutMenuItemListener : ActionListener {
         override fun actionPerformed(e: ActionEvent) {
-            println(e.getActionCommand().toString() + " JMenuItem clicked.")
+            println("${e.actionCommand} JMenuItem clicked.")
         }
     }
 
-    inner class EventMenuItemListener constructor(val ev: TransportContract.UiEventType) : ActionListener {
+    inner class EventMenuItemListener constructor(
+        private val ev: TransportContract.UiEventType
+    ) : ActionListener {
         override fun actionPerformed(e: ActionEvent) {
             events.onNext(UiEvent(ev, null))
         }
