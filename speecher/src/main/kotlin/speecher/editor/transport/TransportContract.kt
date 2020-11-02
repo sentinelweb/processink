@@ -25,13 +25,15 @@ interface TransportContract {
         fun events(): Observable<UiEvent>
         fun setTitle(title: String)
         fun setStateListener(listener: StateListener)
-        fun showOpenDialog(title: String, chosen: (File) -> Unit)
-        fun showSaveDialog(title: String, chosen: (File) -> Unit)
+        fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
+        fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
         fun setDuration(dur: Float)
         fun setPosition(pos: Float)
         fun setPlayState(mode: UiDataType)
         fun setVolume(volume: Float)
         fun updateState()
+        fun setSrtReadTitle(name: String)
+        fun setSrtWriteTitle(name: String)
     }
 
     interface StateListener {

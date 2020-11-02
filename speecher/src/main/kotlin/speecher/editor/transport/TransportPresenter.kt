@@ -93,14 +93,23 @@ class TransportPresenter constructor(
         updates.onNext(UiData(VOLUME, state.volume))
     }
 
+    override fun setSrtReadTitle(name: String) {
+        updates.onNext(UiData(READ_SRT, name))
+    }
+
+    override fun setSrtWriteTitle(name: String) {
+        updates.onNext(UiData(WRITE_SRT, name))
+    }
+
     override fun setStateListener(listener: TransportContract.StateListener) {
         this.listener = listener
     }
 
-    override fun showOpenDialog(title: String, chosen: (File) -> Unit) {
+    override fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
         JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir.let { currentDirectory = it }
             val result = showOpenDialog(view.component)
             if (result == JFileChooser.APPROVE_OPTION) {
                 chosen(selectedFile)
@@ -108,10 +117,11 @@ class TransportPresenter constructor(
         }
     }
 
-    override fun showSaveDialog(title: String, chosen: (File) -> Unit) {
+    override fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
         JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir.let { currentDirectory = it }
             val result = showSaveDialog(view.component)
             if (result == JFileChooser.APPROVE_OPTION) {
                 chosen(selectedFile)
