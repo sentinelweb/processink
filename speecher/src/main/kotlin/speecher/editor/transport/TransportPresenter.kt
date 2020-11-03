@@ -47,12 +47,15 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
         )
     }
 
-    private fun processEvent(uiEvent: TransportContract.UiEvent) = when (uiEvent.uiEventType) {
-        MUTE -> updates.onNext(UiData(MUTED, !(uiEvent.data as Boolean)))
-        FWD -> speed *= 1.1f
-        REW -> speed /= 1.1f
-        VOLUME_CHANGED -> state.volume = uiEvent.data as Float
-        else -> println("event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
+    private fun processEvent(uiEvent: TransportContract.UiEvent) {
+        println("event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
+        when (uiEvent.uiEventType) {
+            MUTE -> state.muted = uiEvent.data as Boolean
+            FWD -> speed *= 1.1f
+            REW -> speed /= 1.1f
+            VOLUME_CHANGED -> state.volume = uiEvent.data as Float
+            else -> Unit
+        }
     }
 
     // region Presenter
@@ -105,6 +108,10 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
 
     override fun showWindow() {
         view.showWindow()
+    }
+
+    override fun setLooping(looping: Boolean) {
+        updates.onNext(UiData(TransportContract.UiDataType.LOOP, state.loop))
     }
 
     override fun setStateListener(listener: TransportContract.StateListener) {

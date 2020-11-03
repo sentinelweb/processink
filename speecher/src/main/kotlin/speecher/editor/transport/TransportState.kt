@@ -7,5 +7,8 @@ data class TransportState(
     var muted: Boolean = false,
     var posSec: Float = 0.0f,
     var durSec: Float = 0.0f,
-    var positionLastUpdate: Long = 0
-)
+    var positionLastUpdate: Long = 0,
+    var loop: Boolean = false
+) {
+
+}

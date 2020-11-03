@@ -5,9 +5,10 @@ import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.koin.core.context.startKoin
 import speecher.di.Modules
+import speecher.editor.transport.TransportContract.*
 import speecher.editor.transport.TransportContract.UiDataType.*
-import speecher.editor.transport.TransportContract.UiEvent
 import speecher.editor.transport.TransportContract.UiEventType.*
+import speecher.editor.util.isSelected
 import speecher.editor.util.setup
 import speecher.editor.util.titledBorder
 import speecher.editor.util.wrapWithLabel
@@ -51,6 +52,7 @@ class TransportView(
 
             addMenu(frame)
             frame.add(controlPanel)
+            controlPanel.updateUI()
 
             disposables.add(
                 presenter.updateObservable.subscribe({
@@ -63,16 +65,16 @@ class TransportView(
                             controlPanel.playButton.isVisible = true
                             controlPanel.pauseButton.isVisible = false
                         }
-                        MUTED -> {
-                            val muted = it.data as Boolean
-                            println("Muted: $muted")
-                            controlPanel.muteButton.isSelected = muted
-                            controlPanel.muteButton.text = if (muted) {
-                                "Muted"
-                            } else {
-                                "Mute"
-                            }
-                        }
+//                        MUTED -> {
+//                            val muted = it.data as Boolean
+//                            println("Muted: $muted")
+//                            controlPanel.muteButton.isSelected = muted
+//                            controlPanel.muteButton.text = if (muted) {
+//                                "Muted"
+//                            } else {
+//                                "Mute"
+//                            }
+//                        }
                         VOLUME -> controlPanel.volumeSlider.value =
                             (it.data as Float * controlPanel.volumeSlider.maximum).toInt()
                         SPEED -> controlPanel.speedLabel.text = "x ${it.data as Float}"
@@ -88,6 +90,7 @@ class TransportView(
                         TITLE -> controlPanel.titleMovieLabel.text = it.data as String
                         READ_SRT -> controlPanel.titleSrtReadLabel.text = it.data as String
                         WRITE_SRT -> controlPanel.titleSrtWriteLabel.text = it.data as String
+                        UiDataType.LOOP -> controlPanel.loopButton.isSelected = it.data as Boolean
                         else -> println("Not implemented : ${it.uiDataType}")
                     }
                 }, {
@@ -111,6 +114,7 @@ class TransportView(
         val titleSrtWriteLabel: JLabel
         val playButton: JButton
         val pauseButton: JButton
+        val loopButton: JToggleButton
         val muteButton: JToggleButton
         val positionLabel: JLabel
         val durationLabel: JLabel
@@ -141,9 +145,10 @@ class TransportView(
                     add(JButton(">>").setup { events.onNext(UiEvent(FWD)) })
                     //add(JButton(">|").setup { events.onNext(UiEvent(NEXT)) })
 
-                    add(JToggleButton("loop").setup {
-                        events.onNext(UiEvent(LOOP))
-                    })
+                    loopButton = JToggleButton("loop")
+                        .setup { events.onNext(UiEvent(UiEventType.LOOP, isSelected(it))) }
+                        .let { add(it); it }
+
                     speedLabel = JLabel("x 1")
                         .let { add(it); it }
                 })
@@ -187,7 +192,7 @@ class TransportView(
             }, BorderLayout.CENTER)
 
             add(JPanel().apply {
-                layout = GridLayout(1, -1)
+                layout = BorderLayout()
                 titledBorder("VOLUME")
 
                 volumeSlider = JSlider(JSlider.VERTICAL, 0, 100, 100)
@@ -197,14 +202,11 @@ class TransportView(
                         //source.size = Dimension(20,200)
                         source.preferredSize = Dimension(20, 200)
                         events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
-                    }.let { add(it); it }
+                    }.let { add(it, BorderLayout.CENTER); it }
 
                 muteButton = JToggleButton("Mute")
-                    .setup {
-                        val source = it.source as JToggleButton
-                        events.onNext(UiEvent(MUTE, source.isSelected))
-                    }
-                    .let { add(it); it }
+                    .setup { events.onNext(UiEvent(MUTE, isSelected(it))) }
+                    .let { add(it, BorderLayout.SOUTH); it }
 
             }, BorderLayout.EAST)
         }
@@ -323,7 +325,7 @@ class TransportView(
     }
 
     inner class EventMenuItemListener constructor(
-        private val ev: TransportContract.UiEventType
+        private val ev: UiEventType
     ) : ActionListener {
         override fun actionPerformed(e: ActionEvent) {
             events.onNext(UiEvent(ev, null))

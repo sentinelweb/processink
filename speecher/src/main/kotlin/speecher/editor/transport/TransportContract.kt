@@ -32,6 +32,7 @@ interface TransportContract {
         fun setSrtReadTitle(name: String)
         fun setSrtWriteTitle(name: String)
         fun showWindow()
+        fun setLooping(looping: Boolean)
     }
 
     interface StateListener {
@@ -85,6 +86,7 @@ interface TransportContract {
         WORD, // String
         DURATION, // String
         POSITION, // String
-        POSITION_SLIDER // 0f .. 1f
+        POSITION_SLIDER, // 0f .. 1f
+        LOOP
     }
 }

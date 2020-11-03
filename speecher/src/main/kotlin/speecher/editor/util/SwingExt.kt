@@ -61,3 +61,16 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
         add(this@wrapWithLabel)
         return this
     }
+
+fun isSelected(ae: ActionEvent) = (ae.source as JToggleButton).isSelected
+
+fun isSelectedDeselectOthers(ae: ActionEvent): Boolean {
+    val jToggleButton = ae.source as JToggleButton
+    val selected = jToggleButton.isSelected
+    jToggleButton.parent.components.forEach { component ->
+        if (component != jToggleButton && component is JToggleButton) {
+            component.isSelected = false
+        }
+    }
+    return selected
+}
