@@ -13,15 +13,11 @@ import javax.swing.*
 import javax.swing.border.BevelBorder
 
 fun main() {
-    startKoin {
-        modules(Modules.allModules)
+    startKoin { modules(Modules.allModules) }
+    SubListPresenter().apply {
+        showWindow()
+        testList(this)
     }
-    //val subListView = SubListView(TimeFormatter())
-    testList(SubListPresenter())
-    //subListView.showWindow()
-    //SwingUtilities.invokeLater {
-    //testList(subListView)
-    // }
 }
 
 private fun testList(subListPresenter: SubListContract.External) {
@@ -88,16 +84,6 @@ class SubListView(
             )
         }
     }
-
-//    inner class SubListPanel : JScrollPane() {
-//        init {
-//            preferredSize = Dimension(300, 450)
-//            layout = ScrollPaneLayout()
-//            listPanel = JPanel().apply {
-//                layout = GridLayout(-1, 1)
-//            }.also { add(it) }
-//        }
-//    }
 
     inner class SubListItem constructor(
         private val index: Int,

@@ -22,6 +22,7 @@ class EditorPresenter constructor(
 
     init {
         transport.setStateListener(this)
+        transport.showWindow()
         readSubs.listener = this
         disposables.add(
             transport.events()
@@ -66,12 +67,12 @@ class EditorPresenter constructor(
     }
 
     override fun initialise() {
-        setMovieFile(File(EditorView.MOVIE_PATH))
+        setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
         writeSubs.showWindow()
         writeSubs.setTitle("Write Subtitles")
-        setReadSrt(File(EditorView.MOVIE_PATH.substringBeforeLast(".") + ".en.srt"))
+        setReadSrt(File(EditorView.DEF_SRT_PATH))
     }
     // endregion
 
@@ -79,7 +80,6 @@ class EditorPresenter constructor(
     override fun speed(speed: Float) {
         view.setMovieSpeed(speed)
     }
-
     // endregion
 
     // region SubListContract.Listener
@@ -91,19 +91,21 @@ class EditorPresenter constructor(
     private fun setMovieFile(file: File) {
         state.movieFile = file
         view.openMovie(file)
-        transport.setTitle(file.name)
+        transport.setMovieTitle(file.name)
         transport.speed = 1f
     }
 
     private fun setReadSrt(file: File) {
         srtInteractor.read(file)
             .subscribeOn(Schedulers.io())
-            .blockingSubscribe {
+            .blockingSubscribe({
                 state.srtRead = it
                 state.srtReadFile = file
                 transport.setSrtReadTitle(file.name)
                 readSubs.setList(it)
-            }
+            }, {
+                it.printStackTrace()
+            })
     }
 
     private fun processEvent(uiEvent: TransportContract.UiEvent) {
@@ -144,7 +146,6 @@ class EditorPresenter constructor(
                         state.srtWriteFile = file
                         transport.setSrtWriteTitle(file.name)
                     }
-
                 }
             }
             MENU_FILE_SAVE_SRT -> {
@@ -153,7 +154,6 @@ class EditorPresenter constructor(
                 }
             }
             MENU_FILE_EXIT -> {
-                // todo prompt confirm and save state
                 System.exit(0)
             }
             MENU_VIEW_READ_SUBLIST -> {

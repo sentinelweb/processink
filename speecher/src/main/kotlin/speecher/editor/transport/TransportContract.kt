@@ -1,7 +1,6 @@
 package speecher.editor.transport
 
 import io.reactivex.Observable
-import io.reactivex.subjects.Subject
 import java.io.File
 import javax.swing.JComponent
 
@@ -9,12 +8,10 @@ interface TransportContract {
 
     interface Presenter {
         val updateObservable: Observable<UiData>
-
     }
 
     interface View {
-        var presenter: Presenter
-        val events: Subject<UiEvent>
+        val events: Observable<UiEvent>
         val component: JComponent
         fun showWindow()
     }
@@ -23,7 +20,7 @@ interface TransportContract {
         var speed: Float
 
         fun events(): Observable<UiEvent>
-        fun setTitle(title: String)
+        fun setMovieTitle(title: String)
         fun setStateListener(listener: StateListener)
         fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
         fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
@@ -34,6 +31,7 @@ interface TransportContract {
         fun updateState()
         fun setSrtReadTitle(name: String)
         fun setSrtWriteTitle(name: String)
+        fun showWindow()
     }
 
     interface StateListener {

@@ -4,6 +4,9 @@ import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
+import org.koin.ext.getOrCreateScope
 import speecher.editor.transport.TransportContract.UiData
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEventType.*
@@ -11,11 +14,12 @@ import speecher.util.format.TimeFormatter
 import java.io.File
 import javax.swing.JFileChooser
 
-class TransportPresenter constructor(
-    private val view: TransportContract.View,
-    private val state: TransportState,
-    private val timeFormatter: TimeFormatter
-) : TransportContract.Presenter, TransportContract.External {
+class TransportPresenter : TransportContract.Presenter, TransportContract.External {
+
+    private val scope = this.getOrCreateScope()
+    private val view: TransportContract.View = scope.get()
+    private val state: TransportState = scope.get()
+    private val timeFormatter: TimeFormatter = scope.get()
 
     private val disposables: CompositeDisposable = CompositeDisposable()
 
@@ -33,7 +37,6 @@ class TransportPresenter constructor(
         }
 
     init {
-        view.presenter = this
         disposables.add(
             view.events.subscribe({
                 processEvent(it)
@@ -42,7 +45,6 @@ class TransportPresenter constructor(
                 it.printStackTrace()
             })
         )
-        view.showWindow()
     }
 
     private fun processEvent(uiEvent: TransportContract.UiEvent) = when (uiEvent.uiEventType) {
@@ -60,7 +62,7 @@ class TransportPresenter constructor(
     // region External
     override fun events(): Observable<TransportContract.UiEvent> = view.events
 
-    override fun setTitle(title: String) {
+    override fun setMovieTitle(title: String) {
         updates.onNext(UiData(TITLE, title))
     }
 
@@ -101,6 +103,10 @@ class TransportPresenter constructor(
         updates.onNext(UiData(WRITE_SRT, name))
     }
 
+    override fun showWindow() {
+        view.showWindow()
+    }
+
     override fun setStateListener(listener: TransportContract.StateListener) {
         this.listener = listener
     }
@@ -131,4 +137,15 @@ class TransportPresenter constructor(
     }
     // endregion
 
+    companion object {
+        @JvmStatic
+        val scope = module {
+            scope(named<TransportPresenter>()) {
+                scoped<TransportContract.View> { TransportView(get()) }
+                scoped { TransportState() }
+            }
+        }
+        // todo move to transport
+
+    }
 }

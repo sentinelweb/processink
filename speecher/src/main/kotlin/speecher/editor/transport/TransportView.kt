@@ -3,13 +3,14 @@ package speecher.editor.transport
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
+import org.koin.core.context.startKoin
+import speecher.di.Modules
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEvent
 import speecher.editor.transport.TransportContract.UiEventType.*
 import speecher.editor.util.setup
 import speecher.editor.util.titledBorder
 import speecher.editor.util.wrapWithLabel
-import speecher.util.format.TimeFormatter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -20,12 +21,21 @@ import javax.swing.*
 
 
 fun main() {
-    TransportPresenter(TransportView(), TransportState(), TimeFormatter())
+    startKoin { modules(Modules.allModules) }
+    TransportPresenter().apply {
+        setStateListener(object : TransportContract.StateListener {
+            override fun speed(speed: Float) {
+                println("StateListener speed = $speed")
+            }
+        })
+        showWindow()
+    }
 }
 
-class TransportView() : TransportContract.View {
+class TransportView(
+    private val presenter: TransportContract.Presenter
+) : TransportContract.View {
 
-    override lateinit var presenter: TransportContract.Presenter
     private lateinit var controlPanel: TransportPanel
     override val events: Subject<UiEvent> = BehaviorSubject.create()
     override lateinit var component: JComponent

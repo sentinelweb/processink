@@ -11,9 +11,6 @@ import processing.core.PFont
 import processing.video.Movie
 import speecher.di.Modules
 import speecher.editor.transport.TransportContract
-import speecher.editor.transport.TransportPresenter
-import speecher.editor.transport.TransportState
-import speecher.editor.transport.TransportView
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 import java.io.File
@@ -167,13 +164,17 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
     // endregion
 
     companion object {
-        private val BASE_RESOURCES = "${System.getProperty("user.dir")}/speecher/src/main/resources"
-        var MOVIE_PATH =
-            "${System.getProperty("user.dir")}/speecher/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0.mp4"
+        val BASE = "${System.getProperty("user.dir")}/speecher"
+        private val BASE_RESOURCES = "$BASE/src/main/resources"
+        var DEF_BASE_PATH =
+            "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
+
+        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/In full - Boris Johnson holds press conference as he defends virus strategy-8aY5J296p9Y"
+        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
+        var DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
+        var DEF_SRT_PATH = "$DEF_BASE_PATH.en.srt"
 
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
-
-        //var MOVIE_PATH = "${System.getProperty("user.home")}/Dropbox/Photos/20170615_185709.mp4"
 
         @JvmStatic
         val viewModule = module {
@@ -181,12 +182,6 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
                 scoped<EditorContract.View> { getSource() }
                 scoped<EditorContract.Presenter> { EditorPresenter(get(), get(), get(), get(), get(), get()) }
                 scoped { EditorState() }
-
-                // todo move to transport
-                scoped<TransportContract.External> { TransportPresenter(get(), get(), get()) }
-                scoped<TransportContract.View> { TransportView() }
-                scoped { TransportState() }
-
             }
         }
     }

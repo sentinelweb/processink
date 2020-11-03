@@ -39,7 +39,7 @@ class SubListPresenter : SubListContract.Presenter, SubListContract.External {
 
     companion object {
         @JvmStatic
-        val viewModule = module {
+        val scope = module {
             scope(named<SubListPresenter>()) {
                 scoped<SubListContract.View> { SubListView(get(), get()) }
                 scoped { SubListState() }
