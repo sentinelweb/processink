@@ -16,14 +16,30 @@ class EditorPresenter constructor(
     private val srtInteractor: SrtInteractor,
     private val readSubs: SubListContract.External,
     private val writeSubs: SubListContract.External
-) : EditorContract.Presenter, TransportContract.StateListener, SubListContract.Listener {
+) : EditorContract.Presenter, TransportContract.StateListener {
 
     private val disposables: CompositeDisposable = CompositeDisposable()
+
+    // region SubListContract.Listener - Read & Write
+    private val readSubListListener = object : SubListContract.Listener {
+        override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
+            val positionSec = sub.fromSec
+            jumpTo(positionSec)
+        }
+    }
+
+    private val writeSubListListener = object : SubListContract.Listener {
+        override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
+
+        }
+    }
+    // endregion
 
     init {
         transport.setStateListener(this)
         transport.showWindow()
-        readSubs.listener = this
+        readSubs.listener = readSubListListener
+        writeSubs.listener = writeSubListListener
         disposables.add(
             transport.events()
                 .subscribe({
@@ -82,12 +98,6 @@ class EditorPresenter constructor(
     }
     // endregion
 
-    // region SubListContract.Listener
-    override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
-
-    }
-    // endregion
-
     private fun setMovieFile(file: File) {
         state.movieFile = file
         view.openMovie(file)
@@ -118,7 +128,7 @@ class EditorPresenter constructor(
             }
             MUTE -> Unit
             SEEK -> {
-                state.movieDurationSec?.apply { view.seekTo((uiEvent.data as Float) * this) }
+                state.movieDurationSec?.apply { jumpTo((uiEvent.data as Float) * this) }
             }
             VOLUME_CHANGED -> {
                 view.volume(uiEvent.data as Float)
@@ -166,6 +176,12 @@ class EditorPresenter constructor(
         }
     }
 
+    private fun jumpTo(positionSec: Float) {
+        state.lastReadIndex = -1
+        view.seekTo(positionSec)
+        scanForward(positionSec)
+    }
+
     private fun checkReadSubtitle(pos: Float) {
         @Suppress("ControlFlowWithEmptyBody")
         if (state.currentReadIndex > -1
@@ -175,11 +191,27 @@ class EditorPresenter constructor(
         } else if (state.currentReadIndex > -1) {
             state.lastReadIndex = state.currentReadIndex
             state.currentReadIndex = -1
-        } else if (state.srtRead?.timedTexts?.get(state.lastReadIndex + 1)?.between(pos) ?: false) {
-            state.currentReadIndex = state.lastReadIndex + 1
-        } else if (state.srtRead?.timedTexts?.get(state.lastReadIndex + 2)?.between(pos) ?: false) {
-            state.currentReadIndex = state.lastReadIndex + 2
+        } else {
+            scanForward(pos)
         }
+    }
+
+    private fun scanForward(positionSec: Float) {
+        state.srtRead?.timedTexts?.let { texts ->
+            val startIndex = state.lastReadIndex
+            (startIndex + 1..texts.size - 1).forEach { testIndex ->
+                val get = texts.get(testIndex)
+                if (get.between(positionSec)) {
+                    state.currentReadIndex = testIndex
+                    return
+                }
+                if (get.toSec < positionSec) {
+                    state.lastReadIndex = testIndex
+                    return
+                }
+            }
+        }
+        state.lastReadIndex = -1
     }
 
 
