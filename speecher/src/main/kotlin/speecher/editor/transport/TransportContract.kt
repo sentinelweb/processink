@@ -13,10 +13,10 @@ interface TransportContract {
     }
 
     interface View {
+        var presenter: Presenter
         val events: Subject<UiEvent>
         val component: JComponent
         fun showWindow()
-        var presenter: TransportPresenter
     }
 
     interface External {
@@ -65,7 +65,9 @@ interface TransportContract {
         MENU_FILE_EXIT,
         MENU_EDIT_CUT,
         MENU_EDIT_COPY,
-        MENU_EDIT_PASTE
+        MENU_EDIT_PASTE,
+        MENU_VIEW_READ_SUBLIST,
+        MENU_VIEW_WRITE_SUBLIST
     }
 
     data class UiData constructor(

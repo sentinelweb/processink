@@ -10,7 +10,7 @@ class SrtFileWriter constructor(
         val writer = f.writer()
         subs.timedTexts.forEachIndexed { index, sub ->
             writer.write("$index\n")
-            writer.write("${mapper.formatTime(sub.from)} --> ${mapper.formatTime(sub.to)}\n")
+            writer.write("${mapper.formatTime(sub.fromSec)} --> ${mapper.formatTime(sub.toSec)}\n")
             writer.write(sub.text.joinToString("\n", postfix = "\n\n"))
         }
         writer.close()

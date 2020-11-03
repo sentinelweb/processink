@@ -14,12 +14,19 @@ class SrtMapper {
     fun formatTime(date: LocalTime): String =
         timeStampFormatter.format(date)
 
+    fun formatTime(sec: Float): String = formatTime(LocalTime.ofNanoOfDay((sec * 1_000_000_000f).toLong()))
+
     fun map(items: List<SrtEntry>) = Subtitles(
         items.map { entry ->
             val (start, end) = entry.timeLine?.split("-->") ?: throw IllegalArgumentException("")
-            Subtitles.Subtitle(parseTime(start.trim()), parseTime((end.trim())), entry.text.filter { it.isNotBlank() })
+            Subtitles.Subtitle(
+                toSec(parseTime(start.trim())),
+                toSec(parseTime(end.trim())),
+                entry.text.filter { it.isNotBlank() })
         }
     )
+
+    fun toSec(time: LocalTime): Float = time.toNanoOfDay() / 1_000_000_000f
 
     companion object {
         // 00:00:36,150

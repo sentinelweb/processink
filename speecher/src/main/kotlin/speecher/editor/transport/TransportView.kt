@@ -6,6 +6,9 @@ import io.reactivex.subjects.Subject
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEvent
 import speecher.editor.transport.TransportContract.UiEventType.*
+import speecher.editor.util.setup
+import speecher.editor.util.titledBorder
+import speecher.editor.util.wrapWithLabel
 import speecher.util.format.TimeFormatter
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -22,7 +25,7 @@ fun main() {
 
 class TransportView() : TransportContract.View {
 
-    override lateinit var presenter: TransportPresenter
+    override lateinit var presenter: TransportContract.Presenter
     private lateinit var controlPanel: TransportPanel
     override val events: Subject<UiEvent> = BehaviorSubject.create()
     override lateinit var component: JComponent
@@ -136,11 +139,12 @@ class TransportView() : TransportContract.View {
                 })
 
                 positionSlider = JSlider(0, 1E6.toInt())
+
                     .setup(0, -1, -1, false) {
                         val source = it.source as JSlider
-                        //if (!source.getValueIsAdjusting()) {
-                        events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
-                        //}
+                        if (!source.getValueIsAdjusting()) {
+                            events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
+                        }
                     }
                     .let { add(it.wrapWithLabel("Position")); it }
 
@@ -207,6 +211,8 @@ class TransportView() : TransportContract.View {
         //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_DOWN_MASK)
         val editMenu = JMenu("Edit")
         editMenu.mnemonic = KeyEvent.VK_E
+        val viewMenu = JMenu("View")
+        editMenu.mnemonic = KeyEvent.VK_V
         //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
         //create menu items
         val openMovieMenuItem = JMenuItem("Open Movie")
@@ -248,6 +254,14 @@ class TransportView() : TransportContract.View {
         pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
         pasteMenuItem.actionCommand = "Paste"
 
+        val showReadSrtMenuItem = JMenuItem("Read Subtitles")
+        pasteMenuItem.mnemonic = KeyEvent.VK_R
+        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_DOWN_MASK)
+
+        val showWriteSrtMenuItem = JMenuItem("Write Subtitles")
+        pasteMenuItem.mnemonic = KeyEvent.VK_W
+        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_DOWN_MASK)
+
         // val sysMenuItemListener = SysOutMenuItemListener()
 
         openMovieMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_MOVIE))
@@ -260,6 +274,9 @@ class TransportView() : TransportContract.View {
         cutMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_CUT))
         copyMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_COPY))
         pasteMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_PASTE))
+
+        showReadSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_READ_SUBLIST))
+        showWriteSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_WRITE_SUBLIST))
 
         //add menu items to menus
         fileMenu.add(openMovieMenuItem)
@@ -276,9 +293,13 @@ class TransportView() : TransportContract.View {
         editMenu.add(copyMenuItem)
         editMenu.add(pasteMenuItem)
 
+        viewMenu.add(showReadSrtMenuItem)
+        viewMenu.add(showWriteSrtMenuItem)
+
         //add menu to menubar
         menuBar.add(fileMenu)
         menuBar.add(editMenu)
+        menuBar.add(viewMenu)
 
         //add menubar to the frame
         mainFrame.setJMenuBar(menuBar)

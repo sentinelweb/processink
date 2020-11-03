@@ -11,5 +11,9 @@ data class EditorState(
     var srtWriteFile: File? = null,
     var srtWrite: Subtitles? = null,
     var movieDurationSec: Float? = null,
-    var moviePositionSec: Float? = null
+    var moviePositionSec: Float? = null,
+    var currentReadIndex: Int = -1,
+    var currentWriteIndex: Int = -1,
+    var lastReadIndex: Int = -1,
+    var lastWriteIndex: Int = -1
 )

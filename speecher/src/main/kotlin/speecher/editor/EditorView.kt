@@ -17,6 +17,7 @@ import speecher.editor.transport.TransportView
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 import java.io.File
+import javax.swing.SwingUtilities
 
 fun main() {
     startKoin {
@@ -41,6 +42,31 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         System.setProperty("jna.library.path", "${LIB_PATH}/")
         System.setProperty("gstreamer.library.path", "${LIB_PATH}/")
         System.setProperty("gstreamer.plugin.path", "${LIB_PATH}/plugins/")
+
+//      Schedulers.from(Executor(Thread.currentThread()))
+//      Executors.newSingleThreadExecutor(ThreadFactory.)
+//      SwingUtilities.invokeLater {  }
+
+//        object : Scheduler() {
+//            val thread = Thread.currentThread()
+//            override fun createWorker(): Worker {
+//                return object:Worker() {
+//                    override fun dispose() {
+//
+//                    }
+//
+//                    override fun isDisposed(): Boolean {
+//
+//                    }
+//
+//                    override fun schedule(run: Runnable, delay: Long, unit: TimeUnit): Disposable {
+//
+//                    }
+//
+//                }
+//            }
+//
+//        }
     }
 
     // region Processing
@@ -58,10 +84,9 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         printArray(PFont.list())
         f = createFont("Thonburi", 24f)
         textFont(f)
-        textSize(24f)
+        textSize(20f)
         textAlign(PConstants.CENTER, PConstants.CENTER)
-
-        presenter.initialise()
+        SwingUtilities.invokeLater { presenter.initialise() }
     }
 
     override fun draw() {
@@ -72,7 +97,10 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
                 image(movie, x, y, width, height)
             }
         }
-        text("Subtitle", width / 2f, height - 50f)
+        fill(255f, 255f, 0f)
+        presenter.currentReadSubtitle?.let { text(it, width / 2f, height - 50f) }
+        fill(255f, 128f, 0f)
+        presenter.currentWriteSubtitle?.let { text(it, width / 2f, height - 100f) }
     }
     // endregion
 
@@ -151,11 +179,14 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         val viewModule = module {
             scope(named<EditorView>()) {
                 scoped<EditorContract.View> { getSource() }
-                scoped<EditorContract.Presenter> { EditorPresenter(get(), get(), get(), get()) }
+                scoped<EditorContract.Presenter> { EditorPresenter(get(), get(), get(), get(), get(), get()) }
+                scoped { EditorState() }
+
+                // todo move to transport
                 scoped<TransportContract.External> { TransportPresenter(get(), get(), get()) }
                 scoped<TransportContract.View> { TransportView() }
                 scoped { TransportState() }
-                scoped { EditorState() }
+
             }
         }
     }

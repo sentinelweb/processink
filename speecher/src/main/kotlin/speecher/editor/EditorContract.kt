@@ -6,11 +6,14 @@ import java.io.File
 interface EditorContract {
 
     interface Presenter {
+        val currentReadSubtitle: String?
+        val currentWriteSubtitle: String?
         fun duration(dur: Float)
         fun position(pos: Float)
         fun setPlayState(mode: TransportContract.UiDataType)
         fun movieInitialised()
         fun initialise()
+
     }
 
     interface View {

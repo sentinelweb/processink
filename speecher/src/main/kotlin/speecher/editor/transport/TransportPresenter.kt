@@ -33,6 +33,7 @@ class TransportPresenter constructor(
         }
 
     init {
+        view.presenter = this
         disposables.add(
             view.events.subscribe({
                 processEvent(it)
@@ -41,7 +42,6 @@ class TransportPresenter constructor(
                 it.printStackTrace()
             })
         )
-        view.presenter = this
         view.showWindow()
     }
 
@@ -105,6 +105,7 @@ class TransportPresenter constructor(
         this.listener = listener
     }
 
+    // todo move to view
     override fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
         JFileChooser().apply {
             isMultiSelectionEnabled = false
