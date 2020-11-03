@@ -18,10 +18,9 @@ interface TransportContract {
 
     interface External {
         var speed: Float
-
+        var listener: StateListener
         fun events(): Observable<UiEvent>
         fun setMovieTitle(title: String)
-        fun setStateListener(listener: StateListener)
         fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
         fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit)
         fun setDuration(dur: Float)

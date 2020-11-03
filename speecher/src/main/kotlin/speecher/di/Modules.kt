@@ -10,6 +10,7 @@ import speecher.interactor.srt.SrtFileReader
 import speecher.interactor.srt.SrtFileWriter
 import speecher.interactor.srt.SrtInteractor
 import speecher.interactor.srt.SrtMapper
+import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
 
 object Modules {
@@ -39,4 +40,5 @@ object Modules {
         .plus(srtModule)
         .plus(subViewModules)
         .plus(scopedModules)
+        .plus(SchedulerModule.module)
 }

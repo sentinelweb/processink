@@ -11,6 +11,9 @@ import processing.core.PFont
 import processing.video.Movie
 import speecher.di.Modules
 import speecher.editor.transport.TransportContract
+import speecher.scheduler.ProcessingExecutor
+import speecher.scheduler.SchedulerModule.PROCESSING
+import speecher.scheduler.SchedulerModule.SWING
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 import java.io.File
@@ -26,8 +29,8 @@ fun main() {
 class EditorView() : PApplet(), EditorContract.View, KoinComponent {
 
     private val scope = this.getOrCreateScope()
-    private val presenter: EditorContract.Presenter =
-        scope.get() //by lazy{scope.get<EditorContract.Presenter>()} <-- lazy creates in Wrong thread
+    private val presenter: EditorContract.Presenter = scope.get()
+    private val pExecutor: ProcessingExecutor = scope.get()
 
     private lateinit var f: PFont
     private lateinit var movie: Movie
@@ -39,31 +42,6 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         System.setProperty("jna.library.path", "${LIB_PATH}/")
         System.setProperty("gstreamer.library.path", "${LIB_PATH}/")
         System.setProperty("gstreamer.plugin.path", "${LIB_PATH}/plugins/")
-
-//      Schedulers.from(Executor(Thread.currentThread()))
-//      Executors.newSingleThreadExecutor(ThreadFactory.)
-//      SwingUtilities.invokeLater {  }
-
-//        object : Scheduler() {
-//            val thread = Thread.currentThread()
-//            override fun createWorker(): Worker {
-//                return object:Worker() {
-//                    override fun dispose() {
-//
-//                    }
-//
-//                    override fun isDisposed(): Boolean {
-//
-//                    }
-//
-//                    override fun schedule(run: Runnable, delay: Long, unit: TimeUnit): Disposable {
-//
-//                    }
-//
-//                }
-//            }
-//
-//        }
     }
 
     // region Processing
@@ -87,6 +65,9 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
     }
 
     override fun draw() {
+        while (pExecutor.workQueue.size > 0) {
+            pExecutor.workQueue.take().run()
+        }
         background(0)
         fill(255f, 255f, 255f)
         if (this::movie.isInitialized) {
@@ -136,29 +117,31 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
     }
 
     override fun setMovieSpeed(speed: Float) {
-        if (this::movie.isInitialized) movie.speed(speed)
+        if (this::movie.isInitialized) pExecutor.execute { movie.speed(speed) }
     }
 
     override fun play() {
         if (this::movie.isInitialized) {
-            movie.play()
+            pExecutor.execute { movie.play() }
             presenter.setPlayState(TransportContract.UiDataType.MODE_PLAYING)
         }
     }
 
     override fun pause() {
         if (this::movie.isInitialized) {
-            movie.pause()
+            pExecutor.execute { movie.pause() }
             presenter.setPlayState(TransportContract.UiDataType.MODE_PAUSED)
         }
     }
 
     override fun volume(vol: Float) {
-        if (this::movie.isInitialized) movie.volume(vol)
+        if (this::movie.isInitialized) pExecutor.execute { movie.volume(vol) }
     }
 
     override fun seekTo(positionSec: Float) {
-        if (this::movie.isInitialized) movie.jump(positionSec)
+        if (this::movie.isInitialized)
+            pExecutor.execute { movie.jump(positionSec) }
+
     }
 
     // endregion
@@ -180,7 +163,12 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         val viewModule = module {
             scope(named<EditorView>()) {
                 scoped<EditorContract.View> { getSource() }
-                scoped<EditorContract.Presenter> { EditorPresenter(get(), get(), get(), get(), get(), get()) }
+                scoped<EditorContract.Presenter> {
+                    EditorPresenter(
+                        get(), get(), get(), get(), get(), get(),
+                        get(named(PROCESSING)), get(named(SWING))
+                    )
+                }
                 scoped { EditorState() }
             }
         }

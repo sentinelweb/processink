@@ -15,5 +15,8 @@ data class EditorState(
     var currentReadIndex: Int = -1,
     var currentWriteIndex: Int = -1,
     var lastReadIndex: Int = -1,
-    var lastWriteIndex: Int = -1
+    var lastWriteIndex: Int = -1,
+    var loopStartSec: Float? = null,
+    var loopEndSec: Float? = null
+
 )

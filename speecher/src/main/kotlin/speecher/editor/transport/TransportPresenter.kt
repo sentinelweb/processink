@@ -25,7 +25,7 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
 
     private val updates: Subject<UiData> = BehaviorSubject.create()
     override val updateObservable: Subject<UiData> = updates
-    private lateinit var listener: TransportContract.StateListener
+    override lateinit var listener: TransportContract.StateListener
 
     override var speed: Float = 1f
         get() = state.speed
@@ -111,11 +111,8 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
     }
 
     override fun setLooping(looping: Boolean) {
+        state.loop = looping
         updates.onNext(UiData(TransportContract.UiDataType.LOOP, state.loop))
-    }
-
-    override fun setStateListener(listener: TransportContract.StateListener) {
-        this.listener = listener
     }
 
     // todo move to view

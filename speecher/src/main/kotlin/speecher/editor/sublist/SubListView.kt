@@ -93,7 +93,7 @@ class SubListView(
             layout = GridLayout(-1, 1)
 
             add(JLabel("${timeFormatter.formatTime(item.fromSec)} -> ${timeFormatter.formatTime(item.toSec)}s"))
-            add(JLabel(item.text.joinToString("\n")))
+            item.text.forEach { add(JLabel(it)) }
             border = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY)
 
             addMouseListener(object : MouseAdapter() {

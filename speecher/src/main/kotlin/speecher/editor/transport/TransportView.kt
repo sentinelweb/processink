@@ -24,11 +24,11 @@ import javax.swing.*
 fun main() {
     startKoin { modules(Modules.allModules) }
     TransportPresenter().apply {
-        setStateListener(object : TransportContract.StateListener {
+        listener = object : TransportContract.StateListener {
             override fun speed(speed: Float) {
                 println("StateListener speed = $speed")
             }
-        })
+        }
         showWindow()
     }
 }

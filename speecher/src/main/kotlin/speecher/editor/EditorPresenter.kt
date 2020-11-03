@@ -1,5 +1,6 @@
 package speecher.editor
 
+import io.reactivex.Scheduler
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import speecher.domain.Subtitles
@@ -15,7 +16,10 @@ class EditorPresenter constructor(
     private val transport: TransportContract.External,
     private val srtInteractor: SrtInteractor,
     private val readSubs: SubListContract.External,
-    private val writeSubs: SubListContract.External
+    private val writeSubs: SubListContract.External,
+    private val pScheduler: Scheduler,
+    private val swingScheduler: Scheduler
+
 ) : EditorContract.Presenter, TransportContract.StateListener {
 
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -25,6 +29,7 @@ class EditorPresenter constructor(
         override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
             val positionSec = sub.fromSec
             jumpTo(positionSec)
+            setLooping(sub.fromSec, sub.toSec)
         }
     }
 
@@ -36,7 +41,7 @@ class EditorPresenter constructor(
     // endregion
 
     init {
-        transport.setStateListener(this)
+        transport.listener = this
         transport.showWindow()
         readSubs.listener = readSubListListener
         writeSubs.listener = writeSubListListener
@@ -72,6 +77,7 @@ class EditorPresenter constructor(
         state.moviePositionSec = pos
         transport.setPosition(pos)
         checkReadSubtitle(pos)
+        checkLoopingPos(pos)
     }
 
     override fun setPlayState(mode: TransportContract.UiDataType) {
@@ -172,14 +178,41 @@ class EditorPresenter constructor(
             MENU_VIEW_WRITE_SUBLIST -> {
                 writeSubs.showWindow()
             }
-            else -> println("event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
+            LOOP -> {
+                if (!(uiEvent.data as Boolean)) {
+                    state.loopEndSec = null
+                    state.loopStartSec = null
+                }
+            }
+            else -> Unit
         }
+        println("EditPresenter: transport.event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
     }
 
     private fun jumpTo(positionSec: Float) {
+        println("jumpTo: $positionSec")
+        // fixme subtitles are syncing up properly after jump
+        state.currentReadIndex = -1
         state.lastReadIndex = -1
         view.seekTo(positionSec)
-        scanForward(positionSec)
+        scanForReadSubtitle(positionSec)
+    }
+
+    private fun setLooping(fromSec: Float, toSec: Float) {
+        println("setLooping: $fromSec -> $toSec")
+        state.loopStartSec = fromSec
+        state.loopEndSec = toSec
+        transport.setLooping(true)
+    }
+
+    private fun checkLoopingPos(pos: Float) {
+        state.loopEndSec?.let { loopEnd ->
+            state.loopStartSec?.let { loopStart ->
+                if (pos > loopEnd) {
+                    jumpTo(loopStart)
+                }
+            }
+        }
     }
 
     private fun checkReadSubtitle(pos: Float) {
@@ -192,11 +225,11 @@ class EditorPresenter constructor(
             state.lastReadIndex = state.currentReadIndex
             state.currentReadIndex = -1
         } else {
-            scanForward(pos)
+            scanForReadSubtitle(pos)
         }
     }
 
-    private fun scanForward(positionSec: Float) {
+    private fun scanForReadSubtitle(positionSec: Float) {
         state.srtRead?.timedTexts?.let { texts ->
             val startIndex = state.lastReadIndex
             (startIndex + 1..texts.size - 1).forEach { testIndex ->
