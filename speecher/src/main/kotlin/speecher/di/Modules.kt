@@ -2,6 +2,8 @@ package speecher.di
 
 import org.koin.dsl.module
 import speecher.editor.EditorView
+import speecher.editor.subedit.SubEditContract
+import speecher.editor.subedit.SubEditPresenter
 import speecher.editor.sublist.SubListContract
 import speecher.editor.sublist.SubListPresenter
 import speecher.editor.transport.TransportContract
@@ -17,12 +19,14 @@ object Modules {
     private val scopedModules = listOf(
         EditorView.viewModule,
         SubListPresenter.scope,
-        TransportPresenter.scope
+        TransportPresenter.scope,
+        SubEditPresenter.scope
     )
 
     private val subViewModules = module {
         factory<SubListContract.External> { SubListPresenter() }
         factory<TransportContract.External> { TransportPresenter() }
+        factory<SubEditContract.External> { SubEditPresenter() }
     }
 
     private val utilModule = module {

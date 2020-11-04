@@ -8,7 +8,7 @@
  * More information about the Pumpernickel project is available here:
  * https://mickleness.github.io/pumpernickel/
  */
-package speecher.editor.subedit.multithumbslider;
+package speecher.ui.multithumbslider;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -251,13 +251,13 @@ public class MultiThumbSlider<T> extends JComponent {
         String name = UIManager.getString("MultiThumbSliderUI");
         if (name == null) {
             if (UIManager.getSystemLookAndFeelClassName().contains("MetalLookAndFeel")) {
-                name = "speecher.editor.subedit.multithumbslider.MetalMultiThumbSliderUI";
+                name = "speecher.ui.multithumbslider.MetalMultiThumbSliderUI";
             } else if (JVM.isMac) {
-                name = "speecher.editor.subedit.multithumbslider.AquaMultiThumbSliderUI";
+                name = "speecher.ui.multithumbslider.AquaMultiThumbSliderUI";
             } else if (JVM.isWindows) {
-                name = "speecher.editor.subedit.multithumbslider.VistaMultiThumbSliderUI";
+                name = "speecher.ui.multithumbslider.VistaMultiThumbSliderUI";
             } else {
-                name = "speecher.editor.subedit.multithumbslider.DefaultMultiThumbSliderUI";
+                name = "speecher.ui.multithumbslider.DefaultMultiThumbSliderUI";
             }
         }
         try {

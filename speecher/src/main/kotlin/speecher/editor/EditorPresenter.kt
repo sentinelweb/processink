@@ -4,6 +4,7 @@ import io.reactivex.Scheduler
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import speecher.domain.Subtitles
+import speecher.editor.subedit.SubEditContract
 import speecher.editor.sublist.SubListContract
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportContract.UiEventType.*
@@ -17,6 +18,7 @@ class EditorPresenter constructor(
     private val srtInteractor: SrtInteractor,
     private val readSubs: SubListContract.External,
     private val writeSubs: SubListContract.External,
+    private val subEdit: SubEditContract.External,
     private val pScheduler: Scheduler,
     private val swingScheduler: Scheduler
 
@@ -43,6 +45,7 @@ class EditorPresenter constructor(
     init {
         transport.listener = this
         transport.showWindow()
+        subEdit.showWindow()
         readSubs.listener = readSubListListener
         writeSubs.listener = writeSubListListener
         disposables.add(
@@ -92,7 +95,7 @@ class EditorPresenter constructor(
         setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
-        writeSubs.showWindow()
+        writeSubs.showWindow(1230, 0)
         writeSubs.setTitle("Write Subtitles")
         setReadSrt(File(EditorView.DEF_SRT_PATH))
     }
@@ -178,6 +181,9 @@ class EditorPresenter constructor(
             MENU_VIEW_WRITE_SUBLIST -> {
                 writeSubs.showWindow()
             }
+            MENU_VIEW_EDIT_SUBLIST -> {
+                subEdit.showWindow()
+            }
             LOOP -> {
                 if (!(uiEvent.data as Boolean)) {
                     state.loopEndSec = null
@@ -191,7 +197,7 @@ class EditorPresenter constructor(
 
     private fun jumpTo(positionSec: Float) {
         println("jumpTo: $positionSec")
-        // fixme subtitles are syncing up properly after jump
+        // fixme subtitles aren't syncing up properly after jump
         state.currentReadIndex = -1
         state.lastReadIndex = -1
         view.seekTo(positionSec)
@@ -246,6 +252,5 @@ class EditorPresenter constructor(
         }
         state.lastReadIndex = -1
     }
-
 
 }

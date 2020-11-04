@@ -114,7 +114,15 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         movie = Movie(this, file.absolutePath)
         movie.play()
         presenter.setPlayState(TransportContract.UiDataType.MODE_PLAYING)
+
+//        movie.playbin.setAudioSink(BufferDataAppSink("audio-sink", null as String?,
+//             { w, h, buffer -> invokeEvent(w, h, buffer) }))
     }
+
+//    private fun invokeEvent(w: Int, h: Int, buffer: Buffer) {
+//        println(
+//            "got buffer $w x $h -> ${buffer.duration}")
+//    }
 
     override fun setMovieSpeed(speed: Float) {
         if (this::movie.isInitialized) pExecutor.execute { movie.speed(speed) }
@@ -165,7 +173,7 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
                 scoped<EditorContract.View> { getSource() }
                 scoped<EditorContract.Presenter> {
                     EditorPresenter(
-                        get(), get(), get(), get(), get(), get(),
+                        get(), get(), get(), get(), get(), get(), get(),
                         get(named(PROCESSING)), get(named(SWING))
                     )
                 }

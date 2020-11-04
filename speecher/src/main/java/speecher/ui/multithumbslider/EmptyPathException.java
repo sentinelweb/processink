@@ -8,7 +8,7 @@
  * More information about the Pumpernickel project is available here:
  * https://mickleness.github.io/pumpernickel/
  */
-package speecher.editor.subedit.multithumbslider;
+package speecher.ui.multithumbslider;
 
 /**
  * This indicates that a path had no shape data.

@@ -37,14 +37,14 @@ class SubListView(
     private lateinit var frame: JFrame
     lateinit var listPanel: JPanel
 
-    override fun showWindow() {
+    override fun showWindow(x: Int, y: Int) {
         SwingUtilities.invokeLater {
             if (!this::frame.isInitialized) {
                 frame = JFrame("Subtitle list")
                 frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
 
                 frame.add(SubListPanel())
-
+                frame.setLocation(x, y)
                 // Display the window.
                 frame.pack()
             }

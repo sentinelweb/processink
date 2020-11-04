@@ -28,8 +28,8 @@ class SubListPresenter : SubListContract.Presenter, SubListContract.External {
         view.buildList(subs)
     }
 
-    override fun showWindow() {
-        view.showWindow()
+    override fun showWindow(x: Int, y: Int) {
+        view.showWindow(x, y)
     }
 
     override fun setTitle(title: String) {

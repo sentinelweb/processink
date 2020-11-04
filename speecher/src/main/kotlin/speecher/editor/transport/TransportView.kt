@@ -15,6 +15,7 @@ import speecher.editor.util.wrapWithLabel
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridLayout
+import java.awt.Point
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
@@ -52,6 +53,7 @@ class TransportView(
 
             addMenu(frame)
             frame.add(controlPanel)
+            frame.location = Point(200, 0)
             controlPanel.updateUI()
 
             disposables.add(
@@ -274,6 +276,10 @@ class TransportView(
         pasteMenuItem.mnemonic = KeyEvent.VK_W
         pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_DOWN_MASK)
 
+        val editSrtMenuItem = JMenuItem("Edit Subtitles")
+        editSrtMenuItem.mnemonic = KeyEvent.VK_E
+        editSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
+
         // val sysMenuItemListener = SysOutMenuItemListener()
 
         openMovieMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_MOVIE))
@@ -289,6 +295,7 @@ class TransportView(
 
         showReadSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_READ_SUBLIST))
         showWriteSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_WRITE_SUBLIST))
+        editSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_EDIT_SUBLIST))
 
         //add menu items to menus
         fileMenu.add(openMovieMenuItem)
@@ -307,6 +314,7 @@ class TransportView(
 
         viewMenu.add(showReadSrtMenuItem)
         viewMenu.add(showWriteSrtMenuItem)
+        viewMenu.add(editSrtMenuItem)
 
         //add menu to menubar
         menuBar.add(fileMenu)

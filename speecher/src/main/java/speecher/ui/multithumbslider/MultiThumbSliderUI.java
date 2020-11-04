@@ -8,9 +8,9 @@
  * More information about the Pumpernickel project is available here:
  * https://mickleness.github.io/pumpernickel/
  */
-package speecher.editor.subedit.multithumbslider;
+package speecher.ui.multithumbslider;
 
-import speecher.editor.subedit.multithumbslider.MultiThumbSlider.Collision;
+import speecher.ui.multithumbslider.MultiThumbSlider.Collision;
 
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;

@@ -65,7 +65,8 @@ interface TransportContract {
         MENU_EDIT_COPY,
         MENU_EDIT_PASTE,
         MENU_VIEW_READ_SUBLIST,
-        MENU_VIEW_WRITE_SUBLIST
+        MENU_VIEW_WRITE_SUBLIST,
+        MENU_VIEW_EDIT_SUBLIST
     }
 
     data class UiData constructor(
