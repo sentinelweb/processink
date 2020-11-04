@@ -82,7 +82,10 @@ class SubEditView constructor(
 //                    it.isAutoAdding = false
                             it.addChangeListener { changeEvent ->
                                 val source = changeEvent.source as MultiThumbSlider<*>
-                                println(source.thumbPositions.joinToString { it.toString() })
+                                presenter.sliderChanged(
+                                    source.selectedThumb,
+                                    source.thumbPositions[source.selectedThumb]
+                                )
                             }
                             add(it); it
                         }

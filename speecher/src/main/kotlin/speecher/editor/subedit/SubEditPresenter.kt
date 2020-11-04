@@ -32,15 +32,15 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
 
     // region SubEditContract.Presenter
     override fun wordSelected(index: Int) {
-
+        println("wordSelected($index)")
     }
 
     override fun sliderChanged(index: Int, time: Float) {
-
+        println("sliderChanged($index, $time)")
     }
 
     override fun onSave(moveToNext: Boolean) {
-
+        println("onSave(moveToNext: $moveToNext)")
     }
     // endregion
 
