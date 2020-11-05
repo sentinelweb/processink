@@ -1,6 +1,7 @@
 package speecher.editor
 
 import io.reactivex.Scheduler
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import speecher.domain.Subtitles
@@ -32,6 +33,7 @@ class EditorPresenter constructor(
             val positionSec = sub.fromSec
             jumpTo(positionSec)
             setLooping(sub.fromSec, sub.toSec)
+            subEdit.setReadSub(sub)
         }
     }
 
@@ -42,12 +44,30 @@ class EditorPresenter constructor(
     }
     // endregion
 
+    // region SubListContract.Listener - Read & Write
+    private val editSubListener = object : SubEditContract.Listener {
+
+        override fun onLoopChanged(fromSec: Float, toSec: Float) {
+            setLooping(fromSec, toSec)
+            if (fromSec != state.loopStartSec) {
+                jumpTo(fromSec)
+            }
+        }
+
+        override fun saveWriteSubs(subs: List<Subtitles.Subtitle>) {
+            TODO("Not yet implemented")
+        }
+    }
+    // endregion
+
     init {
         transport.listener = this
         transport.showWindow()
+        subEdit.listener = editSubListener
         subEdit.showWindow()
         readSubs.listener = readSubListListener
         writeSubs.listener = writeSubListListener
+
         disposables.add(
             transport.events()
                 .subscribe({
@@ -92,6 +112,7 @@ class EditorPresenter constructor(
     }
 
     override fun initialise() {
+        // todo
         setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
@@ -108,10 +129,17 @@ class EditorPresenter constructor(
     // endregion
 
     private fun setMovieFile(file: File) {
-        state.movieFile = file
-        view.openMovie(file)
-        transport.setMovieTitle(file.name)
-        transport.speed = 1f
+        Single.just(file)
+            .subscribeOn(Schedulers.io())
+            .doOnSuccess { state.movieFile = it }
+            .subscribeOn(pScheduler)
+            .doOnSuccess { view.openMovie(it) }
+            .observeOn(swingScheduler)
+            .subscribe({
+                transport.setMovieTitle(it.name)
+                transport.speed = 1f
+            }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
 
     private fun setReadSrt(file: File) {

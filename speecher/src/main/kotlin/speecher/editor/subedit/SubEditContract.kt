@@ -12,14 +12,14 @@ interface SubEditContract {
     }
 
     interface External {
-        val listener: Listener
+        var listener: Listener
         fun showWindow()
         fun setReadSub(sub: Subtitles.Subtitle)
         fun setWriteSubs(subs: List<Subtitles.Subtitle>)
     }
 
     interface Listener {
-        fun onLoopChanged(start: Float, end: Float)
+        fun onLoopChanged(fromSec: Float, toSec: Float)
         fun saveWriteSubs(subs: List<Subtitles.Subtitle>)
     }
 

@@ -58,6 +58,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
             updateSliderPositions()
             updateTimeTexts()
         }
+        listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
         println("wordSelected($index) --> $selectedWord")
     }
 
@@ -65,6 +66,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
         println("sliderChanged($index, $pos)")
         state.sliderPositions[index] = pos
         updateTimeTexts()
+        listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
     }
 
     override fun adjustSliderLimit(index: Int, timeSec: Float) {
@@ -76,6 +78,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
             updateSliderLimitTexts()
             updateSliderPositions()
             updateTimeTexts() // should NOT change the values
+            listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
         }
     }
 
@@ -106,6 +109,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
             updateSliderPositions()
             updateTimeTexts()
             view.selectWord(state.readWordSelected)
+            listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
         }
     }
     // endregion
