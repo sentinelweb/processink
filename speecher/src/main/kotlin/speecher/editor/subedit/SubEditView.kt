@@ -4,10 +4,10 @@ import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Subtitles
 import speecher.editor.util.deselectOthers
+import speecher.editor.util.deselectOthersAction
 import speecher.editor.util.setup
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.ui.multithumbslider.MultiThumbSlider
-import speecher.util.format.TimeFormatter
 import java.awt.*
 import javax.swing.*
 
@@ -30,18 +30,17 @@ fun main() {
 }
 
 class SubEditView constructor(
-    private val presenter: SubEditContract.Presenter,
-    private val timeFormatter: TimeFormatter
+    private val presenter: SubEditContract.Presenter
 ) : SubEditContract.View {
 
-    private lateinit var controlPanel: SubEdittPanel
+    private lateinit var controlPanel: SubEditPanel
 
     override fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Edit subtitles")
             frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
 
-            controlPanel = SubEdittPanel()
+            controlPanel = SubEditPanel()
             frame.add(controlPanel)
             frame.location = Point(200, 340)
             // Display the window.
@@ -50,28 +49,28 @@ class SubEditView constructor(
         }
     }
 
-    inner class SubEdittPanel : JPanel() {
+    inner class SubEditPanel : JPanel() {
         val wordPanel: JPanel
         val slider: MultiThumbSlider<Float>
         val timeText: JLabel
-        val startTimeText: JLabel
-        val endTimeText: JLabel
+        val startLimit: TimeLimitPanel
+        val endLimit: TimeLimitPanel
         val saveButton: JButton
         val saveNextButton: JButton
 
         init {
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                preferredSize = Dimension(1024, 160)
+                preferredSize = Dimension(1024, 200)
                 wordPanel = JPanel().let {
-                    it.layout = WrapLayout();
+                    it.layout = WrapLayout()
                     size = Dimension(1024, 1)
                     add(it); it
                 }
                 add(JPanel().apply {
                     layout = BorderLayout()
-                    startTimeText = JLabel("00:00:00").let { add(it, BorderLayout.WEST); it }
-                    endTimeText = JLabel("00:00:00").let { add(it, BorderLayout.EAST); it }
+                    startLimit = TimeLimitPanel(0).let { add(it, BorderLayout.WEST); it }
+                    endLimit = TimeLimitPanel(1).let { add(it, BorderLayout.EAST); it }
                 })
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)
@@ -82,10 +81,12 @@ class SubEditView constructor(
 //                    it.isAutoAdding = false
                             it.addChangeListener { changeEvent ->
                                 val source = changeEvent.source as MultiThumbSlider<*>
-                                presenter.sliderChanged(
-                                    source.selectedThumb,
-                                    source.thumbPositions[source.selectedThumb]
-                                )
+                                if (source.selectedThumb > -1) {
+                                    presenter.sliderChanged(
+                                        source.selectedThumb,
+                                        source.thumbPositions[source.selectedThumb]
+                                    )
+                                }
                             }
                             add(it); it
                         }
@@ -101,26 +102,49 @@ class SubEditView constructor(
         }
     }
 
-    override fun setLimits(fromSec: Float, toSec: Float) {
-        controlPanel.startTimeText.text = timeFormatter.formatTime(fromSec)
-        controlPanel.endTimeText.text = timeFormatter.formatTime(toSec)
+    inner class TimeLimitPanel(private val index: Int) : JPanel() {
+        val timeText: JLabel
+
+        init {
+            add(JPanel().apply {
+                layout = BoxLayout(this, BoxLayout.X_AXIS)
+                JButton("-1").setup { presenter.adjustSliderLimit(index, -1f) }.let { add(it); it }
+                timeText = JLabel("00:00:00").let { add(it); it }
+                JButton("+1").setup { presenter.adjustSliderLimit(index, 1f) }.let { add(it); it }
+            })
+        }
+    }
+
+    override fun setLimits(fromSec: String, toSec: String) {
+        controlPanel.startLimit.timeText.text = fromSec
+        controlPanel.endLimit.timeText.text = toSec
         controlPanel.updateUI()
     }
 
     override fun setMarkers(markers: List<Float>) {
-        controlPanel.slider.thumbPositions[0] = markers[0]
-        controlPanel.slider.thumbPositions[1] = markers[1]
+        controlPanel.slider.setValues(markers.toFloatArray(), arrayOf(0f, 1f))
     }
 
     override fun setWordList(words: List<String>) {
         controlPanel.wordPanel.removeAll()
         words.forEachIndexed { i, word ->
             controlPanel.wordPanel.add(JToggleButton(word).setup {
-                deselectOthers(it)
+                deselectOthersAction(it)
                 presenter.wordSelected(i)
             })
         }
         controlPanel.updateUI()
+    }
+
+    override fun setTimeText(text: String) {
+        controlPanel.timeText.text = text
+    }
+
+    override fun selectWord(index: Int) {
+        (controlPanel.wordPanel.components[index] as JToggleButton).let {
+            deselectOthers(it)
+            it.isSelected = true
+        }
     }
 
 }

@@ -6,8 +6,9 @@ interface SubEditContract {
 
     interface Presenter {
         fun wordSelected(index: Int)
-        fun sliderChanged(index: Int, time: Float)
+        fun sliderChanged(index: Int, pos: Float)
         fun onSave(moveToNext: Boolean)
+        fun adjustSliderLimit(index: Int, timeSec: Float)
     }
 
     interface External {
@@ -24,8 +25,10 @@ interface SubEditContract {
 
     interface View {
         fun showWindow()
-        fun setLimits(fromSec: Float, toSec: Float)
+        fun setLimits(fromSec: String, toSec: String)
         fun setMarkers(markers: List<Float>)
         fun setWordList(words: List<String>)
+        fun setTimeText(text: String)
+        fun selectWord(index: Int)
     }
 }

@@ -75,13 +75,17 @@ fun isSelectedDeselectOthers(ae: ActionEvent): Boolean {
     return selected
 }
 
-fun deselectOthers(ae: ActionEvent): Boolean {
+fun deselectOthersAction(ae: ActionEvent): Boolean {
     val jToggleButton = ae.source as JToggleButton
     val selected = jToggleButton.isSelected
+    deselectOthers(jToggleButton)
+    return selected
+}
+
+fun deselectOthers(jToggleButton: JToggleButton) {
     jToggleButton.parent.components.forEach { component ->
         if (component != jToggleButton && component is JToggleButton) {
             component.isSelected = false
         }
     }
-    return selected
 }

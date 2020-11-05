@@ -117,14 +117,15 @@ class EditorPresenter constructor(
     private fun setReadSrt(file: File) {
         srtInteractor.read(file)
             .subscribeOn(Schedulers.io())
-            .blockingSubscribe({
+            .observeOn(swingScheduler)
+            .subscribe({
                 state.srtRead = it
                 state.srtReadFile = file
                 transport.setSrtReadTitle(file.name)
                 readSubs.setList(it)
             }, {
                 it.printStackTrace()
-            })
+            }).also { disposables.add(it) }
     }
 
     private fun processEvent(uiEvent: TransportContract.UiEvent) {
