@@ -14,6 +14,7 @@ import speecher.interactor.srt.SrtInteractor
 import speecher.interactor.srt.SrtMapper
 import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
+import speecher.util.subs.SubFinder
 
 object Modules {
     private val scopedModules = listOf(
@@ -31,6 +32,7 @@ object Modules {
 
     private val utilModule = module {
         single { TimeFormatter() }
+        factory { SubFinder() }
     }
 
     private val srtModule = module {

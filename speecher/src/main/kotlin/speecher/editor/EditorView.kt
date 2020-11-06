@@ -173,8 +173,16 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
                 scoped<EditorContract.View> { getSource() }
                 scoped<EditorContract.Presenter> {
                     EditorPresenter(
-                        get(), get(), get(), get(), get(), get(), get(),
-                        get(named(PROCESSING)), get(named(SWING))
+                        view = get(),
+                        state = get(),
+                        transport = get(),
+                        srtInteractor = get(),
+                        readSubs = get(),
+                        writeSubs = get(),
+                        subEdit = get(),
+                        pScheduler = get(named(PROCESSING)),
+                        swingScheduler = get(named(SWING)),
+                        subFinder = get()
                     )
                 }
                 scoped { EditorState() }

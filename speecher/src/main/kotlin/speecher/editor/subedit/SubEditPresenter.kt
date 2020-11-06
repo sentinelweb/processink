@@ -27,15 +27,22 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
         view.showWindow()
     }
 
+    // fixme note writesubs is cleared here which might be ok
     override fun setReadSub(sub: Subtitles.Subtitle) {
+        if (state.writeSubs.size > 0) {
+            listener.saveWriteSubs(state.writeSubs)
+        }
         state.readSub = sub
         state.readWordList.clear()
         state.readWordList.addAll(sub.text.map { it.split(" ") }.flatten())
         view.setWordList(state.readWordList)
         state.sliderLimits[0] = sub.fromSec
         state.sliderLimits[1] = sub.toSec
-        state.sliderTimes[0] = sub.fromSec + 1
-        state.sliderTimes[1] = sub.fromSec + 2
+        state.sliderTimes[0] = sub.fromSec
+        state.sliderTimes[1] = sub.toSec
+        state.readWordSelected = -1
+        state.writeSubs.clear()
+        state.readToWriteMap.clear()
         updateSliderLimitTexts()
         updateSliderPositions()
         updateTimeTexts()
@@ -67,6 +74,10 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
         state.sliderPositions[index] = pos
         updateTimeTexts()
         listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
+    }
+
+    override fun onWrite() {
+        listener.saveWriteSubs(state.writeSubs)
     }
 
     override fun adjustSliderLimit(index: Int, timeSec: Float) {

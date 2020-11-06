@@ -10,6 +10,7 @@ import speecher.editor.sublist.SubListContract
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportContract.UiEventType.*
 import speecher.interactor.srt.SrtInteractor
+import speecher.util.subs.SubFinder
 import java.io.File
 
 class EditorPresenter constructor(
@@ -21,8 +22,8 @@ class EditorPresenter constructor(
     private val writeSubs: SubListContract.External,
     private val subEdit: SubEditContract.External,
     private val pScheduler: Scheduler,
-    private val swingScheduler: Scheduler
-
+    private val swingScheduler: Scheduler,
+    private val subFinder: SubFinder
 ) : EditorContract.Presenter, TransportContract.StateListener {
 
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -39,7 +40,9 @@ class EditorPresenter constructor(
 
     private val writeSubListListener = object : SubListContract.Listener {
         override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
-
+            val positionSec = sub.fromSec
+            jumpTo(positionSec)
+            setLooping(sub.fromSec, sub.toSec)
         }
     }
     // endregion
@@ -55,7 +58,25 @@ class EditorPresenter constructor(
         }
 
         override fun saveWriteSubs(subs: List<Subtitles.Subtitle>) {
-            TODO("Not yet implemented")
+            if (subs.size > 0) {
+                val existing = state.srtWrite?.timedTexts.orEmpty().toMutableList()
+                subs.forEach { sub ->
+                    subFinder.findOverlapping(sub, existing)
+                        ?.let {
+                            existing.set(it, sub)
+                        } ?: existing.add(sub)
+                }
+                existing.sortBy { it.fromSec }
+                (state.srtWrite?.copy(timedTexts = existing) ?: Subtitles(timedTexts = existing))
+                    .let {
+                        state.srtWrite = it
+                        writeSubs.setList(it)
+                    }
+            }
+        }
+
+        override fun markDirty() {
+            state.isDirty = true
         }
     }
     // endregion
@@ -189,16 +210,26 @@ class EditorPresenter constructor(
             MENU_FILE_OPEN_SRT_WRITE -> {
                 state.srtWriteFile = null
                 transport.showOpenDialog("Open SRT for write", state.movieFile?.parentFile) { file ->
-                    srtInteractor.read(file).subscribe {
-                        state.srtWrite = it
-                        state.srtWriteFile = file
-                        transport.setSrtWriteTitle(file.name)
-                    }
+                    srtInteractor.read(file)
+                        .subscribe({
+                            state.srtWrite = it
+                            state.srtWriteFile = file
+                            transport.setSrtWriteTitle(file.name)
+                            writeSubs.setList(it)
+                        }, { it.printStackTrace() })
+                        .also { disposables.add(it) }
                 }
             }
             MENU_FILE_SAVE_SRT -> {
-                transport.showSaveDialog("Save SRT", state.movieFile?.parentFile) { file ->
-
+                val currentDir = state.srtWriteFile?.parentFile ?: state.movieFile?.parentFile
+                transport.showSaveDialog("Save SRT", currentDir) { file ->
+                    state.srtWrite?.let {
+                        srtInteractor.write(it, file)
+                            .subscribe({
+                                println("subtitles saved")
+                            }, { it.printStackTrace() })
+                            .also { disposables.add(it) }
+                    }
                 }
             }
             MENU_FILE_EXIT -> {

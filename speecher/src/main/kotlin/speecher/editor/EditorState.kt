@@ -18,5 +18,4 @@ data class EditorState(
     var lastWriteIndex: Int = -1,
     var loopStartSec: Float? = null,
     var loopEndSec: Float? = null
-
 )

@@ -1,7 +1,7 @@
 package speecher.interactor.srt
 
 import io.reactivex.Completable
-import io.reactivex.Observable
+import io.reactivex.Single
 import speecher.domain.Subtitles
 import java.io.File
 
@@ -10,7 +10,7 @@ class SrtInteractor constructor(
     private val writer: SrtFileWriter
 ) {
 
-    fun read(f: File): Observable<Subtitles> = Observable.fromCallable {
+    fun read(f: File): Single<Subtitles> = Single.fromCallable {
         reader.read(f)
     }
 

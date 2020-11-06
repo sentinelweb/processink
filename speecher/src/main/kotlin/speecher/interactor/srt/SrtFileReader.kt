@@ -8,13 +8,13 @@ class SrtFileReader constructor(
     private val mapper: SrtMapper
 ) {
 
-    private var items: MutableList<SrtEntry> = mutableListOf()
     private var currentItem: SrtEntry? = null
     private var lastLineType: LineType = NONE
 
     private enum class LineType { NONE, INDEX, TIME, TEXT, END }
 
     fun read(f: File): Subtitles {
+        val items: MutableList<SrtEntry> = mutableListOf()
         f.forEachLine { line ->
             when (lastLineType) {
                 NONE -> {

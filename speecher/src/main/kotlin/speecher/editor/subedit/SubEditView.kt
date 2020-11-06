@@ -95,6 +95,7 @@ class SubEditView constructor(
 
                 add(JPanel().apply {
                     layout = FlowLayout(FlowLayout.RIGHT)
+                    JButton("Write").setup { presenter.onWrite() }.let { add(it); it }
                     saveButton = JButton("Save").setup { presenter.onSave(false) }.let { add(it); it }
                     saveNextButton = JButton("Save/Next").setup { presenter.onSave(true) }.let { add(it); it }
                 })

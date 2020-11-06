@@ -9,6 +9,7 @@ interface SubEditContract {
         fun sliderChanged(index: Int, pos: Float)
         fun onSave(moveToNext: Boolean)
         fun adjustSliderLimit(index: Int, timeSec: Float)
+        fun onWrite()
     }
 
     interface External {
@@ -21,6 +22,7 @@ interface SubEditContract {
     interface Listener {
         fun onLoopChanged(fromSec: Float, toSec: Float)
         fun saveWriteSubs(subs: List<Subtitles.Subtitle>)
+        fun markDirty()
     }
 
     interface View {
