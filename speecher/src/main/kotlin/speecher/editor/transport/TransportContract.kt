@@ -60,6 +60,7 @@ interface TransportContract {
         MENU_FILE_OPEN_SRT_READ,
         MENU_FILE_OPEN_SRT_WRITE,
         MENU_FILE_SAVE_SRT,
+        MENU_FILE_SAVE_SRT_AS,
         MENU_FILE_EXIT,
         MENU_EDIT_CUT,
         MENU_EDIT_COPY,

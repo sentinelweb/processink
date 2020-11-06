@@ -1,10 +1,13 @@
 package speecher.editor.subedit
 
 import speecher.domain.Subtitles
+import speecher.editor.subedit.word_timeline.WordTimelineContract
 
 interface SubEditContract {
 
     interface Presenter {
+        var wordTimeline: WordTimelineContract.External
+
         fun wordSelected(index: Int)
         fun sliderChanged(index: Int, pos: Float)
         fun onSave(moveToNext: Boolean)

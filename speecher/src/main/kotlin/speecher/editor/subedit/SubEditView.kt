@@ -3,6 +3,7 @@ package speecher.editor.subedit
 import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Subtitles
+import speecher.editor.subedit.word_timeline.WordTimelineView
 import speecher.editor.util.deselectOthers
 import speecher.editor.util.deselectOthersAction
 import speecher.editor.util.setup
@@ -57,6 +58,7 @@ class SubEditView constructor(
         val endLimit: TimeLimitPanel
         val saveButton: JButton
         val saveNextButton: JButton
+        val wordTimeline: WordTimelineView
 
         init {
             add(JPanel().apply {
@@ -90,6 +92,8 @@ class SubEditView constructor(
                             }
                             add(it); it
                         }
+                    wordTimeline = WordTimelineView().let { add(it); it }
+                    presenter.wordTimeline = wordTimeline.external
                     timeText = JLabel("00:00:00 -> 00:00:00").let { add(it); it }
                 })
 

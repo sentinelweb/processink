@@ -133,13 +133,14 @@ class EditorPresenter constructor(
     }
 
     override fun initialise() {
-        // todo
+        // todo rx chain with other methods
         setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
         writeSubs.showWindow(1230, 0)
         writeSubs.setTitle("Write Subtitles")
-        setReadSrt(File(EditorView.DEF_SRT_PATH))
+        openReadSrt(File(EditorView.DEF_SRT_PATH))
+        openWriteSrt(File(EditorView.DEF_WRITE_SRT_PATH))
     }
     // endregion
 
@@ -161,20 +162,6 @@ class EditorPresenter constructor(
                 transport.speed = 1f
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
-    }
-
-    private fun setReadSrt(file: File) {
-        srtInteractor.read(file)
-            .subscribeOn(Schedulers.io())
-            .observeOn(swingScheduler)
-            .subscribe({
-                state.srtRead = it
-                state.srtReadFile = file
-                transport.setSrtReadTitle(file.name)
-                readSubs.setList(it)
-            }, {
-                it.printStackTrace()
-            }).also { disposables.add(it) }
     }
 
     private fun processEvent(uiEvent: TransportContract.UiEvent) {
@@ -199,7 +186,7 @@ class EditorPresenter constructor(
             }
             MENU_FILE_OPEN_SRT_READ -> {
                 transport.showOpenDialog("Open SRT for read", state.movieFile?.parentFile) { file ->
-                    setReadSrt(file)
+                    openReadSrt(file)
                 }
             }
             MENU_FILE_NEW_SRT_WRITE -> {
@@ -210,26 +197,16 @@ class EditorPresenter constructor(
             MENU_FILE_OPEN_SRT_WRITE -> {
                 state.srtWriteFile = null
                 transport.showOpenDialog("Open SRT for write", state.movieFile?.parentFile) { file ->
-                    srtInteractor.read(file)
-                        .subscribe({
-                            state.srtWrite = it
-                            state.srtWriteFile = file
-                            transport.setSrtWriteTitle(file.name)
-                            writeSubs.setList(it)
-                        }, { it.printStackTrace() })
-                        .also { disposables.add(it) }
+                    openWriteSrt(file)
                 }
             }
             MENU_FILE_SAVE_SRT -> {
+                state.srtWriteFile?.apply { saveWriteSrt(this) } ?: println("No write file - use save as")
+            }
+            MENU_FILE_SAVE_SRT_AS -> {
                 val currentDir = state.srtWriteFile?.parentFile ?: state.movieFile?.parentFile
-                transport.showSaveDialog("Save SRT", currentDir) { file ->
-                    state.srtWrite?.let {
-                        srtInteractor.write(it, file)
-                            .subscribe({
-                                println("subtitles saved")
-                            }, { it.printStackTrace() })
-                            .also { disposables.add(it) }
-                    }
+                transport.showSaveDialog("Save SRT As ..", currentDir) { file ->
+                    saveWriteSrt(file)
                 }
             }
             MENU_FILE_EXIT -> {
@@ -253,6 +230,45 @@ class EditorPresenter constructor(
             else -> Unit
         }
         println("EditPresenter: transport.event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
+    }
+
+    private fun saveWriteSrt(file: File) {
+        state.srtWrite?.let {
+            srtInteractor.write(it, file)
+                .subscribeOn(Schedulers.io())
+                .observeOn(swingScheduler)
+                .subscribe({
+                    println("subtitles saved")
+                }, { it.printStackTrace() })
+                .also { disposables.add(it) }
+        }
+    }
+
+    private fun openReadSrt(file: File) {
+        srtInteractor.read(file)
+            .subscribeOn(Schedulers.io())
+            .observeOn(swingScheduler)
+            .subscribe({
+                state.srtRead = it
+                state.srtReadFile = file
+                transport.setSrtReadTitle(file.name)
+                readSubs.setList(it)
+            }, {
+                it.printStackTrace()
+            }).also { disposables.add(it) }
+    }
+
+    private fun openWriteSrt(file: File) {
+        srtInteractor.read(file)
+            .subscribeOn(Schedulers.io())
+            .observeOn(swingScheduler)
+            .subscribe({
+                state.srtWrite = it
+                state.srtWriteFile = file
+                transport.setSrtWriteTitle(file.name)
+                writeSubs.setList(it)
+            }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
 
     private fun jumpTo(positionSec: Float) {

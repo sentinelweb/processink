@@ -4,6 +4,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ext.getOrCreateScope
 import speecher.domain.Subtitles
+import speecher.editor.subedit.word_timeline.WordTimelineContract
 import speecher.util.format.TimeFormatter
 
 class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
@@ -11,6 +12,8 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
     private val view: SubEditContract.View = scope.get()
     private val state: SubEditState = scope.get()
     private val timeFormatter: TimeFormatter = scope.get()
+
+    override lateinit var wordTimeline: WordTimelineContract.External
 
     private val selectedWord: String?
         get() = if (state.readWordSelected in (0..state.readWordList.size - 1)) {
@@ -64,6 +67,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
             state.sliderTimes[1] = state.writeSubs[state.writeWordSelected].toSec
             updateSliderPositions()
             updateTimeTexts()
+            selectedWord?.apply { wordTimeline.setCurrentWord(this) }
         }
         listener.onLoopChanged(state.sliderTimes[0], state.sliderTimes[1])
         println("wordSelected($index) --> $selectedWord")
@@ -104,6 +108,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
                 state.readToWriteMap[state.readWordSelected] = state.writeSubs.size - 1
             }
         }
+        wordTimeline.setWords(state.writeSubs)
         if (moveToNext && state.readWordSelected < state.readWordList.size - 2) {
             state.readWordSelected++
             selectWord(state.readWordSelected)
@@ -132,6 +137,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
 
     private fun updateSliderLimitTexts() {
         view.setLimits(timeFormatter.formatTime(state.sliderLimits[0]), timeFormatter.formatTime(state.sliderLimits[1]))
+        wordTimeline.setLimits(state.sliderLimits[0], state.sliderLimits[1])
     }
 
     private fun updateSliderPositions() {

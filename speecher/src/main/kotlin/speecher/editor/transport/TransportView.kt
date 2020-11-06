@@ -249,6 +249,10 @@ class TransportView(
         saveSrtMenuItem.mnemonic = KeyEvent.VK_S
         saveSrtMenuItem.actionCommand = "Save"
 
+        val saveAsSrtMenuItem = JMenuItem("Save SRT As ...")
+        saveAsSrtMenuItem.mnemonic = KeyEvent.VK_A
+        saveAsSrtMenuItem.actionCommand = "Save As ..."
+
         val exitMenuItem = JMenuItem("Exit")
         exitMenuItem.mnemonic = KeyEvent.VK_X
         exitMenuItem.actionCommand = "Exit"
@@ -287,6 +291,7 @@ class TransportView(
         openReadSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_SRT_READ))
         openWriteSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_OPEN_SRT_WRITE))
         saveSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_SAVE_SRT))
+        saveAsSrtMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_SAVE_SRT_AS))
         exitMenuItem.addActionListener(EventMenuItemListener(MENU_FILE_EXIT))
 
         cutMenuItem.addActionListener(EventMenuItemListener(MENU_EDIT_CUT))
@@ -305,6 +310,7 @@ class TransportView(
         fileMenu.add(newSrtMenuItem)
         fileMenu.add(openWriteSrtMenuItem)
         fileMenu.add(saveSrtMenuItem)
+        fileMenu.add(saveAsSrtMenuItem)
         fileMenu.addSeparator()
         fileMenu.add(exitMenuItem)
 
