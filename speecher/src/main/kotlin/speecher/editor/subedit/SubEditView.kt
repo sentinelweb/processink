@@ -3,6 +3,7 @@ package speecher.editor.subedit
 import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Subtitles
+import speecher.editor.subedit.word_timeline.WordTimelineContract
 import speecher.editor.subedit.word_timeline.WordTimelineView
 import speecher.editor.util.deselectOthers
 import speecher.editor.util.deselectOthersAction
@@ -35,6 +36,8 @@ class SubEditView constructor(
 ) : SubEditContract.View {
 
     private lateinit var controlPanel: SubEditPanel
+    override val wordTimelineExt: WordTimelineContract.External
+        get() = controlPanel.wordTimeline.external
 
     override fun showWindow() {
         SwingUtilities.invokeLater {
@@ -47,6 +50,7 @@ class SubEditView constructor(
             // Display the window.
             frame.pack()
             frame.isVisible = true
+            presenter.onInitialised()
         }
     }
 
@@ -63,7 +67,7 @@ class SubEditView constructor(
         init {
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                preferredSize = Dimension(1024, 200)
+                preferredSize = Dimension(1024, 220)
                 wordPanel = JPanel().let {
                     it.layout = WrapLayout()
                     size = Dimension(1024, 1)
@@ -93,7 +97,6 @@ class SubEditView constructor(
                             add(it); it
                         }
                     wordTimeline = WordTimelineView().let { add(it); it }
-                    presenter.wordTimeline = wordTimeline.external
                     timeText = JLabel("00:00:00 -> 00:00:00").let { add(it); it }
                 })
 

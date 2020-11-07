@@ -6,19 +6,18 @@ import speecher.editor.subedit.word_timeline.WordTimelineContract
 interface SubEditContract {
 
     interface Presenter {
-        var wordTimeline: WordTimelineContract.External
-
         fun wordSelected(index: Int)
         fun sliderChanged(index: Int, pos: Float)
         fun onSave(moveToNext: Boolean)
         fun adjustSliderLimit(index: Int, timeSec: Float)
         fun onWrite()
+        fun onInitialised()
     }
 
     interface External {
         var listener: Listener
         fun showWindow()
-        fun setReadSub(sub: Subtitles.Subtitle)
+        fun setReadSub(readSub: Subtitles.Subtitle)
         fun setWriteSubs(subs: List<Subtitles.Subtitle>)
     }
 
@@ -29,11 +28,13 @@ interface SubEditContract {
     }
 
     interface View {
+        val wordTimelineExt: WordTimelineContract.External
         fun showWindow()
         fun setLimits(fromSec: String, toSec: String)
         fun setMarkers(markers: List<Float>)
         fun setWordList(words: List<String>)
         fun setTimeText(text: String)
         fun selectWord(index: Int)
+
     }
 }

@@ -35,6 +35,7 @@ class EditorPresenter constructor(
             jumpTo(positionSec)
             setLooping(sub.fromSec, sub.toSec)
             subEdit.setReadSub(sub)
+            state.srtWrite?.let { subEdit.setWriteSubs(subFinder.getRangeExclusive(sub, it)) }
         }
     }
 
@@ -47,7 +48,7 @@ class EditorPresenter constructor(
     }
     // endregion
 
-    // region SubListContract.Listener - Read & Write
+    // region SubEditContract.Listener - Read & Write
     private val editSubListener = object : SubEditContract.Listener {
 
         override fun onLoopChanged(fromSec: Float, toSec: Float) {
@@ -133,14 +134,23 @@ class EditorPresenter constructor(
     }
 
     override fun initialise() {
-        // todo rx chain with other methods
-        setMovieFile(File(EditorView.DEF_MOVIE_PATH))
+//        setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
         writeSubs.showWindow(1230, 0)
         writeSubs.setTitle("Write Subtitles")
-        openReadSrt(File(EditorView.DEF_SRT_PATH))
-        openWriteSrt(File(EditorView.DEF_WRITE_SRT_PATH))
+//        openReadSrt(File(EditorView.DEF_SRT_PATH))
+//        openWriteSrt(File(EditorView.DEF_WRITE_SRT_PATH))
+        Single.concat(
+            openMovieSingle(File(EditorView.DEF_MOVIE_PATH)),
+            srtReadOpenSingle(File(EditorView.DEF_SRT_PATH)),
+            srtWriteOpenSingle(File(EditorView.DEF_WRITE_SRT_PATH))
+        )
+            .observeOn(swingScheduler)
+            .subscribe({
+                println("Opened file : $it")
+            }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
     // endregion
 
@@ -150,19 +160,29 @@ class EditorPresenter constructor(
     }
     // endregion
 
+    // region Movie
     private fun setMovieFile(file: File) {
-        Single.just(file)
+        openMovieSingle(file)
+            .observeOn(swingScheduler)
+            .subscribe({
+                println("Opened movie : $file")
+            }, { it.printStackTrace() })
+            .also { disposables.add(it) }
+    }
+
+    private fun openMovieSingle(file: File): Single<File> {
+        return Single.just(file)
             .subscribeOn(Schedulers.io())
             .doOnSuccess { state.movieFile = it }
             .subscribeOn(pScheduler)
             .doOnSuccess { view.openMovie(it) }
-            .observeOn(swingScheduler)
-            .subscribe({
+            .subscribeOn(swingScheduler)
+            .doOnSuccess {
                 transport.setMovieTitle(it.name)
                 transport.speed = 1f
-            }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            }
     }
+    // endregion
 
     private fun processEvent(uiEvent: TransportContract.UiEvent) {
         when (uiEvent.uiEventType) {
@@ -232,12 +252,14 @@ class EditorPresenter constructor(
         println("EditPresenter: transport.event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
     }
 
+    // region SRT read write
     private fun saveWriteSrt(file: File) {
         state.srtWrite?.let {
             srtInteractor.write(it, file)
                 .subscribeOn(Schedulers.io())
                 .observeOn(swingScheduler)
                 .subscribe({
+                    state.isDirty = false
                     println("subtitles saved")
                 }, { it.printStackTrace() })
                 .also { disposables.add(it) }
@@ -245,32 +267,53 @@ class EditorPresenter constructor(
     }
 
     private fun openReadSrt(file: File) {
-        srtInteractor.read(file)
-            .subscribeOn(Schedulers.io())
+        srtReadOpenSingle(file)
             .observeOn(swingScheduler)
             .subscribe({
-                state.srtRead = it
-                state.srtReadFile = file
-                transport.setSrtReadTitle(file.name)
-                readSubs.setList(it)
+                println("opened Read SRT: ${it}")
             }, {
                 it.printStackTrace()
             }).also { disposables.add(it) }
     }
 
+    private fun srtReadOpenSingle(file: File): Single<Subtitles> {
+        return srtOpenSingle(file)
+            .subscribeOn(swingScheduler)
+            .doOnSuccess {
+                state.srtRead = it
+                state.srtReadFile = file
+                transport.setSrtReadTitle(file.name)
+                readSubs.setList(it)
+            }
+    }
+
     private fun openWriteSrt(file: File) {
-        srtInteractor.read(file)
-            .subscribeOn(Schedulers.io())
+        srtWriteOpenSingle(file)
             .observeOn(swingScheduler)
             .subscribe({
-                state.srtWrite = it
-                state.srtWriteFile = file
-                transport.setSrtWriteTitle(file.name)
-                writeSubs.setList(it)
+                println("opened Read SRT: ${it}")
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
     }
 
+    private fun srtWriteOpenSingle(file: File): Single<Subtitles> {
+        return srtOpenSingle(file)
+            .subscribeOn(swingScheduler)
+            .doOnSuccess {
+                state.srtWrite = it
+                state.srtWriteFile = file
+                transport.setSrtWriteTitle(file.name)
+                writeSubs.setList(it)
+            }
+    }
+
+    private fun srtOpenSingle(file: File) =
+        srtInteractor.read(file)
+            .subscribeOn(Schedulers.io())
+
+    //endregion
+
+    // region movie control
     private fun jumpTo(positionSec: Float) {
         println("jumpTo: $positionSec")
         // fixme subtitles aren't syncing up properly after jump
@@ -329,4 +372,5 @@ class EditorPresenter constructor(
         state.lastReadIndex = -1
     }
 
+    // endregion
 }

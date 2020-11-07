@@ -7,6 +7,8 @@ class WordTimelinePresenter constructor(
     private val state: WordTimelineState
 ) : WordTimelineContract.Presenter, WordTimelineContract.External {
 
+    override lateinit var listener: WordTimelineContract.External.Listener
+
     // region SubEditContract.External
     override fun setWords(subs: List<Subtitles.Subtitle>) {
         state.subs.clear()
@@ -29,6 +31,15 @@ class WordTimelinePresenter constructor(
         state.currentWordLimits[0] = fromSec
         state.currentWordLimits[1] = toSec
         view.update()
+    }
+
+    override fun clearCurrentWord() {
+        state.currentWord = null
+        setCurrentWordTime(0f, 0f)
+    }
+
+    override fun onIndexSelected(i: Int) {
+        listener.wordSelected(i, state.subs[i])
     }
     // endregion
 
