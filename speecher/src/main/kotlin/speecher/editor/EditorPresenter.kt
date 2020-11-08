@@ -11,6 +11,7 @@ import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportContract.UiEventType.*
 import speecher.interactor.srt.SrtInteractor
 import speecher.util.subs.SubFinder
+import speecher.util.subs.SubTracker
 import java.io.File
 
 class EditorPresenter constructor(
@@ -23,7 +24,9 @@ class EditorPresenter constructor(
     private val subEdit: SubEditContract.External,
     private val pScheduler: Scheduler,
     private val swingScheduler: Scheduler,
-    private val subFinder: SubFinder
+    private val subFinder: SubFinder,
+    private val readSubTracker: SubTracker,
+    private val writeSubTracker: SubTracker
 ) : EditorContract.Presenter, TransportContract.StateListener {
 
     private val disposables: CompositeDisposable = CompositeDisposable()
@@ -89,7 +92,16 @@ class EditorPresenter constructor(
         subEdit.showWindow()
         readSubs.listener = readSubListListener
         writeSubs.listener = writeSubListListener
-
+        readSubTracker.provider = object : SubTracker.SubProvider {
+            override fun getSubs(): Subtitles? {
+                return state.srtRead
+            }
+        }
+        writeSubTracker.provider = object : SubTracker.SubProvider {
+            override fun getSubs(): Subtitles? {
+                return state.srtWrite
+            }
+        }
         disposables.add(
             transport.events()
                 .subscribe({
@@ -102,16 +114,13 @@ class EditorPresenter constructor(
         )
     }
 
+
     // region Presenter
     override val currentReadSubtitle: String?
-        get() = if (state.currentReadIndex > -1) {
-            state.srtRead?.timedTexts?.get(state.currentReadIndex)?.text?.toString()//joinToString { "," }
-        } else null
+        get() = readSubTracker.currentSubtitle
 
     override val currentWriteSubtitle: String?
-        get() = if (state.currentWriteIndex > -1) {
-            state.srtWrite?.timedTexts?.get(state.currentWriteIndex)?.text?.joinToString { "," }
-        } else null
+        get() = writeSubTracker.currentSubtitle
 
     override fun duration(dur: Float) {
         state.movieDurationSec = dur
@@ -121,7 +130,8 @@ class EditorPresenter constructor(
     override fun position(pos: Float) {
         state.moviePositionSec = pos
         transport.setPosition(pos)
-        checkReadSubtitle(pos)
+        readSubTracker.checkSubtitle(pos)
+        writeSubTracker.checkSubtitle(pos)
         checkLoopingPos(pos)
     }
 
@@ -134,13 +144,10 @@ class EditorPresenter constructor(
     }
 
     override fun initialise() {
-//        setMovieFile(File(EditorView.DEF_MOVIE_PATH))
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
         writeSubs.showWindow(1230, 0)
         writeSubs.setTitle("Write Subtitles")
-//        openReadSrt(File(EditorView.DEF_SRT_PATH))
-//        openWriteSrt(File(EditorView.DEF_WRITE_SRT_PATH))
         Single.concat(
             openMovieSingle(File(EditorView.DEF_MOVIE_PATH)),
             srtReadOpenSingle(File(EditorView.DEF_SRT_PATH)),
@@ -317,10 +324,9 @@ class EditorPresenter constructor(
     private fun jumpTo(positionSec: Float) {
         println("jumpTo: $positionSec")
         // fixme subtitles aren't syncing up properly after jump
-        state.currentReadIndex = -1
-        state.lastReadIndex = -1
+        readSubTracker.scanForPosition(positionSec)
+        writeSubTracker.scanForPosition(positionSec)
         view.seekTo(positionSec)
-        scanForReadSubtitle(positionSec)
     }
 
     private fun setLooping(fromSec: Float, toSec: Float) {
@@ -339,38 +345,5 @@ class EditorPresenter constructor(
             }
         }
     }
-
-    private fun checkReadSubtitle(pos: Float) {
-        @Suppress("ControlFlowWithEmptyBody")
-        if (state.currentReadIndex > -1
-            && (state.srtRead?.timedTexts?.get(state.currentReadIndex)?.between(pos) ?: false)
-        ) {
-
-        } else if (state.currentReadIndex > -1) {
-            state.lastReadIndex = state.currentReadIndex
-            state.currentReadIndex = -1
-        } else {
-            scanForReadSubtitle(pos)
-        }
-    }
-
-    private fun scanForReadSubtitle(positionSec: Float) {
-        state.srtRead?.timedTexts?.let { texts ->
-            val startIndex = state.lastReadIndex
-            (startIndex + 1..texts.size - 1).forEach { testIndex ->
-                val get = texts.get(testIndex)
-                if (get.between(positionSec)) {
-                    state.currentReadIndex = testIndex
-                    return
-                }
-                if (get.toSec < positionSec) {
-                    state.lastReadIndex = testIndex
-                    return
-                }
-            }
-        }
-        state.lastReadIndex = -1
-    }
-
     // endregion
 }

@@ -52,6 +52,7 @@ interface TransportContract {
         LAST,
         LOOP,
         SEEK,
+        SEEK_DRAG,
         FINE_SEEK,
         VOLUME_CHANGED,
         MUTE,

@@ -8,7 +8,8 @@ data class TransportState(
     var posSec: Float = 0.0f,
     var durSec: Float = 0.0f,
     var positionLastUpdate: Long = 0,
-    var loop: Boolean = false
+    var loop: Boolean = false,
+    var positionDragging: Boolean = false
 ) {
 
 }

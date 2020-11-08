@@ -80,7 +80,9 @@ class TransportView(
                         VOLUME -> controlPanel.volumeSlider.value =
                             (it.data as Float * controlPanel.volumeSlider.maximum).toInt()
                         SPEED -> controlPanel.speedLabel.text = "x ${it.data as Float}"
-                        POSITION -> controlPanel.positionLabel.text = it.data as String
+                        POSITION -> {
+                            controlPanel.positionLabel.text = it.data as String
+                        }
                         POSITION_SLIDER -> {
                             val listener = controlPanel.positionSlider.changeListeners[0]
                             controlPanel.positionSlider.removeChangeListener(listener)
@@ -123,6 +125,8 @@ class TransportView(
         val volumeSlider: JSlider
         val positionSlider: JSlider
 
+        var positionSliderDragValue: Float? = null
+
         init {
             preferredSize = Dimension(1024, 250)
             layout = BorderLayout()
@@ -156,23 +160,22 @@ class TransportView(
                 })
 
                 positionSlider = JSlider(0, 1E6.toInt())
-
                     .setup(0, -1, -1, false) {
                         val source = it.source as JSlider
-                        if (!source.getValueIsAdjusting()) {
-                            events.onNext(UiEvent(SEEK, source.value.toFloat() / source.maximum))
+                        positionSliderDragValue = source.value.toFloat() / source.maximum
+                        if (source.getValueIsAdjusting()) {
+                            events.onNext(UiEvent(SEEK_DRAG, positionSliderDragValue))
+                        } else {
+                            events.onNext(
+                                UiEvent(
+                                    SEEK,
+                                    positionSliderDragValue ?: source.value.toFloat() / source.maximum
+                                )
+                            )
+                            positionSliderDragValue = null
                         }
                     }
                     .let { add(it.wrapWithLabel("Position")); it }
-
-                add(
-                    JSlider(-1000000, 1000000)
-                        .setup(null, -1, -1, false) {
-                            val source = it.source as JSlider
-                            events.onNext(UiEvent(FINE_SEEK, source.value.toFloat() / source.maximum))
-
-                        }.wrapWithLabel("Fine")
-                )
 
                 add(JPanel().apply {
                     preferredSize = Dimension(900, 80)
@@ -201,7 +204,6 @@ class TransportView(
                     .setup(null, -1, -1, false) {
                         val source = it.source as JSlider
                         source.orientation = JSlider.VERTICAL
-                        //source.size = Dimension(20,200)
                         source.preferredSize = Dimension(20, 200)
                         events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
                     }.let { add(it, BorderLayout.CENTER); it }

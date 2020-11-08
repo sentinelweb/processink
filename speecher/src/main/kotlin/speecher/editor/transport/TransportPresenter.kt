@@ -54,6 +54,11 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
             FWD -> speed *= 1.1f
             REW -> speed /= 1.1f
             VOLUME_CHANGED -> state.volume = uiEvent.data as Float
+            SEEK_DRAG -> {
+                state.positionDragging = true
+                updates.onNext(UiData(POSITION, timeFormatter.formatTime(uiEvent.data as Float * state.durSec)))
+            }
+            SEEK -> state.positionDragging = false
             else -> Unit
         }
     }
@@ -77,8 +82,10 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
     override fun setPosition(pos: Float) {
         state.posSec = pos
         //if (System.currentTimeMillis() - state.positionLastUpdate > 250) {
-        updates.onNext(UiData(POSITION, timeFormatter.formatTime(pos)))
-        updates.onNext(UiData(POSITION_SLIDER, state.posSec / state.durSec))
+        if (!state.positionDragging) {
+            updates.onNext(UiData(POSITION, timeFormatter.formatTime(pos)))
+            updates.onNext(UiData(POSITION_SLIDER, state.posSec / state.durSec))
+        }
         //    state.positionLastUpdate = System.currentTimeMillis()
         //}
     }

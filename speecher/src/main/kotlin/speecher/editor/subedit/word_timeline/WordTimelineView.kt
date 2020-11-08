@@ -31,10 +31,6 @@ class WordTimelineView() : JPanel(), WordTimelineContract.View {
                     }
                 }
             }
-
-            override fun mouseReleased(e: MouseEvent?) {
-
-            }
         })
     }
 

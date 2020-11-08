@@ -12,9 +12,7 @@ data class EditorState(
     var srtWrite: Subtitles? = null,
     var movieDurationSec: Float? = null,
     var moviePositionSec: Float? = null,
-    var currentReadIndex: Int = -1,
     var currentWriteIndex: Int = -1,
-    var lastReadIndex: Int = -1,
     var lastWriteIndex: Int = -1,
     var loopStartSec: Float? = null,
     var loopEndSec: Float? = null

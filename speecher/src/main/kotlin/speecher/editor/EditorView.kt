@@ -78,7 +78,7 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         fill(255f, 255f, 0f)
         presenter.currentReadSubtitle?.let { text(it, width / 2f, height - 50f) }
         fill(255f, 128f, 0f)
-        presenter.currentWriteSubtitle?.let { text(it, width / 2f, height - 100f) }
+        presenter.currentWriteSubtitle?.let { text(it, width / 2f, height - 25f) }
     }
     // endregion
 
@@ -183,7 +183,9 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
                         subEdit = get(),
                         pScheduler = get(named(PROCESSING)),
                         swingScheduler = get(named(SWING)),
-                        subFinder = get()
+                        subFinder = get(),
+                        readSubTracker = get(),
+                        writeSubTracker = get()
                     )
                 }
                 scoped { EditorState() }
