@@ -7,6 +7,7 @@ import speecher.domain.Subtitles
 import speecher.editor.subedit.word_timeline.WordTimelineContract
 import speecher.util.format.TimeFormatter
 import speecher.util.subs.SubFinder
+import java.lang.Float.min
 
 class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
     private val scope = this.getOrCreateScope()
@@ -95,6 +96,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
     }
 
     override fun onWrite() {
+        listener.markDirty()
         listener.saveWriteSubs(state.writeSubs)
     }
 
@@ -126,6 +128,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
                 state.readToWriteMap[state.readWordSelected] = state.writeSubs.size - 1
             }
         }
+        listener.markDirty()
         view.wordTimelineExt.setWords(state.writeSubs)
         if (moveToNext && state.readWordSelected <= state.readWordList.size - 2) {
             state.readWordSelected++
@@ -135,6 +138,7 @@ class SubEditPresenter : SubEditContract.Presenter, SubEditContract.External {
                 val dist = state.sliderTimes[1] - state.sliderTimes[0]
                 state.sliderTimes[0] = state.sliderTimes[1]
                 state.sliderTimes[1] += dist
+                state.sliderTimes[1] = min(state.sliderTimes[1], state.sliderLimits[1])
             } else {
                 state.sliderTimes[0] = state.writeSubs[state.writeWordSelected].fromSec
                 state.sliderTimes[1] = state.writeSubs[state.writeWordSelected].toSec

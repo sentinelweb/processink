@@ -14,10 +14,14 @@ import speecher.editor.transport.TransportContract
 import speecher.scheduler.ProcessingExecutor
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
+import java.awt.BorderLayout
+import java.awt.Dialog
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.geom.Rectangle2D
 import java.io.File
-import javax.swing.SwingUtilities
+import javax.swing.*
+import javax.swing.border.EmptyBorder
 
 fun main() {
     startKoin {
@@ -146,10 +150,53 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         if (this::movie.isInitialized) pExecutor.execute { movie.volume(vol) }
     }
 
+    override fun showExitDialog() {
+        createConfirmSaveDialog().isVisible = true
+    }
+
+    private fun createConfirmSaveDialog(): JDialog {
+        val modelDialog = JDialog(frame, "Confirm Exit", Dialog.ModalityType.DOCUMENT_MODAL)
+        modelDialog.setBounds(132, 132, 400, 100)
+        val dialogContainer = modelDialog.getContentPane()
+            .apply { layout = BorderLayout() }
+
+        JLabel("There are unsaved changes ... ").let {
+            it.border = EmptyBorder(20, 20, 20, 20)
+            dialogContainer.add(it, BorderLayout.CENTER)
+        }
+        val panel1 = JPanel()
+            .apply { layout = FlowLayout() }
+
+        JButton("Save").apply {
+            addActionListener {
+                presenter.onConfirmSave()
+                modelDialog.setVisible(false)
+            }
+            panel1.add(this)
+        }
+        JButton("Don't Save").apply {
+            addActionListener {
+                presenter.onConfirmDontSave()
+                modelDialog.setVisible(false)
+            }
+            panel1.add(this)
+        }
+        JButton("Save As ..").apply {
+            addActionListener {
+                presenter.onConfirmSaveAs()
+                modelDialog.setVisible(false)
+            }
+            panel1.add(this)
+        }
+
+        dialogContainer.add(panel1, BorderLayout.SOUTH)
+
+        return modelDialog
+    }
+
     override fun seekTo(positionSec: Float) {
         if (this::movie.isInitialized)
             pExecutor.execute { movie.jump(positionSec) }
-
     }
 
     // endregion
@@ -157,11 +204,10 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
     companion object {
         val BASE = "${System.getProperty("user.dir")}/speecher"
         private val BASE_RESOURCES = "$BASE/src/main/resources"
-        var DEF_BASE_PATH =
-            "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
 
+        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
         //var DEF_BASE_PATH = "$BASE/ytcaptiondl/In full - Boris Johnson holds press conference as he defends virus strategy-8aY5J296p9Y"
-        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
+        var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
         var DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
         var DEF_SRT_PATH = "$DEF_BASE_PATH.en.srt"
         var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"

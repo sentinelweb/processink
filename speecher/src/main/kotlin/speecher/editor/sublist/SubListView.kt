@@ -17,6 +17,19 @@ fun main() {
     SubListPresenter().apply {
         showWindow()
         testList(this)
+        listener = object : SubListContract.Listener {
+
+            var selected: Int? = null
+
+            override fun onItemSelected(sub: Subtitles.Subtitle, index: Int) {
+                if (selected == index) {
+                    selected = null
+                } else {
+                    selected = index
+                }
+                setSelected(index)
+            }
+        }
     }
 }
 
@@ -52,6 +65,18 @@ class SubListView(
         }
     }
 
+    override fun setSelected(index: Int) {
+        if (index < listPanel.components.size) {
+            (listPanel.components[index] as SubListItem).selected = true
+        }
+    }
+
+    override fun clearSelected(index: Int) {
+        if (index < listPanel.components.size) {
+            (listPanel.components[index] as SubListItem).selected = false
+        }
+    }
+
     override fun setTitle(title: String) {
         SwingUtilities.invokeLater {
             frame.title = title
@@ -71,7 +96,7 @@ class SubListView(
 
     inner class SubListPanel : JPanel() {
         init {
-            preferredSize = Dimension(200, 650)
+            preferredSize = Dimension(300, 650)
             layout = GridLayout(1, 1)
             listPanel = JPanel().apply {
                 layout = GridLayout(-1, 1)
@@ -80,6 +105,7 @@ class SubListView(
             add(
                 JScrollPane(listPanel).apply {
                     layout = ScrollPaneLayout()
+                    verticalScrollBar.unitIncrement = 32
                 }
             )
         }
@@ -89,27 +115,44 @@ class SubListView(
         private val index: Int,
         item: Subtitles.Subtitle
     ) : JPanel() {
+
+        private val colorSelected = Color.decode("#cccccc")
+        private val colorNormal = Color.decode("#eeeeee")
+        private val colorClick = Color.decode("#aaaaaa")
+
+        private var mouseDown = false
+        var selected = false
+            set(value) {
+                field = value
+                setBackground()
+            }
+
+
         init {
             layout = GridLayout(-1, 1)
 
             add(JLabel("${timeFormatter.formatTime(item.fromSec)} -> ${timeFormatter.formatTime(item.toSec)}s"))
             item.text.forEach { add(JLabel(it)) }
             border = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY)
+            background = if (selected) colorSelected else colorNormal
 
             addMouseListener(object : MouseAdapter() {
-                private var background: Color? = null
 
-                override fun mousePressed(e: MouseEvent?) {
-                    background = getBackground()
-                    setBackground(Color.LIGHT_GRAY)
-                    repaint()
+                override fun mousePressed(e: MouseEvent) {
+                    mouseDown = true
+                    setBackground()
                     presenter.onItemClicked(index)
                 }
 
-                override fun mouseReleased(e: MouseEvent?) {
-                    setBackground(background)
+                override fun mouseReleased(e: MouseEvent) {
+                    mouseDown = false
+                    setBackground()
                 }
             })
+        }
+
+        private fun setBackground() {
+            background = if (mouseDown) colorClick else if (selected) colorSelected else colorNormal
         }
     }
 }

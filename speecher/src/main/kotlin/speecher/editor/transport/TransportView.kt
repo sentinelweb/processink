@@ -1,5 +1,6 @@
 package speecher.editor.transport
 
+import com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
@@ -12,14 +13,12 @@ import speecher.editor.util.isSelected
 import speecher.editor.util.setup
 import speecher.editor.util.titledBorder
 import speecher.editor.util.wrapWithLabel
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.GridLayout
-import java.awt.Point
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.awt.event.KeyEvent
+import java.awt.*
+import java.awt.event.*
 import javax.swing.*
+import javax.swing.border.BevelBorder
+import javax.swing.border.CompoundBorder
+import javax.swing.border.EmptyBorder
 
 
 fun main() {
@@ -31,6 +30,8 @@ fun main() {
             }
         }
         showWindow()
+        Thread.sleep(200)
+        setStatus("some status")
     }
 }
 
@@ -47,13 +48,18 @@ class TransportView(
     override fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Transport")
-            frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            frame.defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
+            addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    events.onNext(UiEvent(MENU_FILE_EXIT, null))
+                }
+            })
 
             controlPanel = TransportPanel()
 
             addMenu(frame)
             frame.add(controlPanel)
-            frame.location = Point(200, 0)
+            frame.location = Point(300, 0)
             controlPanel.updateUI()
 
             disposables.add(
@@ -111,6 +117,14 @@ class TransportView(
         }
     }
 
+    override fun setStatus(status: String) {
+        controlPanel.statusBar.text = status
+    }
+
+    override fun clearStatus() {
+        controlPanel.statusBar.text = ""
+    }
+
     inner class TransportPanel : JPanel() {
         val speedLabel: JLabel
         val titleMovieLabel: JLabel
@@ -124,11 +138,12 @@ class TransportView(
         val durationLabel: JLabel
         val volumeSlider: JSlider
         val positionSlider: JSlider
+        val statusBar: JLabel
 
         var positionSliderDragValue: Float? = null
 
         init {
-            preferredSize = Dimension(1024, 250)
+            preferredSize = Dimension(1024, 280)
             layout = BorderLayout()
 
             add(JPanel().apply {
@@ -213,6 +228,16 @@ class TransportView(
                     .let { add(it, BorderLayout.SOUTH); it }
 
             }, BorderLayout.EAST)
+
+            statusBar = JLabel().let {
+                it.preferredSize = Dimension(1024, 30)
+                it.border = CompoundBorder(
+                    BevelBorder(BevelBorder.RAISED, Color.decode("#cccccc"), Color.decode("#888888")),
+                    EmptyBorder(5, 5, 5, 5)
+                )
+                it.foreground = Color.RED
+                add(it, BorderLayout.SOUTH); it
+            }
         }
 
     }

@@ -37,6 +37,7 @@ class EditorPresenter constructor(
             val positionSec = sub.fromSec
             jumpTo(positionSec)
             setLooping(sub.fromSec, sub.toSec)
+            selectSubtitle(EditorState.SelectedSubtitle(index, true))
             subEdit.setReadSub(sub)
             state.srtWrite?.let { subEdit.setWriteSubs(subFinder.getRangeExclusive(sub, it)) }
         }
@@ -47,6 +48,16 @@ class EditorPresenter constructor(
             val positionSec = sub.fromSec
             jumpTo(positionSec)
             setLooping(sub.fromSec, sub.toSec)
+            selectSubtitle(EditorState.SelectedSubtitle(index, false))
+        }
+    }
+
+    private fun selectSubtitle(selectedSubtitle: EditorState.SelectedSubtitle?) {
+        state.selectedSubtitle?.let {
+            (if (it.isRead) readSubs else writeSubs).setSelected(null)
+        }
+        state.selectedSubtitle = selectedSubtitle?.apply {
+            (if (isRead) readSubs else writeSubs).setSelected(index)
         }
     }
     // endregion
@@ -55,6 +66,10 @@ class EditorPresenter constructor(
     private val editSubListener = object : SubEditContract.Listener {
 
         override fun onLoopChanged(fromSec: Float, toSec: Float) {
+            if (toSec - fromSec < 0.05) {
+                transport.setStatus("TOO SHORT : not setting loop reigon $fromSec -> $toSec ")
+                return
+            }
             setLooping(fromSec, toSec)
             if (fromSec != state.loopStartSec) {
                 jumpTo(fromSec)
@@ -76,6 +91,7 @@ class EditorPresenter constructor(
                         state.srtWrite = it
                         writeSubs.setList(it)
                     }
+                state.srtWriteFile?.let { saveWriteSrt(it) } ?: saveAs()
             }
         }
 
@@ -146,7 +162,7 @@ class EditorPresenter constructor(
     override fun initialise() {
         readSubs.showWindow()
         readSubs.setTitle("Read Subtitles")
-        writeSubs.showWindow(1230, 0)
+        writeSubs.showWindow(1330, 0)
         writeSubs.setTitle("Write Subtitles")
         Single.concat(
             openMovieSingle(File(EditorView.DEF_MOVIE_PATH)),
@@ -155,9 +171,25 @@ class EditorPresenter constructor(
         )
             .observeOn(swingScheduler)
             .subscribe({
-                println("Opened file : $it")
+                when (it) {
+                    is File -> println("Opened movie file : $it")
+                    is Subtitles -> println("Opened subtitles : ${it.timedTexts.size} subtitles")
+                }
+                transport.setStatus("opened: ${EditorView.DEF_BASE_PATH}")
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
+    }
+
+    override fun onConfirmSave() {
+        state.srtWriteFile?.let { saveWriteSrt(it) }
+    }
+
+    override fun onConfirmDontSave() {
+        System.exit(0)
+    }
+
+    override fun onConfirmSaveAs() {
+        saveAs()
     }
     // endregion
 
@@ -172,7 +204,7 @@ class EditorPresenter constructor(
         openMovieSingle(file)
             .observeOn(swingScheduler)
             .subscribe({
-                println("Opened movie : $file")
+                transport.setStatus("Opened movie : $file")
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
     }
@@ -228,16 +260,17 @@ class EditorPresenter constructor(
                 }
             }
             MENU_FILE_SAVE_SRT -> {
-                state.srtWriteFile?.apply { saveWriteSrt(this) } ?: println("No write file - use save as")
+                state.srtWriteFile?.apply { saveWriteSrt(this) } ?: saveAs()
             }
             MENU_FILE_SAVE_SRT_AS -> {
-                val currentDir = state.srtWriteFile?.parentFile ?: state.movieFile?.parentFile
-                transport.showSaveDialog("Save SRT As ..", currentDir) { file ->
-                    saveWriteSrt(file)
-                }
+                saveAs()
             }
             MENU_FILE_EXIT -> {
-                System.exit(0)
+                if (state.isDirty) {
+                    view.showExitDialog()
+                } else {
+                    System.exit(0)
+                }
             }
             MENU_VIEW_READ_SUBLIST -> {
                 readSubs.showWindow()
@@ -259,6 +292,13 @@ class EditorPresenter constructor(
         println("EditPresenter: transport.event: ${uiEvent.uiEventType} -> ${uiEvent.data}")
     }
 
+    private fun saveAs() {
+        val currentDir = state.srtWriteFile?.parentFile ?: state.movieFile?.parentFile
+        transport.showSaveDialog("Save SRT As ..", currentDir) { file ->
+            saveWriteSrt(file)
+        }
+    }
+
     // region SRT read write
     private fun saveWriteSrt(file: File) {
         state.srtWrite?.let {
@@ -267,7 +307,8 @@ class EditorPresenter constructor(
                 .observeOn(swingScheduler)
                 .subscribe({
                     state.isDirty = false
-                    println("subtitles saved")
+                    state.srtWriteFile = file
+                    transport.setStatus("subtitles saved to :- ${file.absolutePath}")
                 }, { it.printStackTrace() })
                 .also { disposables.add(it) }
         }
@@ -277,7 +318,7 @@ class EditorPresenter constructor(
         srtReadOpenSingle(file)
             .observeOn(swingScheduler)
             .subscribe({
-                println("opened Read SRT: ${it}")
+                transport.setStatus("opened Read SRT: ${it}")
             }, {
                 it.printStackTrace()
             }).also { disposables.add(it) }

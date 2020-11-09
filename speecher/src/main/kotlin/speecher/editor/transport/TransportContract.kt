@@ -14,6 +14,8 @@ interface TransportContract {
         val events: Observable<UiEvent>
         val component: JComponent
         fun showWindow()
+        fun setStatus(status: String)
+        fun clearStatus()
     }
 
     interface External {
@@ -32,6 +34,7 @@ interface TransportContract {
         fun setSrtWriteTitle(name: String)
         fun showWindow()
         fun setLooping(looping: Boolean)
+        fun setStatus(status: String)
     }
 
     interface StateListener {

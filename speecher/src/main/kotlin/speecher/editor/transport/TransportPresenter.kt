@@ -1,7 +1,12 @@
 package speecher.editor.transport
 
 import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.Disposables
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
 import org.koin.core.qualifier.named
@@ -10,8 +15,11 @@ import org.koin.ext.getOrCreateScope
 import speecher.editor.transport.TransportContract.UiData
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEventType.*
+import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
 import java.io.File
+import java.time.LocalTime
+import java.util.concurrent.TimeUnit
 import javax.swing.JFileChooser
 
 class TransportPresenter : TransportContract.Presenter, TransportContract.External {
@@ -20,8 +28,10 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
     private val view: TransportContract.View = scope.get()
     private val state: TransportState = scope.get()
     private val timeFormatter: TimeFormatter = scope.get()
+    private val swingScheduler: Scheduler = scope.get(named(SchedulerModule.SWING))
 
     private val disposables: CompositeDisposable = CompositeDisposable()
+    private var statusDisposable: Disposable = Disposables.disposed()
 
     private val updates: Subject<UiData> = BehaviorSubject.create()
     override val updateObservable: Subject<UiData> = updates
@@ -120,6 +130,18 @@ class TransportPresenter : TransportContract.Presenter, TransportContract.Extern
     override fun setLooping(looping: Boolean) {
         state.loop = looping
         updates.onNext(UiData(TransportContract.UiDataType.LOOP, state.loop))
+    }
+
+    override fun setStatus(status: String) {
+        statusDisposable.dispose()
+        val localTime = timeFormatter.formatTime(LocalTime.now())
+        view.setStatus("[$localTime] $status")
+        Single.just("")
+            .delay(5, TimeUnit.SECONDS)
+            .subscribeOn(Schedulers.io())
+            .observeOn(swingScheduler)
+            .subscribe({ view.clearStatus() }, { it.printStackTrace() })
+            .also { statusDisposable = it }
     }
 
     // todo move to view

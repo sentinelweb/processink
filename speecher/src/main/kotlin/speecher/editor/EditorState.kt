@@ -15,5 +15,11 @@ data class EditorState(
     var currentWriteIndex: Int = -1,
     var lastWriteIndex: Int = -1,
     var loopStartSec: Float? = null,
-    var loopEndSec: Float? = null
-)
+    var loopEndSec: Float? = null,
+    var selectedSubtitle: SelectedSubtitle? = null
+) {
+    data class SelectedSubtitle constructor(
+        val index: Int,
+        val isRead: Boolean
+    )
+}

@@ -10,6 +10,4 @@ data class TransportState(
     var positionLastUpdate: Long = 0,
     var loop: Boolean = false,
     var positionDragging: Boolean = false
-) {
-
-}
+)

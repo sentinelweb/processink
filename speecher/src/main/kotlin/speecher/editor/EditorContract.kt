@@ -13,6 +13,9 @@ interface EditorContract {
         fun setPlayState(mode: TransportContract.UiDataType)
         fun movieInitialised()
         fun initialise()
+        fun onConfirmSave()
+        fun onConfirmDontSave()
+        fun onConfirmSaveAs()
 
     }
 
@@ -23,6 +26,7 @@ interface EditorContract {
         fun pause()
         fun volume(vol: Float)
         fun seekTo(positionSec: Float)
+        fun showExitDialog()
     }
 
 }

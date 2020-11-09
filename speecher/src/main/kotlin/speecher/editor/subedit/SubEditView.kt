@@ -46,7 +46,7 @@ class SubEditView constructor(
 
             controlPanel = SubEditPanel()
             frame.add(controlPanel)
-            frame.location = Point(200, 340)
+            frame.location = Point(300, 370)
             // Display the window.
             frame.pack()
             frame.isVisible = true
@@ -84,7 +84,8 @@ class SubEditView constructor(
                         .let {
                             // it.preferredSize = Dimension(1000, 60)
                             it.collisionPolicy = MultiThumbSlider.Collision.STOP_AGAINST
-//                    it.isAutoAdding = false
+                            it.isThumbRemovalAllowed = false
+                            // it.isAutoAdding = false
                             it.addChangeListener { changeEvent ->
                                 val source = changeEvent.source as MultiThumbSlider<*>
                                 if (source.selectedThumb > -1) {

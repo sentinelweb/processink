@@ -32,6 +32,12 @@ class SubListPresenter : SubListContract.Presenter, SubListContract.External {
         view.showWindow(x, y)
     }
 
+    override fun setSelected(index: Int?) {
+        state.selectedIndex?.let { view.clearSelected(it) }
+        index?.let { view.setSelected(it) }
+        state.selectedIndex = index
+    }
+
     override fun setTitle(title: String) {
         view.setTitle(title)
     }
