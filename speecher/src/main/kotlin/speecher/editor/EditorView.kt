@@ -154,6 +154,13 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         createConfirmSaveDialog().isVisible = true
     }
 
+    override fun seekTo(positionSec: Float) {
+        if (this::movie.isInitialized)
+            pExecutor.execute { movie.jump(positionSec) }
+    }
+
+    // endregion
+
     private fun createConfirmSaveDialog(): JDialog {
         val modelDialog = JDialog(frame, "Confirm Exit", Dialog.ModalityType.DOCUMENT_MODAL)
         modelDialog.setBounds(132, 132, 400, 100)
@@ -194,12 +201,6 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         return modelDialog
     }
 
-    override fun seekTo(positionSec: Float) {
-        if (this::movie.isInitialized)
-            pExecutor.execute { movie.jump(positionSec) }
-    }
-
-    // endregion
 
     companion object {
         val BASE = "${System.getProperty("user.dir")}/speecher"
@@ -212,7 +213,8 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         var DEF_SRT_PATH = "$DEF_BASE_PATH.en.srt"
         var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
 
-        val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
+        private val LIB_PATH =
+            "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
 
         @JvmStatic
         val viewModule = module {

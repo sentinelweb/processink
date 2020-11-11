@@ -9,6 +9,7 @@ import speecher.editor.sublist.SubListContract
 import speecher.editor.sublist.SubListPresenter
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
+import speecher.generator.GeneratorPresenter
 import speecher.interactor.srt.SrtFileReader
 import speecher.interactor.srt.SrtFileWriter
 import speecher.interactor.srt.SrtInteractor
@@ -24,7 +25,8 @@ object Modules {
         SubListPresenter.scope,
         TransportPresenter.scope,
         SubEditPresenter.scope,
-        WordTimelineView.scope
+        WordTimelineView.scope,
+        GeneratorPresenter.scopeModule
     )
 
     private val subViewModules = module {
