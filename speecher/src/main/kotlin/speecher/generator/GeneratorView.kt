@@ -65,16 +65,23 @@ class GeneratorView constructor(
         }
         background(0)
         fill(255f, 255f, 255f)
-        activeMovie?.let {
-            movies[it]?.apply {
+        activeMovie?.let { active ->
+            movies[active]?.apply {
                 if (isInitialised) {
-                    movies[it]?.screenRect?.apply {
+                    movies[active]?.screenRect?.apply {
                         image(movie, x, y, width, height)
                     }
                 }
             }
 
         }
+//            movies.values.forEachIndexed {i,movie ->
+//                if (movie.isInitialised) {
+//                    movie.screenRect?.apply {
+//                        image(movie.movie, x + (width / 2 *i), y, width / 2, height)
+//                    }
+//                }
+//            }
         fill(255f, 255f, 0f)
         presenter.subtitle?.let { text(it, width / 2f, height - 25f) }
     }
@@ -100,8 +107,10 @@ class GeneratorView constructor(
                         movieData.duration = movie.duration()
                         movieData.playState = MovieData.State.LOADED
                     }
+                    val index = movies.filter { it.value.movie == movie }.keys.toList()[0]
+                    println("view.movieEvent index=$index activeIndex=${activeMovie}")
                     movieData.position = movie.time().apply {
-                        presenter.onMovieEvent(movies.filter { it.value.movie == movie }.keys.toList()[0], this)
+                        presenter.onMovieEvent(index, this)
                     }
                     movieData.playState = MovieData.State.PLAYING
 

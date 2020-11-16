@@ -19,6 +19,6 @@ interface GeneratorContract {
         val subtitle: String?
 
         fun initialise()
-        fun onMovieEvent(indexOf: Int, pos: Float)
+        fun onMovieEvent(index: Int, pos: Float)
     }
 }

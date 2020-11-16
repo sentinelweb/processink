@@ -31,8 +31,9 @@ class GeneratorPresenter : GeneratorContract.Presenter {
     private val srtInteractor: SrtInteractor = scope.get()
 
     override val subtitle: String?
-        get() = if (state.playIndex > -1) state.words[state.playIndex].text.toString() else "-"
-
+        get() = if (state.playingWord > -1) state.words[state.playingWord].text.toString() else "-"
+    private val loadIndex: Int
+        get() = if (state.activeIndex == 0) 1 else 0
     private val disposables: CompositeDisposable = CompositeDisposable()
 
     init {
@@ -47,10 +48,12 @@ class GeneratorPresenter : GeneratorContract.Presenter {
             .subscribeOn(Schedulers.computation())
             .doOnComplete {
                 buildWordList()
-                state.playIndex = -1
+                state.wordIndex = -1
                 state.startTime = System.currentTimeMillis()
-                view.setActive(0)
-                playNext()
+//                view.volume(0,0.2f)
+//                view.volume(1,0.2f)
+                playFirst()
+                //testPlayMultiple()
             }
             .observeOn(Schedulers.computation())
             .subscribe({
@@ -62,38 +65,81 @@ class GeneratorPresenter : GeneratorContract.Presenter {
             .also { disposables.add(it) }
     }
 
-    private fun playNext() {
-        state.playIndex++
-        state.playIndex = state.playIndex % state.words.size
-        view.seekTo(0, state.words[state.playIndex].fromSec)
+    private fun testPlayMultiple() {
+        view.seekTo(0, 10f)
+        view.seekTo(1, 20f)
     }
 
-    override fun onMovieEvent(indexOf: Int, pos: Float) {
-        if (state.playIndex > -1) {
-            if (pos > state.words[state.playIndex].toSec) {
-                playNext()
+    //    private fun playFirst() {
+//        state.activeIndex = 0
+//        state.wordIndex++
+//        state.wordIndex = state.wordIndex % state.words.size
+//        view.pause(1)
+//        view.seekTo(state.activeIndex, state.words[state.wordIndex].fromSec)
+//        playNext()
+//        loadNext()
+//    }
+    private fun playFirst() {
+        state.activeIndex = 0
+        state.wordIndex++
+        view.seekTo(0, state.words[state.wordIndex].fromSec)
+        view.pause(1)
+        state.wordIndex++
+        view.seekTo(1, state.words[state.wordIndex].fromSec)
+        state.playingWord = 0
+    }
+
+    private fun loadNext() {
+        println("loadNext: $loadIndex -> ${state.wordIndex}")
+        view.pause(loadIndex)
+        view.seekTo(loadIndex, state.words[state.wordIndex].fromSec)
+    }
+
+    private fun playNext() {
+        println("playNext: ${state.activeIndex}")
+        view.setActive(state.activeIndex)
+        view.play(state.activeIndex)
+    }
+
+    override fun onMovieEvent(index: Int, pos: Float) {
+        if (state.playingWord > -1) {
+            //println("presenter.onMovieEvent: index=$index, pos=$pos")
+            if (index == state.activeIndex && pos > state.words[(state.playingWord)].toSec) {
+                //println("presenter.onMovieEvent loopend: ${state.activeIndex} ${state.wordIndex}")
+                view.pause(state.activeIndex)
+                state.activeIndex = loadIndex
+                view.setActive(state.activeIndex)
+                view.play(state.activeIndex)
+                state.playingWord = state.wordIndex
+                state.wordIndex++
+                state.wordIndex = state.wordIndex % state.words.size
+                view.seekTo(loadIndex, state.words[state.wordIndex].fromSec)
+
+//                state.activeIndex = if (state.activeIndex == 0) 1 else 0
+//                playNext()
+//                state.wordIndex++
+//                state.wordIndex = state.wordIndex % state.words.size
+//                loadNext()
+                //state.activeIndex = if (state.activeIndex == 0) 1 else 0
+//                state.wordIndex++
+//                state.wordIndex = state.wordIndex % state.words.size
+//                view.seekTo(state.activeIndex, state.words[state.wordIndex].fromSec)
             }
         }
     }
 
     // region Movie
-    private fun setMovieFile(file: File) {
-        openMovieSingle(file)
-            .observeOn(swingScheduler)
-            .subscribe({
-
-            }, { it.printStackTrace() })
-            .also { disposables.add(it) }
-    }
-
     private fun openMovieSingle(file: File): Single<File> {
         return Single.just(file)
             .subscribeOn(Schedulers.io())
             .doOnSuccess { state.movieFile = it }
             .subscribeOn(pScheduler)
-            .doOnSuccess { view.openMovie(0, it) }
-
+            .doOnSuccess {
+                view.openMovie(0, it)
+                view.openMovie(1, it)
+            }
     }
+    // endregion
 
     private fun buildWordList() {
         state.words = state.speakString
