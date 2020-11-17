@@ -51,7 +51,7 @@ class GeneratorView constructor(
     override fun setup() {
         background(0)
         // Create the font
-        printArray(PFont.list())
+        //printArray(PFont.list())
         f = createFont("Thonburi", 24f)
         textFont(f)
         textSize(20f)
