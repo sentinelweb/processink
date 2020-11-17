@@ -44,7 +44,7 @@ class MovieView constructor(
                 (p.width / movieAspect)
             )
             state.duration = state.movie.duration()
-            state.playState = MovieContract.State.LOADED
+            presenter.changeState(MovieContract.State.LOADED)
         }
         presenter.onMovieEvent()
     }

@@ -22,9 +22,14 @@ class MovieContract {
     interface Presenter {
         fun initialise()
         fun onMovieEvent()
+        fun changeState(state1: State)
     }
 
     interface External {
+        var listener: Listener?
+        val position: Float
+        val duration: Float
+        val playState: State
         fun openMovie(file: File)
         fun setMovieSpeed(speed: Float)
         fun play()
@@ -35,7 +40,9 @@ class MovieContract {
     }
 
     interface Listener {
-
+        fun onSubtitleStart(sub: Subtitles.Subtitle)
+        fun onSubtitleFinished(sub: Subtitles.Subtitle)
+        fun onStateChange(state: State)
     }
 
     interface Sketch {
