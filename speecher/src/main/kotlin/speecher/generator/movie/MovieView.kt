@@ -20,10 +20,8 @@ class MovieView constructor(
 
     override fun render() {
         if (state.isMovieInitialised() && !state.isInitialised()) {
-            //if (state.movie.available()) {
             state.movie.read()
             initialise()
-            //}
         }
         if (state.isInitialised()) {
             state.screenRect?.apply {
@@ -34,6 +32,7 @@ class MovieView constructor(
 
     override fun cleanup() {
         if (state.isMovieInitialised()) {
+            state.movie.stop()
             state.movie.dispose()
         }
     }

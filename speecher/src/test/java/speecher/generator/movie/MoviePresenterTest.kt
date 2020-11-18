@@ -112,7 +112,6 @@ class MoviePresenterTest : KoinComponent {
         waitFor { sut.position >= 31 }
 
         assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(31f)))
-        //assertEquals(PAUSED, sut.playState)
     }
 
 
@@ -168,8 +167,10 @@ class MoviePresenterTest : KoinComponent {
     }
 
     private inner class SubTestListener : MovieContract.Listener {
+
         var subStartCalled = false
         var subFinishedCalled = false
+
         override fun onSubtitleStart(sub: Subtitles.Subtitle) {
             subStartCalled = true
         }
@@ -178,9 +179,26 @@ class MoviePresenterTest : KoinComponent {
             subFinishedCalled = true
         }
 
-        override fun onStateChange(state: MovieContract.State) {
+    }
 
-        }
+    @Test
+    fun testMovieSpeed() {
+        sut.openMovie(File(DEF_MOVIE_PATH))
+        sut.play()
+        sut.volume(0.2f)
+        waitFor { sut.playState == PLAYING }
+        sut.setMovieSpeed(2f)
+
+        val start = System.currentTimeMillis()
+
+        waitFor { sut.position >= 2 }
+
+        val timeTaken = System.currentTimeMillis() - start
+
+
+        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(2f)))
+        assertThat(sut.position, `is`(Matchers.lessThanOrEqualTo(2.1f)))
+        assertThat(timeTaken, `is`(Matchers.lessThanOrEqualTo(1050L)))
 
     }
 

@@ -69,7 +69,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
                 if (state.subPauseOnFinish) {
                     pause()
                 }
-                println("after pause")
+                println("after subfinish pause")
                 listener?.onSubtitleFinished(it)
             }
     }

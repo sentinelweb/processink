@@ -35,7 +35,6 @@ class MovieContract {
     interface Listener {
         fun onSubtitleStart(sub: Subtitles.Subtitle)
         fun onSubtitleFinished(sub: Subtitles.Subtitle)
-        fun onStateChange(state: State)
     }
 
     interface Sketch {
