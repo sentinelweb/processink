@@ -11,18 +11,11 @@ class MovieContract {
         fun render()
         fun hasMovie(m: Movie): Boolean
         fun movieEvent(m: Movie)
-//        fun openMovie(file: File)
-//        fun setMovieSpeed(speed: Float)
-//        fun play()
-//        fun pause()
-//        fun volume(vol: Float)
-//        fun seekTo(positionSec: Float)
+        fun cleanup()
     }
 
     interface Presenter {
-        fun initialise()
         fun onMovieEvent()
-        fun changeState(state1: State)
     }
 
     interface External {
@@ -36,7 +29,7 @@ class MovieContract {
         fun pause()
         fun volume(vol: Float)
         fun seekTo(positionSec: Float)
-        fun setSubtitle(sub: Subtitles.Subtitle)
+        fun setSubtitle(sub: Subtitles.Subtitle, pauseOnFinish: Boolean = true)
     }
 
     interface Listener {
@@ -49,5 +42,5 @@ class MovieContract {
         fun addView(v: View)
     }
 
-    enum class State { INIT, LOADED, PLAYING, PAUSED, STOPPED, SEEKING }
+    enum class State { NOT_INIT, INIT, LOADED, PLAYING, PAUSED, STOPPED, SEEKING }
 }

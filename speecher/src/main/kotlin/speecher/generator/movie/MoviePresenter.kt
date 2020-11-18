@@ -1,6 +1,10 @@
 package speecher.generator.movie
 
+import io.reactivex.Completable
 import io.reactivex.Scheduler
+import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
+import org.gstreamer.State
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ext.getOrCreateScope
@@ -14,7 +18,8 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
     private val scope = this.getOrCreateScope()
     private val view: MovieContract.View = scope.get()
     private val state: MovieState = scope.get()
-    private val pScheduler: Scheduler = scope.get(named(SchedulerModule.PROCESSING))
+    private val processingScheduler: Scheduler = scope.get(named(SchedulerModule.PROCESSING))
+    private val playerScheduler: Scheduler = scope.get(named(SchedulerModule.PLAYER))
 
     override var listener: MovieContract.Listener? = null
     override val position: Float
@@ -22,35 +27,55 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
     override val duration: Float
         get() = state.duration ?: 0f
     override val playState: MovieContract.State
-        get() = state.playState
+        get() = mapState()
 
-    override fun initialise() {
+    private val disposables: CompositeDisposable = CompositeDisposable()
 
-    }
+    private fun mapState(): MovieContract.State =
+        if (state.isInitialised()) {
+            if (!state.isMovieInitialised()) {
+                INIT
+            } else {
+                if (state.movie.isSeeking() || state.seeking) {
+                    SEEKING
+                } else {
+                    when (state.movie.playerState()) {
+                        State.READY -> LOADED
+                        State.VOID_PENDING -> INIT
+                        State.NULL -> INIT
+                        State.PAUSED -> PAUSED
+                        State.PLAYING -> PLAYING
+                        null -> INIT
+                    }
+                }
+            }
+        } else NOT_INIT
 
+    // region External
     override fun onMovieEvent() {
-        state.position
-            ?.takeIf { it < state.movie.time() && state.playState != PLAYING && state.playState != PAUSED }
-            ?.let { changeState(PLAYING) }
-
         state.position = state.movie.time()
         state.apply { println("state: $playState -> $position") }
         state.subtitle
-            ?.takeIf { it.fromSec <= state.position ?: 0f && !state.subStartCalled }
+            ?.takeIf { it.fromSec <= state.position ?: 0f && !state.onSubStartCalled }
             ?.let {
-                state.subStartCalled = true
-                changeState(PLAYING)
+                state.onSubStartCalled = true
                 listener?.onSubtitleStart(it)
             }
 
         state.subtitle
-            ?.takeIf { it.toSec <= state.position ?: Float.MAX_VALUE }
+            ?.takeIf { it.toSec <= state.position ?: 0f }
             ?.let {
-                changeState(PAUSED)
+                println("sub finished : pausing = ${state.subPauseOnFinish}")
+                if (state.subPauseOnFinish) {
+                    pause()
+                }
+                println("after pause")
                 listener?.onSubtitleFinished(it)
             }
     }
+    // endregion
 
+    // region External
     override fun openMovie(file: File) {
         view.createMovie(file)
     }
@@ -60,16 +85,21 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
     }
 
     override fun play() {
-        state.movie.play()
-    }
-
-    override fun changeState(state1: MovieContract.State) {
-        state.playState = state1
+        Completable.fromCallable {
+            state.movie.play()
+        }
+            .subscribeOn(processingScheduler)
+            .subscribe({ println("Playing") }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
 
     override fun pause() {
-        state.movie.pause()
-        changeState(PAUSED)
+        Completable.fromCallable {
+            state.movie.pause()
+        }
+            .subscribeOn(processingScheduler)
+            .subscribe({ println("Paused") }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
 
     override fun volume(vol: Float) {
@@ -77,15 +107,27 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
     }
 
     override fun seekTo(positionSec: Float) {
-        state.movie.jump(positionSec)
-        changeState(SEEKING)
+        state.seeking = true
+        Single.fromCallable {
+            val startTime = System.currentTimeMillis()
+            state.movie.jump(positionSec)
+            startTime
+        }
+            .subscribeOn(playerScheduler)
+            .subscribe({
+                state.seeking = false
+                println("Jump finished: t = ${System.currentTimeMillis() - it}")
+            }, { it.printStackTrace() })
+            .also { disposables.add(it) }
     }
 
-    override fun setSubtitle(sub: Subtitles.Subtitle) {
-        state.subStartCalled = false
+    override fun setSubtitle(sub: Subtitles.Subtitle, pauseOnFinish: Boolean) {
+        state.onSubStartCalled = false
+        state.subPauseOnFinish = pauseOnFinish
         state.subtitle = sub
         seekTo(sub.fromSec)
     }
+    // endregion
 
     companion object {
         @JvmStatic

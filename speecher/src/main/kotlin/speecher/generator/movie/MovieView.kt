@@ -14,15 +14,27 @@ class MovieView constructor(
 ) : MovieContract.View {
 
     override fun createMovie(file: File) {
-        state.movie = Movie(p, file.absolutePath)
+        state.movie = MovieWrapper(p, file.absolutePath)
         sketch.addView(this)
     }
 
     override fun render() {
+        if (state.isMovieInitialised() && !state.isInitialised()) {
+            //if (state.movie.available()) {
+            state.movie.read()
+            initialise()
+            //}
+        }
         if (state.isInitialised()) {
             state.screenRect?.apply {
                 p.image(state.movie, x, y, width, height)
             }
+        }
+    }
+
+    override fun cleanup() {
+        if (state.isMovieInitialised()) {
+            state.movie.dispose()
         }
     }
 
@@ -34,18 +46,21 @@ class MovieView constructor(
 
     override fun movieEvent(m: Movie) {
         if (!state.isInitialised()) {
-            state.movieDimension = Dimension(state.movie.width, state.movie.height)
-            val movieAspect = state.movieDimension!!.width / state.movieDimension!!.height.toFloat()
-            val screenAspect = p.width / p.height.toFloat()
-            state.screenRect = Rectangle2D.Float(
-                0f,
-                ((p.height - p.height * screenAspect / movieAspect) / 2f),
-                p.width.toFloat(),
-                (p.width / movieAspect)
-            )
-            state.duration = state.movie.duration()
-            presenter.changeState(MovieContract.State.LOADED)
+            initialise()
         }
         presenter.onMovieEvent()
+    }
+
+    private fun initialise() {
+        state.movieDimension = Dimension(state.movie.width, state.movie.height)
+        val movieAspect = state.movieDimension!!.width / state.movieDimension!!.height.toFloat()
+        val screenAspect = p.width / p.height.toFloat()
+        state.screenRect = Rectangle2D.Float(
+            0f,
+            ((p.height - p.height * screenAspect / movieAspect) / 2f),
+            p.width.toFloat(),
+            (p.width / movieAspect)
+        )
+        state.duration = state.movie.duration()
     }
 }

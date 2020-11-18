@@ -51,6 +51,10 @@ class TestPApplet : PApplet(), MovieContract.Sketch, KoinComponent {
         movieViews.add(v)
     }
 
+    fun cleanup() {
+        movieViews.forEach { it.cleanup() }
+    }
+
     companion object {
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
 
