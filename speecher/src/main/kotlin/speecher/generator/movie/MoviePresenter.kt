@@ -127,6 +127,11 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
         state.subtitle = sub
         seekTo(sub.fromSec)
     }
+
+    override fun cleanup() {
+        disposables.dispose()
+        view.cleanup()
+    }
     // endregion
 
     companion object {

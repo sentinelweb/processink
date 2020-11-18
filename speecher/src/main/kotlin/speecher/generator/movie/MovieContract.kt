@@ -30,6 +30,7 @@ class MovieContract {
         fun volume(vol: Float)
         fun seekTo(positionSec: Float)
         fun setSubtitle(sub: Subtitles.Subtitle, pauseOnFinish: Boolean = true)
+        fun cleanup()
     }
 
     interface Listener {
@@ -39,6 +40,7 @@ class MovieContract {
 
     interface Sketch {
         fun addView(v: View)
+        fun cleanup()
     }
 
     enum class State { NOT_INIT, INIT, LOADED, PLAYING, PAUSED, STOPPED, SEEKING }

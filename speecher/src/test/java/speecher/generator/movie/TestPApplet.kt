@@ -51,7 +51,7 @@ class TestPApplet : PApplet(), MovieContract.Sketch, KoinComponent {
         movieViews.add(v)
     }
 
-    fun cleanup() {
+    override fun cleanup() {
         movieViews.forEach { it.cleanup() }
     }
 

@@ -42,7 +42,6 @@ class MovieView constructor(
             state.movie == m
         } else false
 
-
     override fun movieEvent(m: Movie) {
         if (!state.isInitialised()) {
             initialise()
@@ -51,15 +50,17 @@ class MovieView constructor(
     }
 
     private fun initialise() {
-        state.movieDimension = Dimension(state.movie.width, state.movie.height)
-        val movieAspect = state.movieDimension!!.width / state.movieDimension!!.height.toFloat()
-        val screenAspect = p.width / p.height.toFloat()
-        state.screenRect = Rectangle2D.Float(
-            0f,
-            ((p.height - p.height * screenAspect / movieAspect) / 2f),
-            p.width.toFloat(),
-            (p.width / movieAspect)
-        )
-        state.duration = state.movie.duration()
+        if (state.movie.width > 0 && state.movie.height > 0) {
+            state.movieDimension = Dimension(state.movie.width, state.movie.height)
+            val movieAspect = state.movieDimension!!.width / state.movieDimension!!.height.toFloat()
+            val screenAspect = p.width / p.height.toFloat()
+            state.screenRect = Rectangle2D.Float(
+                0f,
+                ((p.height - p.height * screenAspect / movieAspect) / 2f),
+                p.width.toFloat(),
+                (p.width / movieAspect)
+            )
+            state.duration = state.movie.duration()
+        }
     }
 }
