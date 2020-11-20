@@ -51,7 +51,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             }
         } else NOT_INIT
 
-    // region External
+    // region Presenter
     override fun onMovieEvent() {
         state.position = state.movie.time()
         state.apply { println("state: $playState -> $position") }
@@ -73,10 +73,16 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
                 listener?.onSubtitleFinished(it)
             }
     }
+
+    override fun flagReady() {
+        state.ready = true
+        listener?.onReady()
+    }
     // endregion
 
     // region External
     override fun openMovie(file: File) {
+        state.ready = false
         view.createMovie(file)
     }
 

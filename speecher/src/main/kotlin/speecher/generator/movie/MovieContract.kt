@@ -16,6 +16,7 @@ class MovieContract {
 
     interface Presenter {
         fun onMovieEvent()
+        fun flagReady()
     }
 
     interface External {
@@ -34,6 +35,7 @@ class MovieContract {
     }
 
     interface Listener {
+        fun onReady()
         fun onSubtitleStart(sub: Subtitles.Subtitle)
         fun onSubtitleFinished(sub: Subtitles.Subtitle)
     }

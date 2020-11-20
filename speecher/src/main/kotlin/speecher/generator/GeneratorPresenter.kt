@@ -47,38 +47,47 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
     }
 
     override fun initialise() {
-        Single.concat(
-            openMovieSingle(File(DEF_MOVIE_PATH)),
-            srtOpenSingle(File(DEF_WRITE_SRT_PATH))
-        )
+        srtOpenSingle(File(DEF_WRITE_SRT_PATH))
             .subscribeOn(Schedulers.computation())
-            .observeOn(pScheduler)
-            .doOnComplete {
+            .doOnSuccess {
                 buildWordList()
+            }
+            .doOnSuccess {
+                println("Opened subtitles : ${it.timedTexts.size} subtitles")
+            }
+            .flatMap {
+                openMovieSingle(File(DEF_MOVIE_PATH))
+            }
+            //.observeOn(pScheduler)
+            .doOnSuccess {
                 state.wordIndex = -1
                 state.startTime = System.currentTimeMillis()
-                movies.forEach {
-                    it.volume(0.05f)
-                    it.listener = object : MovieContract.Listener {
-                        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
-
-                        }
-
-                        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
-                            playNext()
-                        }
-
-                    }
+                movies.forEachIndexed { i, movie ->
+                    movie.volume(0.05f)
+                    //movie.pause()
                 }
-                playFirst()
+
             }
             .subscribe({
-                when (it) {
-                    is File -> println("Opened movie file : $it")
-                    is Subtitles -> println("Opened subtitles : ${it.timedTexts.size} subtitles")
-                }
+                println("Opened movie file : $it")
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
+    }
+
+    inner class MvListener(val index: Int) : MovieContract.Listener {
+        override fun onReady() {
+            println("onReady($index)")
+            if (index == 0) playFirst()
+            else movies[index].pause()
+        }
+
+        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
+
+        }
+
+        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
+            playNext()
+        }
     }
 
     private fun playNext() {
@@ -92,15 +101,14 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
     private fun playFirst() {
         state.activeIndex = 0
         movies[state.activeIndex].play()
-        movies[loadIndex].pause()
+        //movies[loadIndex].pause()
         state.wordIndex++
         //state.wordIndex = state.wordIndex % state.words.size
         movies[state.activeIndex].setSubtitle(state.words[state.wordIndex])
         state.wordIndex++
         //state.wordIndex = state.wordIndex % state.words.size
-        movies[loadIndex].setSubtitle(state.words[state.wordIndex])
+        //movies[loadIndex].setSubtitle(state.words[state.wordIndex])
     }
-
 
     override fun onMovieEvent(index: Int, pos: Float) {
 //        if (state.playingWord > -1) {
@@ -128,10 +136,15 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
             .doOnSuccess { state.movieFile = it }
             .subscribeOn(pScheduler)
             .doOnSuccess { file ->
-                movies.add(MoviePresenter())
-                movies.add(MoviePresenter())
-                movies.forEach { movie -> movie.openMovie(file) }
+                makeMovie(0, file)
+                makeMovie(1, file)
             }
+    }
+
+    private fun makeMovie(i: Int, file: File) = MoviePresenter().apply {
+        listener = MvListener(i)
+        movies.add(this)
+        openMovie(file)
     }
     // endregion
 

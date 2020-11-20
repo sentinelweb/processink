@@ -1,10 +1,12 @@
 package speecher.generator.movie
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.hamcrest.Matchers.lessThanOrEqualTo
 import org.hamcrest.core.Is.`is`
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.koin.core.KoinComponent
@@ -40,13 +42,16 @@ class MoviePresenterTest : KoinComponent {
     @After
     fun tearDown() {
         stopKoin()
-        testApplet.cleanup()
+        sut.cleanup()
     }
 
     private fun waitFor(sleep: Long = 50, timeout: Long = 5000, condition: () -> Boolean) {
         val start = System.currentTimeMillis()
-        while (!condition.invoke() && System.currentTimeMillis() - start < timeout) {
+        while (!condition.invoke()) {
             Thread.sleep(sleep)
+            if (System.currentTimeMillis() - start > timeout) {
+                assertTrue("Timeout waiting for state", false)
+            }
         }
     }
 
@@ -58,7 +63,7 @@ class MoviePresenterTest : KoinComponent {
 
         waitFor { sut.position >= 2 }
 
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(2f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(2f)))
         assertEquals(PLAYING, sut.playState)
     }
 
@@ -88,18 +93,20 @@ class MoviePresenterTest : KoinComponent {
         println("sek time : ${System.currentTimeMillis() - time}")
         assertEquals(SEEKING, sut.playState)
 
-        waitFor { sut.position >= 20 }
+        waitFor { sut.position >= 20.1 }
 
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(20f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(20.1f)))
         assertEquals(PLAYING, sut.playState)
     }
 
     @Test
     fun testMovieNoPlaySeek() {
+        val testListener = TestListener()
+        sut.listener = testListener
         sut.openMovie(File(DEF_MOVIE_PATH))
         sut.volume(0.0f)
         sut.pause()
-        waitFor { sut.playState == PAUSED }
+        waitFor { testListener.readyCalled }
 
         val time = System.currentTimeMillis()
         sut.seekTo(30f)
@@ -111,7 +118,7 @@ class MoviePresenterTest : KoinComponent {
 
         waitFor { sut.position >= 31 }
 
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(31f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(31f)))
     }
 
 
@@ -135,19 +142,20 @@ class MoviePresenterTest : KoinComponent {
 
         waitFor { sut.position >= 21 }
 
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(21f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(21f)))
     }
 
     @Test
     fun testMovieSubtitle() {
         val fixSub = Subtitles.Subtitle(10f, 12f, listOf())
-        val testListener = SubTestListener()
+        val testListener = TestListener()
+        sut.listener = testListener
         sut.openMovie(File(DEF_MOVIE_PATH))
         sut.play()
         sut.volume(0.2f)
-        waitFor { sut.playState == PLAYING }
+        waitFor { testListener.readyCalled }
 
-        sut.listener = testListener
+
         val time = System.currentTimeMillis()
         sut.setSubtitle(fixSub)
         println("seek time : ${System.currentTimeMillis() - time}")
@@ -156,20 +164,25 @@ class MoviePresenterTest : KoinComponent {
         waitFor { testListener.subStartCalled }
 
         assertEquals(PLAYING, sut.playState)
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(10f)))
-        assertThat(sut.position, `is`(Matchers.lessThanOrEqualTo(10.1f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(10f)))
+        assertThat(sut.position, `is`(lessThanOrEqualTo(10.1f)))
 
         waitFor { testListener.subFinishedCalled }
 
         assertEquals(PAUSED, sut.playState)
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(12f)))
-        assertThat(sut.position, `is`(Matchers.lessThanOrEqualTo(12.1f)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(12f)))
+        assertThat(sut.position, `is`(lessThanOrEqualTo(12.1f)))
     }
 
-    private inner class SubTestListener : MovieContract.Listener {
+    private inner class TestListener : MovieContract.Listener {
 
+        var readyCalled = false
         var subStartCalled = false
         var subFinishedCalled = false
+
+        override fun onReady() {
+            readyCalled = true
+        }
 
         override fun onSubtitleStart(sub: Subtitles.Subtitle) {
             subStartCalled = true
@@ -196,9 +209,9 @@ class MoviePresenterTest : KoinComponent {
         val timeTaken = System.currentTimeMillis() - start
 
 
-        assertThat(sut.position, `is`(Matchers.greaterThanOrEqualTo(2f)))
-        assertThat(sut.position, `is`(Matchers.lessThanOrEqualTo(2.1f)))
-        assertThat(timeTaken, `is`(Matchers.lessThanOrEqualTo(1050L)))
+        assertThat(sut.position, `is`(greaterThanOrEqualTo(2f)))
+        assertThat(sut.position, `is`(lessThanOrEqualTo(2.1f)))
+        assertThat(timeTaken, `is`(lessThanOrEqualTo(1050L)))
 
     }
 

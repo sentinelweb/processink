@@ -15,6 +15,7 @@ class MovieView constructor(
 
     override fun createMovie(file: File) {
         state.movie = MovieWrapper(p, file.absolutePath)
+        state.movie.play()
         sketch.addView(this)
     }
 
@@ -61,6 +62,7 @@ class MovieView constructor(
                 (p.width / movieAspect)
             )
             state.duration = state.movie.duration()
+            presenter.flagReady()
         }
     }
 }

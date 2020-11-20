@@ -13,7 +13,8 @@ data class MovieState constructor(
     var subtitle: Subtitles.Subtitle? = null,
     var onSubStartCalled: Boolean = false,
     var subPauseOnFinish: Boolean = false,
-    var seeking: Boolean = false
+    var seeking: Boolean = false,
+    var ready: Boolean = false
 ) {
 
     lateinit var movie: MovieWrapper
