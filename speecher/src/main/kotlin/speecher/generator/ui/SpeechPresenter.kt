@@ -7,22 +7,30 @@ import org.koin.ext.getOrCreateScope
 import speecher.di.Modules
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.generator.ui.SpeechContract.CursorPosition.*
+import speecher.generator.ui.SpeechContract.SortOrder.*
+import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
+import java.lang.Integer.max
 import javax.swing.SwingUtilities
+import kotlin.math.min
 
 fun main() {
     startKoin { modules(Modules.allModules) }
     SpeechPresenter().apply {
         listener = object : SpeechContract.Listener {
             override fun sentenceChanged(sentence: Sentence) {
-                println("listener:sentence")
+                val string = sentence.words.map {
+                    if (it != CURSOR) it.sub.text[0] else ""
+                }
+                println("listener: sentence = $string")
             }
 
             override fun play() {
-                println("listener:play")
+                playing = true
             }
 
             override fun pause() {
-                println("listener:pause")
+                playing = false
             }
 
         }
@@ -35,10 +43,9 @@ fun main() {
     }
 }
 
-class SpeechPresenter :
+class SpeechPresenter() :
     SpeechContract.Presenter,
-    SpeechContract.External,
-    SubtitleChipView.Listener {
+    SpeechContract.External {
 
     private val scope = this.getOrCreateScope()
     private val view: SpeechContract.View = scope.get()
@@ -46,66 +53,143 @@ class SpeechPresenter :
 
     // region presenter
     override fun moveCursor(pos: SpeechContract.CursorPosition) {
-        println("moveCursor $pos")
+        when (pos) {
+            START -> state.cursorPos = 0
+            LAST -> state.cursorPos = max(0, state.cursorPos - 1)
+            NEXT -> state.cursorPos = min(state.wordList.size, state.cursorPos + 1)
+            END -> state.cursorPos = state.wordList.size
+        }
+        buildSentence()
     }
 
     override fun sortOrder(order: SpeechContract.SortOrder) {
-        println("sort $order")
+        state.sortOrder = order
+        updateSubs()
     }
 
     override fun play() {
-        println("play")
+        listener.play()
     }
 
     override fun pause() {
-        println("pause")
+        listener.pause()
     }
 
     override fun searchText(text: String) {
-        println("search $text")
+        state.searchText = text
+        updateSubs()
     }
 
     override fun openSubs() {
         println("openSubs")
     }
+
+    override fun deleteWord() {
+        if (state.cursorPos < state.wordList.size) {
+            state.wordList = state.wordList.toMutableList().apply { removeAt(state.cursorPos) }
+            buildSentence()
+        }
+        listener.sentenceChanged(Sentence(state.wordList))
+    }
+
+    override fun initView() {
+        buildSentence()
+    }
+
     // endregion
 
     // region External
     override lateinit var listener: SpeechContract.Listener
 
+    override var playing: Boolean = false
+        get() = field
+        set(value) {
+            field = value
+            view.setPlaying(field)
+        }
+
     override fun setSubs(subs: List<Subtitles.Subtitle>) {
         state.subs = subs
-        view.updateSubList(subs)
+        updateSubs()
     }
 
     override fun showWindow() {
         view.showWindow()
     }
-
     // endregion
 
-    // region SubtitleChipView.Listener
-    override fun onItemClicked(sub: Subtitles.Subtitle) {
-        println("subchip.onItemClicked $sub")
-    }
+    // region SubtitleChipView.Listener [sub]
+    inner class SubChipListener : SubtitleChipView.Listener {
+        override fun onItemClicked(sub: Subtitles.Subtitle) {
+            //println("subchip.onItemClicked $sub")
+            state.wordList = state.wordList.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
+            state.cursorPos++
+            buildSentence()
+            listener.sentenceChanged(Sentence(state.wordList))
+        }
 
-    override fun onPreviewClicked(sub: Subtitles.Subtitle) {
-        println("subchip.onPreviewClicked $sub")
+        override fun onPreviewClicked(sub: Subtitles.Subtitle) {
+            println("subchip.onPreviewClicked $sub")
+        }
     }
     // endregion
 
+    // region SubtitleChipView.Listener [word]
+    inner class WordChipListener : SubtitleChipView.Listener {
+
+        override fun onItemClicked(sub: Subtitles.Subtitle) {
+            println("word.onItemClicked $sub")
+        }
+
+        override fun onPreviewClicked(sub: Subtitles.Subtitle) {
+            println("word.onPreviewClicked $sub")
+        }
+    }
+    // endregion
+
+    private fun buildSentence() {
+        view.updateSentence(
+            state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
+        )
+    }
+
+    private fun updateSubs() {
+        val subs = state.searchText
+            ?.let { searchText ->
+                state.subs?.filter { it.text[0].contains(searchText) }
+            } ?: state.subs
+        when (state.sortOrder) {
+            NATURAL -> state.subsDisplay = subs
+            A_Z -> state.subsDisplay = subs?.sortedBy { it.text[0] }
+            Z_A -> state.subsDisplay = subs?.sortedBy { it.text[0] }?.reversed()
+        }
+
+        view.updateSubList(state.subsDisplay ?: listOf())
+    }
 
     companion object {
+        val CURSOR = Sentence.Word(Subtitles.Subtitle(0f, 0f, listOf("Cursor")))
+        const val CHIP_SUB = "Subs"
+        const val CHIP_WORD = "Sentence"
 
         @JvmStatic
         val scope = module {
             scope(named<SpeechPresenter>()) {
                 scoped<SpeechContract.Presenter> { getSource() }
-                scoped<SubtitleChipView.Listener> { getSource() }
-                scoped<SpeechContract.View> { SpeechView(get(), get(), get()) }
+                scoped<SubtitleChipView.Listener>(named(CHIP_SUB)) { getSource<SpeechPresenter>().SubChipListener() }
+                scoped<SubtitleChipView.Listener>(named(CHIP_WORD)) { getSource<SpeechPresenter>().WordChipListener() }
+                scoped<SpeechContract.View> {
+                    SpeechView(
+                        presenter = get(),
+                        timeFormatter = get(),
+                        subChipListener = get(named(CHIP_SUB)),
+                        wordChipListener = get(named(CHIP_WORD))
+                    )
+                }
                 scoped { SpeechState() }
             }
         }
     }
+
 
 }

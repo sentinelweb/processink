@@ -6,14 +6,13 @@ import speecher.domain.Subtitles
 interface SpeechContract {
 
     interface View {
-
         fun showWindow()
-        fun updateSentence(sentence: List<Sentence.Item>)
+        fun updateSentence(sentence: List<Sentence.Word>)
         fun updateSubList(subs: List<Subtitles.Subtitle>)
+        fun setPlaying(isPlaying: Boolean)
     }
 
     interface Presenter {
-
         fun showWindow()
         fun moveCursor(pos: CursorPosition)
         fun sortOrder(order: SortOrder)
@@ -21,9 +20,12 @@ interface SpeechContract {
         fun pause()
         fun searchText(text: String)
         fun openSubs()
+        fun deleteWord()
+        fun initView()
     }
 
     interface External {
+        var playing: Boolean
         var listener: Listener
         fun setSubs(subs: List<Subtitles.Subtitle>)
     }
