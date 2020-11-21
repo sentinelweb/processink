@@ -2,8 +2,6 @@ package speecher.generator
 
 import io.reactivex.Scheduler
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import org.koin.core.KoinComponent
 import org.koin.core.context.startKoin
 import org.koin.core.get
@@ -11,10 +9,11 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import processing.core.PApplet
 import speecher.di.Modules
+import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.generator.movie.MovieContract
 import speecher.generator.movie.MoviePresenter
-import speecher.interactor.srt.SrtInteractor
+import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
 import java.io.File
@@ -26,59 +25,54 @@ fun main() {
     GeneratorPresenter()
 }
 
-class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
+class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechContract.Listener {
     private val view: GeneratorContract.View = get()
     private val state: GeneratorState = get()
     private val pScheduler: Scheduler = get(named(PROCESSING))
     private val swingScheduler: Scheduler = get(named(SWING))
-    private val srtInteractor: SrtInteractor = get()
+    private val speechUI: SpeechContract.External = get()
+
 
     override val subtitle: String?
-        get() = if (state.playingWord > -1) state.words[state.playingWord].text.toString() else "-"
+        get() = if (state.playingWord > -1) subtitle(state.playingWord)?.text.toString() else "-"
+
     private val loadIndex: Int
         get() = if (state.activeIndex == 0) 1 else 0
     private val movies = mutableListOf<MovieContract.External>()
 
-    private val disposables: CompositeDisposable = CompositeDisposable()
+    private fun subtitle(index: Int) = state.words?.words?.get(index)?.sub
 
     init {
         view.presenter = this
         view.run()
+        speechUI.listener = this
+        speechUI.showWindow()
     }
 
     override fun initialise() {
-        srtOpenSingle(File(DEF_WRITE_SRT_PATH))
-            .subscribeOn(Schedulers.computation())
+        openMovieSingle(File(DEF_MOVIE_PATH))
             .doOnSuccess {
-                buildWordList()
-            }
-            .doOnSuccess {
-                println("Opened subtitles : ${it.timedTexts.size} subtitles")
-            }
-            .flatMap {
-                openMovieSingle(File(DEF_MOVIE_PATH))
+                speechUI.setSrtFile(File(DEF_WRITE_SRT_PATH))
             }
             //.observeOn(pScheduler)
             .doOnSuccess {
                 state.wordIndex = -1
                 state.startTime = System.currentTimeMillis()
                 movies.forEachIndexed { i, movie ->
-                    movie.volume(0.05f)
-                    //movie.pause()
+                    movie.volume(1f)
+                    movie.pause()
                 }
 
             }
             .subscribe({
                 println("Opened movie file : $it")
             }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            .also { state.disposables.add(it) }
     }
 
     inner class MvListener(val index: Int) : MovieContract.Listener {
         override fun onReady() {
-            println("onReady($index)")
-            if (index == 0) playFirst()
-            else movies[index].pause()
+
         }
 
         override fun onSubtitleStart(sub: Subtitles.Subtitle) {
@@ -90,24 +84,43 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
         }
     }
 
+    //
     private fun playNext() {
         state.activeIndex = loadIndex
         state.wordIndex++
-        state.wordIndex = state.wordIndex % state.words.size
-        movies[loadIndex].setSubtitle(state.words[state.wordIndex])
+        state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+        state.words?.words?.get(state.wordIndex)?.sub?.let {
+            movies[loadIndex].setSubtitle(it)
+            println(it.text[0])
+        }
         movies[state.activeIndex].play()
     }
+//
+//    private fun playFirst() {
+//        state.activeIndex = 0
+//        movies[state.activeIndex].play()
+//        //movies[loadIndex].pause()
+//        state.wordIndex++
+//        //state.wordIndex = state.wordIndex % state.words.size
+//        movies[state.activeIndex].setSubtitle(state.words[state.wordIndex])
+//        state.wordIndex++
+//        //state.wordIndex = state.wordIndex % state.words.size
+//        //movies[loadIndex].setSubtitle(state.words[state.wordIndex])
+//    }
 
-    private fun playFirst() {
+    private fun startPlaying() {
+        state.wordIndex = 0
         state.activeIndex = 0
+        subtitle(state.wordIndex)?.apply {
+            movies[state.activeIndex].setSubtitle(this)
+        }
+
         movies[state.activeIndex].play()
-        //movies[loadIndex].pause()
         state.wordIndex++
-        //state.wordIndex = state.wordIndex % state.words.size
-        movies[state.activeIndex].setSubtitle(state.words[state.wordIndex])
-        state.wordIndex++
-        //state.wordIndex = state.wordIndex % state.words.size
-        //movies[loadIndex].setSubtitle(state.words[state.wordIndex])
+        state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+        subtitle(state.wordIndex)?.apply {
+            movies[loadIndex].setSubtitle(this)
+        }
     }
 
     override fun onMovieEvent(index: Int, pos: Float) {
@@ -132,10 +145,9 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
     // region Movie
     private fun openMovieSingle(file: File): Single<File> {
         return Single.just(file)
-            .subscribeOn(Schedulers.io())
             .doOnSuccess { state.movieFile = it }
-            .subscribeOn(pScheduler)
-            .doOnSuccess { file ->
+            .observeOn(pScheduler)
+            .doOnSuccess {
                 makeMovie(0, file)
                 makeMovie(1, file)
             }
@@ -148,21 +160,17 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
     }
     // endregion
 
-    private fun buildWordList() {
-        state.words = state.speakString
-            .split(" ")
-            .map { word -> state.subs?.timedTexts?.find { it.text[0] == word } }
-            .filterNotNull()
+    override fun sentenceChanged(sentence: Sentence) {
+        state.words = sentence
     }
 
-    private fun srtOpenSingle(file: File) =
-        srtInteractor.read(file)
-            .subscribeOn(Schedulers.io())
-            .doOnSuccess {
-                state.subs = it
-                state.srtFile = file
-            }
+    override fun play() {
+        startPlaying()
+    }
 
+    override fun pause() {
+        movies.forEach { it.pause() }
+    }
 
     companion object {
 
@@ -192,5 +200,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent {
         }
 
     }
+
+
 }
 

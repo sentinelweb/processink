@@ -11,6 +11,7 @@ import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
 import speecher.generator.GeneratorPresenter
 import speecher.generator.movie.MoviePresenter
+import speecher.generator.ui.SpeechContract
 import speecher.generator.ui.SpeechPresenter
 import speecher.interactor.srt.SrtFileReader
 import speecher.interactor.srt.SrtFileWriter
@@ -35,6 +36,7 @@ object Modules {
         factory<SubListContract.External> { SubListPresenter() }
         factory<TransportContract.External> { TransportPresenter() }
         factory<SubEditContract.External> { SubEditPresenter() }
+        factory<SpeechContract.External> { SpeechPresenter() }
     }
 
     private val generatorModules = listOf(

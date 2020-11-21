@@ -12,6 +12,7 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridLayout
+import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -173,5 +174,18 @@ class SpeechView constructor(
             }.also { add(it) }
         }
     }
+
+    override fun showOpenDialog(title: String, currentDir: File?) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir?.let { currentDirectory = it }
+            val result = showOpenDialog(frame)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                presenter.setSrtFile(selectedFile)
+            }
+        }
+    }
+
 
 }

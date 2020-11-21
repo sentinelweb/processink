@@ -1,5 +1,6 @@
 package speecher.generator.ui
 
+import io.reactivex.schedulers.Schedulers
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -10,6 +11,8 @@ import speecher.domain.Subtitles
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
+import speecher.interactor.srt.SrtInteractor
+import java.io.File
 import java.lang.Integer.max
 import javax.swing.SwingUtilities
 import kotlin.math.min
@@ -36,20 +39,21 @@ fun main() {
         }
         showWindow()
         SwingUtilities.invokeLater {
-            setSubs((0..300).mapIndexed { i, e ->
+            setSubs(Subtitles((0..300).mapIndexed { i, e ->
                 Subtitles.Subtitle(e.toFloat(), e.toFloat() + 1, listOf("subtitle $i"))
-            })
+            }))
         }
     }
 }
 
-class SpeechPresenter() :
+class SpeechPresenter :
     SpeechContract.Presenter,
     SpeechContract.External {
 
     private val scope = this.getOrCreateScope()
     private val view: SpeechContract.View = scope.get()
     private val state: SpeechState = scope.get()
+    private val srtInteractor: SrtInteractor = scope.get()
 
     // region presenter
     override fun moveCursor(pos: SpeechContract.CursorPosition) {
@@ -81,7 +85,7 @@ class SpeechPresenter() :
     }
 
     override fun openSubs() {
-        println("openSubs")
+        view.showOpenDialog("Open SRT", state.srtFile?.parentFile)
     }
 
     override fun deleteWord() {
@@ -89,7 +93,6 @@ class SpeechPresenter() :
             state.wordList = state.wordList.toMutableList().apply { removeAt(state.cursorPos) }
             buildSentence()
         }
-        listener.sentenceChanged(Sentence(state.wordList))
     }
 
     override fun initView() {
@@ -108,9 +111,17 @@ class SpeechPresenter() :
             view.setPlaying(field)
         }
 
-    override fun setSubs(subs: List<Subtitles.Subtitle>) {
+    override fun setSubs(subs: Subtitles) {
         state.subs = subs
         updateSubs()
+    }
+
+    override fun setSrtFile(file: File) {
+        srtOpenSingle(file)
+            .subscribe(
+                { println("opened SRT = $file") },
+                { it.printStackTrace() }
+            )
     }
 
     override fun showWindow() {
@@ -125,12 +136,15 @@ class SpeechPresenter() :
             state.wordList = state.wordList.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
             state.cursorPos++
             buildSentence()
-            listener.sentenceChanged(Sentence(state.wordList))
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
             println("subchip.onPreviewClicked $sub")
         }
+    }
+
+    private fun pushSentence() {
+        listener.sentenceChanged(Sentence(state.wordList))
     }
     // endregion
 
@@ -151,13 +165,15 @@ class SpeechPresenter() :
         view.updateSentence(
             state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
         )
+        pushSentence()
     }
 
     private fun updateSubs() {
         val subs = state.searchText
             ?.let { searchText ->
-                state.subs?.filter { it.text[0].contains(searchText) }
-            } ?: state.subs
+                state.subs?.timedTexts?.filter { it.text[0].contains(searchText) }
+            } ?: state.subs?.timedTexts
+
         when (state.sortOrder) {
             NATURAL -> state.subsDisplay = subs
             A_Z -> state.subsDisplay = subs?.sortedBy { it.text[0] }
@@ -165,6 +181,30 @@ class SpeechPresenter() :
         }
 
         view.updateSubList(state.subsDisplay ?: listOf())
+    }
+
+    private fun srtOpenSingle(file: File) =
+        srtInteractor.read(file)
+            .subscribeOn(Schedulers.io())
+            .doOnSuccess {
+                state.subs = it
+                updateSubs()
+                state.speakString?.let { buildWordList(it) }
+                state.srtFile = file
+            }
+
+    private fun buildWordList(s: String) {
+        state.wordList = state.wordList.toMutableList().apply {
+            val elements = s
+                .split(" ")
+                .map { word -> state.subs?.timedTexts?.find { it.text[0] == word } }
+                .filterNotNull()
+            val elements1 = elements.map { Sentence.Word(it) }
+            addAll(state.cursorPos, elements1)
+            state.cursorPos = elements1.size
+
+        }
+        buildSentence()
     }
 
     companion object {

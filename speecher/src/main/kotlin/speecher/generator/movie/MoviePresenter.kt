@@ -3,7 +3,6 @@ package speecher.generator.movie
 import io.reactivex.Completable
 import io.reactivex.Scheduler
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
 import org.gstreamer.State
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -28,8 +27,6 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
         get() = state.duration ?: 0f
     override val playState: MovieContract.State
         get() = mapState()
-
-    private val disposables: CompositeDisposable = CompositeDisposable()
 
     private fun mapState(): MovieContract.State =
         if (state.isInitialised()) {
@@ -94,18 +91,18 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
         Completable.fromCallable {
             state.movie.play()
         }
-            .subscribeOn(processingScheduler)
+            .subscribeOn(playerScheduler)
             .subscribe({ println("Playing") }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            .also { state.disposables.add(it) }
     }
 
     override fun pause() {
         Completable.fromCallable {
             state.movie.pause()
         }
-            .subscribeOn(processingScheduler)
+            .subscribeOn(playerScheduler)
             .subscribe({ println("Paused") }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            .also { state.disposables.add(it) }
     }
 
     override fun volume(vol: Float) {
@@ -124,7 +121,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
                 state.seeking = false
                 println("Jump finished: t = ${System.currentTimeMillis() - it}")
             }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            .also { state.disposables.add(it) }
     }
 
     override fun setSubtitle(sub: Subtitles.Subtitle, pauseOnFinish: Boolean) {
@@ -135,7 +132,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
     }
 
     override fun cleanup() {
-        disposables.dispose()
+        state.disposables.dispose()
         view.cleanup()
     }
     // endregion
