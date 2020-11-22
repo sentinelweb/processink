@@ -75,6 +75,7 @@ class SpeechView constructor(
     inner class SpeechPanel : JPanel() {
         val playButton: JButton
         val pauseButton: JButton
+        val loopButton: JToggleButton
         val sentencePanel: JPanel
         val subsPanel: JPanel
         val searchText: JTextField
@@ -104,15 +105,21 @@ class SpeechView constructor(
                     // east panel - play control
                     JPanel().apply {
                         preferredSize = Dimension(124, 80)
-                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
 
                         playButton = JButton(">")
+                            .apply { preferredSize = Dimension(40, 40) }
                             .setup { presenter.play() }
-                            .let { add(it); it }
+                            .also { add(it) }
                         pauseButton = JButton("||")
+                            .apply { preferredSize = Dimension(40, 40) }
                             .setup { presenter.pause() }
-                            .let { add(it); it }
+                            .also { add(it) }
                             .let { it.isVisible = false; it }
+                        loopButton = JToggleButton("<->")
+                            .apply { preferredSize = Dimension(40, 40) }
+                            .setup { presenter.loop() }
+                            .also { add(it) }
                     }.also { add(it, BorderLayout.EAST) }
 
                     sentencePanel = JPanel().apply {

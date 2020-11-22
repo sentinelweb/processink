@@ -24,6 +24,7 @@ interface SpeechContract {
         fun deleteWord()
         fun initView()
         fun setSrtFile(file: File)
+        fun loop()
     }
 
     interface External {

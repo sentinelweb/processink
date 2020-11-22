@@ -175,11 +175,13 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
     }
 
     override fun play() {
+        speechUI.playing = true
         startPlaying()
     }
 
     override fun pause() {
         movies.forEach { it.pause() }
+        speechUI.playing = false
     }
 
     companion object {

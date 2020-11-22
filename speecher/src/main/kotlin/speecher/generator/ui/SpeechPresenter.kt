@@ -124,6 +124,10 @@ class SpeechPresenter :
             )
     }
 
+    override fun loop() {
+        println("loop")
+    }
+
     override fun showWindow() {
         view.showWindow()
     }
