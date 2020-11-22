@@ -58,7 +58,6 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
                 state.wordIndex = -1
                 state.startTime = System.currentTimeMillis()
                 movies.forEachIndexed { i, movie ->
-                    movie.volume(1f)
                     movie.pause()
                 }
 
@@ -95,6 +94,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             movies[lastIndex].setSubtitle(it)
             println(it.text[0])
         }
+        //movies[state.activeIndex].volume(1f)
         movies[state.activeIndex].play()
         println("playing(${state.activeIndex})")
     }
@@ -118,6 +118,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             movies[state.activeIndex].setSubtitle(this)
         }
 
+        //movies[state.activeIndex].volume(1f)
         movies[state.activeIndex].play()
         (1..movies.size - 1).forEach { i ->
             state.wordIndex++
@@ -153,28 +154,17 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             .doOnSuccess { state.movieFile = it }
             .observeOn(pScheduler)
             .doOnSuccess {
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
-                makeMovie(file)
+                (0..20).forEach {
+                    makeMovie(it, file)
+                }
             }
     }
 
-    private fun makeMovie(file: File) = MoviePresenter().apply {
+    private fun makeMovie(i: Int, file: File) = MoviePresenter(i).apply {
         listener = MvListener()
         movies.add(this)
         openMovie(file)
+        //volume(0f)
     }
     // endregion
 

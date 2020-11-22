@@ -1,5 +1,6 @@
 package speecher.generator.movie
 
+import org.gstreamer.State
 import processing.core.PApplet
 import processing.video.Movie
 import java.awt.Dimension
@@ -24,7 +25,7 @@ class MovieView constructor(
             state.movie.read()
             initialise()
         }
-        if (state.isInitialised()) {
+        if (state.isInitialised() && state.movie.playerState() == State.PLAYING) {
             state.screenRect?.apply {
                 p.image(state.movie, x, y, width, height)
             }

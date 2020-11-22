@@ -13,7 +13,7 @@ import speecher.generator.movie.MovieContract.State.*
 import speecher.scheduler.SchedulerModule
 import java.io.File
 
-class MoviePresenter : MovieContract.Presenter, MovieContract.External {
+class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContract.External {
 
     private val scope = this.getOrCreateScope()
     private val view: MovieContract.View = scope.get()
@@ -64,11 +64,11 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             ?.takeIf { it.toSec <= state.position ?: 0f }
             ?.let {
                 println("sub finished : pausing = ${state.subPauseOnFinish}")
+                listener?.onSubtitleFinished(it)
                 if (state.subPauseOnFinish) {
                     pause()
                 }
-                println("after subfinish pause")
-                listener?.onSubtitleFinished(it)
+                println("after subfinish pause ($i)")
             }
     }
 
@@ -93,7 +93,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             state.movie.play()
         }
             .subscribeOn(playerScheduler)
-            .subscribe({ println("Playing") }, { it.printStackTrace() })
+            .subscribe({ println("Playing ($i)") }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
 
@@ -102,7 +102,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             state.movie.pause()
         }
             .subscribeOn(playerScheduler)
-            .subscribe({ println("Paused") }, { it.printStackTrace() })
+            .subscribe({ println("Paused ($i)") }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
 
@@ -120,7 +120,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             .subscribeOn(Schedulers.newThread())
             .subscribe({
                 state.seeking = false
-                println("Jump finished: t = ${System.currentTimeMillis() - it}")
+                println("Jump finished: ($i) t = ${System.currentTimeMillis() - it}")
             }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
