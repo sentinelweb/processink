@@ -92,7 +92,7 @@ class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContrac
         Completable.fromCallable {
             state.movie.play()
         }
-            .subscribeOn(playerScheduler)
+            .subscribeOn(Schedulers.newThread())
             .subscribe({ println("Playing ($i)") }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
@@ -101,7 +101,7 @@ class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContrac
         Completable.fromCallable {
             state.movie.pause()
         }
-            .subscribeOn(playerScheduler)
+            .subscribeOn(Schedulers.newThread())
             .subscribe({ println("Paused ($i)") }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
