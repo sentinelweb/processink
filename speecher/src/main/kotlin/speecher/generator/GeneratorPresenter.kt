@@ -95,6 +95,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             println(it.text[0])
         }
         //movies[state.activeIndex].volume(1f)
+        view.active = state.activeIndex
         movies[state.activeIndex].play()
         println("playing(${state.activeIndex})")
     }
@@ -120,6 +121,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
 
         //movies[state.activeIndex].volume(1f)
         movies[state.activeIndex].play()
+        view.active = state.activeIndex
         (1..movies.size - 1).forEach { i ->
             state.wordIndex++
             state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)

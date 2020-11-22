@@ -5,9 +5,11 @@ import java.io.File
 interface GeneratorContract {
 
     interface View {
-        var presenter: GeneratorContract.Presenter
+        var presenter: Presenter
+        var active: Int
         fun run()
         fun openMovie(i: Int, file: File)
+
     }
 
     interface Presenter {

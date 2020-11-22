@@ -15,6 +15,7 @@ class GeneratorView constructor(
 ) : PApplet(), GeneratorContract.View, MovieContract.Sketch {
 
     override lateinit var presenter: GeneratorContract.Presenter
+    override var active: Int = -1
 
     private lateinit var f: PFont
     private val movieViews: MutableList<MovieContract.View> = mutableListOf()
@@ -46,9 +47,10 @@ class GeneratorView constructor(
         }
         background(0)
         fill(255f, 255f, 255f)
-        movieViews.forEach { it.render() }
+        //movieViews.forEach { it.render() }
+        if (active > -1) movieViews[active].render()
         fill(255f, 255f, 0f)
-//        presenter.subtitle?.let { text(it, width / 2f, height - 25f) }
+        presenter.subtitle?.let { text(it, width / 2f, height - 25f) }
     }
     // endregion
 
