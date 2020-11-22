@@ -156,7 +156,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             .doOnSuccess { state.movieFile = it }
             .observeOn(pScheduler)
             .doOnSuccess {
-                (0..20).forEach {
+                (0..8).forEach {
                     makeMovie(it, file)
                 }
             }
