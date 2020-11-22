@@ -3,6 +3,7 @@ package speecher.generator.movie
 import io.reactivex.Completable
 import io.reactivex.Scheduler
 import io.reactivex.Single
+import io.reactivex.schedulers.Schedulers
 import org.gstreamer.State
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -116,7 +117,7 @@ class MoviePresenter : MovieContract.Presenter, MovieContract.External {
             state.movie.jump(positionSec)
             startTime
         }
-            .subscribeOn(playerScheduler)
+            .subscribeOn(Schedulers.newThread())
             .subscribe({
                 state.seeking = false
                 println("Jump finished: t = ${System.currentTimeMillis() - it}")

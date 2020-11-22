@@ -36,11 +36,10 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
     override val subtitle: String?
         get() = if (state.playingWord > -1) subtitle(state.playingWord)?.text.toString() else "-"
 
-    private val loadIndex: Int
-        get() = if (state.activeIndex == 0) 1 else 0
     private val movies = mutableListOf<MovieContract.External>()
-
     private fun subtitle(index: Int) = state.words?.words?.get(index)?.sub
+
+    private fun wrapInc(i: Int) = if (i + 1 < movies.size) i + 1 else 0
 
     init {
         view.presenter = this
@@ -70,7 +69,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             .also { state.disposables.add(it) }
     }
 
-    inner class MvListener(val index: Int) : MovieContract.Listener {
+    inner class MvListener() : MovieContract.Listener {
         override fun onReady() {
 
         }
@@ -84,16 +83,20 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
         }
     }
 
-    //
+
     private fun playNext() {
-        state.activeIndex = loadIndex
+        movies[state.activeIndex].pause()
+        val lastIndex = state.activeIndex
+        state.activeIndex = wrapInc(state.activeIndex)
+
         state.wordIndex++
         state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
         state.words?.words?.get(state.wordIndex)?.sub?.let {
-            movies[loadIndex].setSubtitle(it)
+            movies[lastIndex].setSubtitle(it)
             println(it.text[0])
         }
         movies[state.activeIndex].play()
+        println("playing(${state.activeIndex})")
     }
 //
 //    private fun playFirst() {
@@ -116,10 +119,12 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
         }
 
         movies[state.activeIndex].play()
-        state.wordIndex++
-        state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
-        subtitle(state.wordIndex)?.apply {
-            movies[loadIndex].setSubtitle(this)
+        (1..movies.size - 1).forEach { i ->
+            state.wordIndex++
+            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+            subtitle(state.wordIndex)?.apply {
+                movies[i].setSubtitle(this)
+            }
         }
     }
 
@@ -148,13 +153,26 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             .doOnSuccess { state.movieFile = it }
             .observeOn(pScheduler)
             .doOnSuccess {
-                makeMovie(0, file)
-                makeMovie(1, file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
+                makeMovie(file)
             }
     }
 
-    private fun makeMovie(i: Int, file: File) = MoviePresenter().apply {
-        listener = MvListener(i)
+    private fun makeMovie(file: File) = MoviePresenter().apply {
+        listener = MvListener()
         movies.add(this)
         openMovie(file)
     }
