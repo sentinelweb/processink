@@ -5,6 +5,7 @@ import speecher.domain.Subtitles
 import speecher.editor.util.isSelected
 import speecher.editor.util.setup
 import speecher.editor.util.titledBorder
+import speecher.editor.util.wrapWithLabel
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
@@ -101,10 +102,12 @@ class SpeechView constructor(
                         add(JButton(">>").setup { presenter.moveCursor(NEXT) })
                         add(JButton(">|").setup { presenter.moveCursor(END) })
                         add(JButton("DEL").setup { presenter.deleteWord() })
-                    }.also { add(it, BorderLayout.NORTH) }
+                    }.wrapWithLabel("Cursor")
+                        .also { add(it, BorderLayout.NORTH) }
 
                     // east panel - play control
                     JPanel().apply {
+                        titledBorder("Control")
                         preferredSize = Dimension(124, 80)
                         layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
 
