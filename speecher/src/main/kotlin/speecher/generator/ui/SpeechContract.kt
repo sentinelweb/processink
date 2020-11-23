@@ -20,6 +20,7 @@ interface SpeechContract {
         var selectedFontColor: Color?
         var selectedFont: Font?
         var volume: Float
+        var playEventLatency: Float?
         fun moveCursor(pos: CursorPosition)
         fun sortOrder(order: SortOrder)
         fun play()
@@ -33,6 +34,7 @@ interface SpeechContract {
     }
 
     interface External {
+        val playEventLatency: Float?
         var playing: Boolean
         var looping: Boolean
         var listener: Listener

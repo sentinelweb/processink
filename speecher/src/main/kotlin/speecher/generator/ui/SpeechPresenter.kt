@@ -84,7 +84,7 @@ class SpeechPresenter constructor(
     private val srtInteractor: SrtInteractor = scope.get()
 
     init {
-        log.tag(this::class)
+        log.tag(this)
     }
 
     // region presenter
@@ -107,6 +107,13 @@ class SpeechPresenter constructor(
         set(value) {
             state.volume = value
             listener.updateVolume()
+        }
+
+    override var playEventLatency: Float?
+        get() = state.playEventLatency
+        set(value) {
+            state.playEventLatency = value
+            log.d(" = $value s")
         }
 
     override fun moveCursor(pos: SpeechContract.CursorPosition) {
@@ -156,6 +163,7 @@ class SpeechPresenter constructor(
 
     // region External
     override lateinit var listener: SpeechContract.Listener
+
 
     override var playing: Boolean = false
         get() = field

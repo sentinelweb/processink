@@ -16,6 +16,8 @@ import org.koin.core.get
 import speecher.domain.Subtitles
 import speecher.generator.movie.MovieContract.State.*
 import speecher.scheduler.SchedulerModule
+import speecher.util.format.TimeFormatter
+import speecher.util.wrapper.LogWrapper
 import java.io.File
 
 class MoviePresenterTest : KoinComponent {
@@ -34,7 +36,7 @@ class MoviePresenterTest : KoinComponent {
             )
         }
         testApplet = get()
-        sut = MoviePresenter()
+        sut = MoviePresenter(0, LogWrapper(TimeFormatter(), "test"))
         testApplet.run()
 
     }
@@ -179,6 +181,7 @@ class MoviePresenterTest : KoinComponent {
         var readyCalled = false
         var subStartCalled = false
         var subFinishedCalled = false
+        var playingCalled = false // todo test
 
         override fun onReady() {
             readyCalled = true
@@ -190,6 +193,10 @@ class MoviePresenterTest : KoinComponent {
 
         override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
             subFinishedCalled = true
+        }
+
+        override fun onPlaying() {
+            playingCalled = true
         }
 
     }

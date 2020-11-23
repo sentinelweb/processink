@@ -14,6 +14,8 @@ interface GeneratorContract {
 
         fun setFont(fontName: String, size: Float)
         fun updateFontColor()
+        fun recordNew(path: String)
+        fun recordStop()
     }
 
     interface Presenter {

@@ -31,7 +31,7 @@ fun main() {
 
 class GeneratorPresenter constructor(
     private val log: LogWrapper
-) : GeneratorContract.Presenter, SpeechContract.Listener, KoinComponent {
+) : GeneratorContract.Presenter, SpeechContract.Listener, KoinComponent, MovieContract.Parent {
 
     private val view: GeneratorContract.View = get()
     private val state: GeneratorState = get()
@@ -40,15 +40,17 @@ class GeneratorPresenter constructor(
     private val speechUI: SpeechContract.External = get()
 
     init {
-        log.tag(this::class)
+        log.tag(this)
     }
 
     override val subtitleToDisplay: String?
-        get() = state.movietoWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
+        get() = state.movieToWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
     override val selectedFontColor: Color?
         get() = speechUI.selectedFontColor
     override val selectedFont: Font?
         get() = speechUI.selectedFont
+    override val playEventLatency: Float?
+        get() = speechUI.playEventLatency
 
     private val movies = mutableListOf<MovieContract.External>()
 
@@ -84,18 +86,28 @@ class GeneratorPresenter constructor(
             .also { state.disposables.add(it) }
     }
 
-    inner class MvListener() : MovieContract.Listener {
+    inner class MvListener(private val index: Int) : MovieContract.Listener {
+
         override fun onReady() {
 
         }
 
         override fun onSubtitleStart(sub: Subtitles.Subtitle) {
-
+            //log.d("onSubtitleStart ${state.activeIndex}")
         }
 
         override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
+            log.d("onSubtitleFinished ${state.activeIndex}")
             playNext()
         }
+
+        override fun onPlaying() {
+            log.d("onPlaying($index active=${state.activeIndex})")
+            if (index == state.activeIndex) {
+                view.active = state.activeIndex
+            }
+        }
+
     }
 
     override fun onMovieEvent(index: Int, pos: Float) {
@@ -113,8 +125,9 @@ class GeneratorPresenter constructor(
             }
     }
 
-    private fun makeMovie(i: Int, file: File) = MoviePresenter(i).apply {
-        listener = MvListener()
+    private fun makeMovie(i: Int, file: File) = MoviePresenter(i, log).apply {
+        listener = MvListener(i)
+        parent = this@GeneratorPresenter
         movies.add(this)
         openMovie(file)
         volume(0f)
@@ -129,7 +142,6 @@ class GeneratorPresenter constructor(
 
     override fun play() {
         speechUI.playing = true
-        // fixme doesnt work!!
         startPlaying()
     }
 
@@ -152,7 +164,6 @@ class GeneratorPresenter constructor(
 
     override fun updateVolume() {
         state.volume = speechUI.volume
-        //movies.forEach { it.volume(state.volume) }
     }
 
     private fun updateViewFont() {
@@ -163,48 +174,62 @@ class GeneratorPresenter constructor(
 
     // region playback
     private fun startPlaying() {
+//        File(RECORD_PATH).mkdir()
+//        view.recordNew(RECORD_PATH)
         log.startTime()
-        movies.forEach { it.volume(state.volume) }
+        movies.forEach {
+            it.volume(state.volume)
+        }
         state.wordIndex = 0
         state.activeIndex = 0
         wordAtIndex(state.wordIndex)?.let {
-            state.movietoWordMap[state.activeIndex] = it
+            state.movieToWordMap[state.activeIndex] = it
             movies[state.activeIndex].setSubtitle(it.sub)
         }
 
         movies[state.activeIndex].play()
-        view.active = state.activeIndex
         (1..movies.size - 1).forEach { i ->
             incrementWordIndex()
             wordAtIndex(state.wordIndex)?.let {
-                state.movietoWordMap[i] = it
+                log.d("next for $i ${it.sub}")
+                state.movieToWordMap[i] = it
                 movies[i].setSubtitle(it.sub)
             }
         }
     }
 
     private fun playNext() {
+        //view.active = -1
+        log.d("finished(${state.activeIndex}) - $subtitleToDisplay")
+        movies[state.activeIndex].volume(0f)
         movies[state.activeIndex].pause()
         val lastIndex = state.activeIndex
         state.activeIndex = state.activeIndex.wrapInc()
 
-        incrementWordIndex()
-        wordAtIndex(state.wordIndex)?.let {
-            movies[lastIndex].setSubtitle(it.sub)
-            state.movietoWordMap[lastIndex] = it
-            log.d(it.sub.text[0])
-        } ?: run {
-            state.movietoWordMap[lastIndex] = null
-            log.d("no more words to load")
-        }
-        if (state.movietoWordMap[state.activeIndex] != null) {
-            view.active = state.activeIndex
+        state.movieToWordMap[state.activeIndex]?.let {
+            //view.active = state.activeIndex
             movies[state.activeIndex].volume(state.volume)
             movies[state.activeIndex].play()
-            log.d("playing(${state.activeIndex})")
-        } else {
+            log.d("playing(${state.activeIndex}) - ${it.sub.text}")
+        } ?: run {
             log.d("Nothing to play")
             speechUI.playing = false
+            view.active = -1
+            //view.recordStop()
+        }
+        loadNextWord(lastIndex)
+    }
+
+    private fun loadNextWord(playerIndex: Int) {
+        incrementWordIndex()
+        wordAtIndex(state.wordIndex)?.let {
+            log.d("next for $playerIndex ${it.sub}")
+            movies[playerIndex].setSubtitle(it.sub)
+            state.movieToWordMap[playerIndex] = it
+            log.d(it.sub.text[0])
+        } ?: run {
+            state.movieToWordMap[playerIndex] = null
+            log.d("No more words to load playerIndex=${playerIndex} wordIndex=${state.wordIndex}")
         }
     }
 
@@ -223,10 +248,12 @@ class GeneratorPresenter constructor(
 
         //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
         //var DEF_BASE_PATH = "$BASE/ytcaptiondl/In full - Boris Johnson holds press conference as he defends virus strategy-8aY5J296p9Y"
-        var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
-        var DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
+        val DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
+        val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
 
-        var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+        val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+
+        val RECORD_PATH = "$BASE/record"
 
         @JvmStatic
         val module = module {
@@ -234,7 +261,8 @@ class GeneratorPresenter constructor(
             single {
                 GeneratorView(
                     state = get(),
-                    pExecutor = get()
+                    pExecutor = get(),
+                    log = get()
                 )
             }
             factory<GeneratorContract.View> { get<GeneratorView>() }

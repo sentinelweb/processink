@@ -20,5 +20,6 @@ data class SpeechState(
     var selectedFont: Font? = null,
     var volume: Float = 0f,
     val disposables: CompositeDisposable = CompositeDisposable(),
-    var speakString: String? = "This is the year in which we mourn the passing of thought humanity dissenters and media to the applause of crowds"
+    var speakString: String? = "This is the year in which we mourn the passing of thought humanity dissenters and media to the applause of crowds",
+    var playEventLatency: Float? = 0.05f
 )

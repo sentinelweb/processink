@@ -2,6 +2,7 @@ package speecher.generator.movie
 
 import processing.core.PApplet
 import processing.video.Movie
+import speecher.util.wrapper.LogWrapper
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 import java.io.File
@@ -10,8 +11,13 @@ class MovieView constructor(
     private val p: PApplet,
     private val sketch: MovieContract.Sketch,
     private val presenter: MovieContract.Presenter,
-    private val state: MovieState
+    private val state: MovieState,
+    private val log: LogWrapper
 ) : MovieContract.View {
+
+    init {
+        log.tag(this)
+    }
 
     override fun createMovie(file: File) {
         state.movie = MovieWrapper(p, file.absolutePath)
@@ -25,9 +31,11 @@ class MovieView constructor(
             initialise()
         }
         if (state.isInitialised()) {
+            //log.d("pos: ${state.movie.time()} ")
             state.screenRect?.apply {
                 p.image(state.movie, x, y, width, height)
             }
+
         }
     }
 

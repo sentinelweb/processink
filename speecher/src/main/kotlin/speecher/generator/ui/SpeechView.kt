@@ -81,6 +81,7 @@ class SpeechView constructor(
         val subsPanel: JPanel
         val searchText: JTextField
         val volumeSlider: JSlider
+        val latencySlider: JSlider
         val fontButton: JButton
         val fontColorButton: JButton
 
@@ -110,7 +111,7 @@ class SpeechView constructor(
                     // east panel - play control
                     JPanel().apply {
                         titledBorder("Control")
-                        preferredSize = Dimension(124, 80)
+                        preferredSize = Dimension(180, 80)
                         layout = GridLayout(1, -1)
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
@@ -164,6 +165,21 @@ class SpeechView constructor(
                                 val source = it.source as JSlider
 //                                if (source.getValueIsAdjusting()) {
                                 presenter.volume = source.value / 100f
+
+                            }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+
+                        latencySlider = JSlider(0, 100, 100)
+                            .apply {
+                                preferredSize = Dimension(20, 200)
+                                majorTickSpacing = 10
+                                paintTicks = true
+                                value = presenter.playEventLatency?.let { (it * 1000).toInt() } ?: 0
+                            }
+                            .setup(null, -1, -1, false) {
+                                val source = it.source as JSlider
+                                if (source.getValueIsAdjusting()) {
+                                    presenter.playEventLatency = source.value / 1000f
+                                }
 
                             }.let { add(it); it.orientation = JSlider.VERTICAL; it }
                     }.also { add(it, BorderLayout.EAST) }

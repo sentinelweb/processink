@@ -24,20 +24,26 @@ class MovieContract {
         val position: Float
         val duration: Float
         val playState: State
+        val parent: Parent?
         fun openMovie(file: File)
         fun setMovieSpeed(speed: Float)
         fun play()
         fun pause()
         fun volume(vol: Float)
         fun seekTo(positionSec: Float)
-        fun setSubtitle(sub: Subtitles.Subtitle, pauseOnFinish: Boolean = true)
+        fun setSubtitle(sub: Subtitles.Subtitle)
         fun cleanup()
+    }
+
+    interface Parent {
+        val playEventLatency: Float?
     }
 
     interface Listener {
         fun onReady()
         fun onSubtitleStart(sub: Subtitles.Subtitle)
         fun onSubtitleFinished(sub: Subtitles.Subtitle)
+        fun onPlaying()
     }
 
     interface Sketch {

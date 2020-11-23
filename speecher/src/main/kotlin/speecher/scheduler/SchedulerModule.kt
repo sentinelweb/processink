@@ -16,7 +16,8 @@ object SchedulerModule {
         single { SwingExecutor() }
         single(named(PROCESSING)) { Schedulers.from(get<ProcessingExecutor>()) }
         single(named(SWING)) { Schedulers.from(get<SwingExecutor>()) }
-        single(named(PLAYER)) { Schedulers.from(Executors.newSingleThreadExecutor()) }
+//        single(named(PLAYER)) { Schedulers.from(Executors.newSingleThreadExecutor()) }
+        single(named(PLAYER)) { Schedulers.from(Executors.newFixedThreadPool(10)) }
     }
 
 }

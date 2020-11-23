@@ -15,8 +15,8 @@ class LogWrapper constructor(private val timeFormatter: TimeFormatter, var tag: 
 
     var time: Boolean = false
 
-    fun tag(clazz: KClass<*>) {
-        tag = clazz.simpleName ?: clazz.qualifiedName
+    fun tag(obj: Any) {
+        tag = obj::class.simpleName ?: obj::class.qualifiedName
     }
 
     fun startTime() {

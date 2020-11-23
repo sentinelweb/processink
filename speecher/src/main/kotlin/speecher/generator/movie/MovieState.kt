@@ -17,7 +17,8 @@ data class MovieState constructor(
     var seeking: Boolean = false,
     var ready: Boolean = false,
     val disposables: CompositeDisposable = CompositeDisposable(),
-    var volume: Float = 0f
+    var volume: Float = 0f,
+    var onPlayEventCalled: Boolean = false
 ) {
 
     lateinit var movie: MovieWrapper
