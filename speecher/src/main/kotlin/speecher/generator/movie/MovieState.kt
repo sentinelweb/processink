@@ -16,7 +16,8 @@ data class MovieState constructor(
     var subPauseOnFinish: Boolean = false,
     var seeking: Boolean = false,
     var ready: Boolean = false,
-    val disposables: CompositeDisposable = CompositeDisposable()
+    val disposables: CompositeDisposable = CompositeDisposable(),
+    var volume: Float = 0f
 ) {
 
     lateinit var movie: MovieWrapper

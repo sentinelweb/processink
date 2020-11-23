@@ -92,59 +92,6 @@ class GeneratorPresenter constructor(
         }
     }
 
-    private fun playNext() {
-        movies[state.activeIndex].pause()
-        val lastIndex = state.activeIndex
-        state.activeIndex = state.activeIndex.wrapInc()
-
-        incrementWordIndex()
-        subtitle(state.wordIndex)?.let {
-            movies[lastIndex].setSubtitle(it)
-            state.movietoWordMap[lastIndex] = state.wordIndex
-            log.d(it.text[0])
-        } ?: run {
-            state.movietoWordMap[lastIndex] = null
-            log.d("no more words to load")
-        }
-        //movies[state.activeIndex].volume(1f)
-        if (state.movietoWordMap[state.activeIndex] != null) {
-            view.active = state.activeIndex
-            movies[state.activeIndex].play()
-            log.d("playing(${state.activeIndex})")
-        } else {
-            log.d("Nothing to play")
-            speechUI.playing = false
-        }
-    }
-
-    private fun startPlaying() {
-        log.startTime()
-        state.wordIndex = 0
-        state.activeIndex = 0
-        subtitle(state.wordIndex)?.apply {
-            state.movietoWordMap[state.activeIndex] = state.wordIndex
-            movies[state.activeIndex].setSubtitle(this)
-        }
-
-        //movies[state.activeIndex].volume(1f)
-        movies[state.activeIndex].play()
-        view.active = state.activeIndex
-        (1..movies.size - 1).forEach { i ->
-            incrementWordIndex()
-            subtitle(state.wordIndex)?.apply {
-                state.movietoWordMap[i] = state.wordIndex
-                movies[i].setSubtitle(this)
-            }
-        }
-    }
-
-    private fun incrementWordIndex() {
-        state.wordIndex++
-        if (state.looping) {
-            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
-        }
-    }
-
     override fun onMovieEvent(index: Int, pos: Float) {
     }
 
@@ -164,11 +111,12 @@ class GeneratorPresenter constructor(
         listener = MvListener()
         movies.add(this)
         openMovie(file)
-        //volume(0f)
-        //pause()
+        volume(0f)
+//        pause()
     }
     // endregion
 
+    // region SpeechContract.External
     override fun sentenceChanged(sentence: Sentence) {
         state.words = sentence
     }
@@ -176,7 +124,7 @@ class GeneratorPresenter constructor(
     override fun play() {
         speechUI.playing = true
         // fixme doesnt work!!
-        //movies.forEach { it.volume(0.3f) }
+        movies.forEach { it.volume(0.3f) }
         startPlaying()
     }
 
@@ -188,6 +136,60 @@ class GeneratorPresenter constructor(
     override fun loop(l: Boolean) {
         state.looping = l
     }
+    // endregion
+
+    // region playback
+    private fun playNext() {
+        movies[state.activeIndex].pause()
+        val lastIndex = state.activeIndex
+        state.activeIndex = state.activeIndex.wrapInc()
+
+        incrementWordIndex()
+        subtitle(state.wordIndex)?.let {
+            movies[lastIndex].setSubtitle(it)
+            state.movietoWordMap[lastIndex] = state.wordIndex
+            log.d(it.text[0])
+        } ?: run {
+            state.movietoWordMap[lastIndex] = null
+            log.d("no more words to load")
+        }
+        if (state.movietoWordMap[state.activeIndex] != null) {
+            view.active = state.activeIndex
+            movies[state.activeIndex].play()
+            log.d("playing(${state.activeIndex})")
+        } else {
+            log.d("Nothing to play")
+            speechUI.playing = false
+        }
+    }
+
+    private fun startPlaying() {
+        log.startTime()
+        state.wordIndex = 0
+        state.activeIndex = 0
+        subtitle(state.wordIndex)?.apply {
+            state.movietoWordMap[state.activeIndex] = state.wordIndex
+            movies[state.activeIndex].setSubtitle(this)
+        }
+
+        movies[state.activeIndex].play()
+        view.active = state.activeIndex
+        (1..movies.size - 1).forEach { i ->
+            incrementWordIndex()
+            subtitle(state.wordIndex)?.apply {
+                state.movietoWordMap[i] = state.wordIndex
+                movies[i].setSubtitle(this)
+            }
+        }
+    }
+
+    private fun incrementWordIndex() {
+        state.wordIndex++
+        if (state.looping) {
+            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+        }
+    }
+    // endregion
 
     companion object {
 

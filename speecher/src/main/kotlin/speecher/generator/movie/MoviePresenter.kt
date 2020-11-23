@@ -91,6 +91,7 @@ class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContrac
     override fun play() {
         Completable.fromCallable {
             state.movie.play()
+            state.movie.volume(state.volume)
         }
             .subscribeOn(Schedulers.newThread())
             .subscribe({ println("Playing ($i)") }, { it.printStackTrace() })
@@ -109,6 +110,7 @@ class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContrac
     }
 
     override fun volume(vol: Float) {
+        state.volume = vol
         state.movie.volume(vol)
     }
 
