@@ -2,6 +2,7 @@ package speecher.generator.ui
 
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.editor.util.isSelected
 import speecher.editor.util.setup
 import speecher.editor.util.titledBorder
 import speecher.generator.ui.SpeechContract.CursorPosition.*
@@ -118,7 +119,7 @@ class SpeechView constructor(
                             .let { it.isVisible = false; it }
                         loopButton = JToggleButton("<->")
                             .apply { preferredSize = Dimension(40, 40) }
-                            .setup { presenter.loop() }
+                            .setup { ae -> presenter.loop(isSelected(ae)) }
                             .also { add(it) }
                     }.also { add(it, BorderLayout.EAST) }
 

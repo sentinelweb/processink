@@ -21,6 +21,7 @@ import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
 import speecher.util.subs.SubFinder
 import speecher.util.subs.SubTracker
+import speecher.util.wrapper.LogWrapper
 
 object Modules {
 
@@ -36,7 +37,7 @@ object Modules {
         factory<SubListContract.External> { SubListPresenter() }
         factory<TransportContract.External> { TransportPresenter() }
         factory<SubEditContract.External> { SubEditPresenter() }
-        factory<SpeechContract.External> { SpeechPresenter() }
+        factory<SpeechContract.External> { SpeechPresenter(get()) }
     }
 
     private val generatorModules = listOf(
@@ -49,6 +50,7 @@ object Modules {
         single { TimeFormatter() }
         factory { SubFinder() }
         factory { SubTracker() }
+        factory { LogWrapper(get()) }
     }
 
     private val srtModule = module {

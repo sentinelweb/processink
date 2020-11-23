@@ -3,6 +3,7 @@ package speecher.generator
 import io.reactivex.Scheduler
 import io.reactivex.Single
 import org.koin.core.KoinComponent
+import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
 import org.koin.core.get
 import org.koin.core.qualifier.named
@@ -16,30 +17,40 @@ import speecher.generator.movie.MoviePresenter
 import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
+import speecher.util.wrapper.LogWrapper
 import java.io.File
 
 fun main() {
     startKoin {
         modules(Modules.allModules)
     }
-    GeneratorPresenter()
+    GeneratorPresenter(get().get())
 }
 
-class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechContract.Listener {
+class GeneratorPresenter constructor(
+    private val log: LogWrapper
+) : GeneratorContract.Presenter, SpeechContract.Listener, KoinComponent {
+
     private val view: GeneratorContract.View = get()
     private val state: GeneratorState = get()
     private val pScheduler: Scheduler = get(named(PROCESSING))
     private val swingScheduler: Scheduler = get(named(SWING))
     private val speechUI: SpeechContract.External = get()
 
+    init {
+        log.tag(this::class)
+    }
 
     override val subtitle: String?
         get() = if (state.playingWord > -1) subtitle(state.playingWord)?.text.toString() else "-"
 
     private val movies = mutableListOf<MovieContract.External>()
-    private fun subtitle(index: Int) = state.words?.words?.get(index)?.sub
 
-    private fun wrapInc(i: Int) = if (i + 1 < movies.size) i + 1 else 0
+    private fun subtitle(index: Int): Subtitles.Subtitle? = state.words?.words?.let {
+        if (index < it.size) it.get(index).sub else null
+    }
+
+    private fun Int.wrapInc() = if (this + 1 < movies.size) this + 1 else 0
 
     init {
         view.presenter = this
@@ -60,7 +71,6 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
                 movies.forEachIndexed { i, movie ->
                     movie.pause()
                 }
-
             }
             .subscribe({
                 println("Opened movie file : $it")
@@ -82,40 +92,37 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
         }
     }
 
-
     private fun playNext() {
         movies[state.activeIndex].pause()
         val lastIndex = state.activeIndex
-        state.activeIndex = wrapInc(state.activeIndex)
+        state.activeIndex = state.activeIndex.wrapInc()
 
-        state.wordIndex++
-        state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
-        state.words?.words?.get(state.wordIndex)?.sub?.let {
+        incrementWordIndex()
+        subtitle(state.wordIndex)?.let {
             movies[lastIndex].setSubtitle(it)
-            println(it.text[0])
+            state.movietoWordMap[lastIndex] = state.wordIndex
+            log.d(it.text[0])
+        } ?: run {
+            state.movietoWordMap[lastIndex] = null
+            log.d("no more words to load")
         }
         //movies[state.activeIndex].volume(1f)
-        view.active = state.activeIndex
-        movies[state.activeIndex].play()
-        println("playing(${state.activeIndex})")
+        if (state.movietoWordMap[state.activeIndex] != null) {
+            view.active = state.activeIndex
+            movies[state.activeIndex].play()
+            log.d("playing(${state.activeIndex})")
+        } else {
+            log.d("Nothing to play")
+            speechUI.playing = false
+        }
     }
-//
-//    private fun playFirst() {
-//        state.activeIndex = 0
-//        movies[state.activeIndex].play()
-//        //movies[loadIndex].pause()
-//        state.wordIndex++
-//        //state.wordIndex = state.wordIndex % state.words.size
-//        movies[state.activeIndex].setSubtitle(state.words[state.wordIndex])
-//        state.wordIndex++
-//        //state.wordIndex = state.wordIndex % state.words.size
-//        //movies[loadIndex].setSubtitle(state.words[state.wordIndex])
-//    }
 
     private fun startPlaying() {
+        log.startTime()
         state.wordIndex = 0
         state.activeIndex = 0
         subtitle(state.wordIndex)?.apply {
+            state.movietoWordMap[state.activeIndex] = state.wordIndex
             movies[state.activeIndex].setSubtitle(this)
         }
 
@@ -123,31 +130,22 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
         movies[state.activeIndex].play()
         view.active = state.activeIndex
         (1..movies.size - 1).forEach { i ->
-            state.wordIndex++
-            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+            incrementWordIndex()
             subtitle(state.wordIndex)?.apply {
+                state.movietoWordMap[i] = state.wordIndex
                 movies[i].setSubtitle(this)
             }
         }
     }
 
+    private fun incrementWordIndex() {
+        state.wordIndex++
+        if (state.looping) {
+            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+        }
+    }
+
     override fun onMovieEvent(index: Int, pos: Float) {
-//        if (state.playingWord > -1) {
-//            //println("presenter.onMovieEvent: index=$index, pos=$pos")
-//            if (index == state.activeIndex && pos > state.words[(state.playingWord)].toSec) {
-//                //println("presenter.onMovieEvent loopend: ${state.activeIndex} ${state.wordIndex}")
-//                view.pause(state.activeIndex)
-//                state.activeIndex = loadIndex
-//                view.setActive(state.activeIndex)
-//                view.play(state.activeIndex)
-//                state.playingWord = state.wordIndex
-//                state.wordIndex++
-//                state.wordIndex = state.wordIndex % state.words.size
-//                view.seekTo(loadIndex, state.words[state.wordIndex].fromSec)
-//
-//
-//            }
-//        }
     }
 
     // region Movie
@@ -156,7 +154,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
             .doOnSuccess { state.movieFile = it }
             .observeOn(pScheduler)
             .doOnSuccess {
-                (0..8).forEach {
+                (0..10).forEach {
                     makeMovie(it, file)
                 }
             }
@@ -167,6 +165,7 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
         movies.add(this)
         openMovie(file)
         //volume(0f)
+        //pause()
     }
     // endregion
 
@@ -176,12 +175,18 @@ class GeneratorPresenter : GeneratorContract.Presenter, KoinComponent, SpeechCon
 
     override fun play() {
         speechUI.playing = true
+        // fixme doesnt work!!
+        //movies.forEach { it.volume(0.3f) }
         startPlaying()
     }
 
     override fun pause() {
         movies.forEach { it.pause() }
         speechUI.playing = false
+    }
+
+    override fun loop(l: Boolean) {
+        state.looping = l
     }
 
     companion object {

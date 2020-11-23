@@ -8,9 +8,10 @@ data class GeneratorState constructor(
     var movieFile: File? = null,
     var words: Sentence? = null,
     var startTime: Long = 0,
-    var wordIndex: Int = -1, // currently playing word
-    var activeIndex: Int = -1,
-    var playingWord: Int = -1,
-    val disposables: CompositeDisposable = CompositeDisposable()
-
+    var wordIndex: Int = -1, // currently loading word
+    var activeIndex: Int = -1,// currently playing player
+    var playingWord: Int = -1,// currently playing word
+    val disposables: CompositeDisposable = CompositeDisposable(),
+    var looping: Boolean = false,
+    var movietoWordMap: MutableMap<Int, Int?> = mutableMapOf()
 )

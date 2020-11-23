@@ -1,9 +1,11 @@
 package speecher.generator.ui
 
 import io.reactivex.schedulers.Schedulers
+import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
 import org.koin.ext.getOrCreateScope
 import speecher.di.Modules
 import speecher.domain.Sentence
@@ -12,6 +14,8 @@ import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
 import speecher.interactor.srt.SrtInteractor
+import speecher.util.format.TimeFormatter
+import speecher.util.wrapper.LogWrapper
 import java.io.File
 import java.lang.Integer.max
 import javax.swing.SwingUtilities
@@ -19,21 +23,30 @@ import kotlin.math.min
 
 fun main() {
     startKoin { modules(Modules.allModules) }
-    SpeechPresenter().apply {
+    SpeechPresenter(get().get()).apply {
         listener = object : SpeechContract.Listener {
+
+            private val log = LogWrapper(TimeFormatter(), "SpeechlLstener")
+
             override fun sentenceChanged(sentence: Sentence) {
                 val string = sentence.words.map {
-                    if (it != CURSOR) it.sub.text[0] else ""
+                    if (it != CURSOR) it.sub.text[0] else " | "
                 }
-                println("listener: sentence = $string")
+                log.d("sentence = $string")
             }
 
             override fun play() {
+                log.d("play")
                 playing = true
             }
 
             override fun pause() {
+                log.d("pause")
                 playing = false
+            }
+
+            override fun loop(l: Boolean) {
+                log.d("loop = $l")
             }
 
         }
@@ -46,14 +59,19 @@ fun main() {
     }
 }
 
-class SpeechPresenter :
-    SpeechContract.Presenter,
+class SpeechPresenter constructor(
+    private val log: LogWrapper
+) : SpeechContract.Presenter,
     SpeechContract.External {
 
     private val scope = this.getOrCreateScope()
     private val view: SpeechContract.View = scope.get()
     private val state: SpeechState = scope.get()
     private val srtInteractor: SrtInteractor = scope.get()
+
+    init {
+        log.tag(this::class)
+    }
 
     // region presenter
     override fun moveCursor(pos: SpeechContract.CursorPosition) {
@@ -111,6 +129,12 @@ class SpeechPresenter :
             view.setPlaying(field)
         }
 
+    override var looping: Boolean = false
+        get() = field
+        set(value) {
+            field = value
+        }
+
     override fun setSubs(subs: Subtitles) {
         state.subs = subs
         updateSubs()
@@ -124,8 +148,8 @@ class SpeechPresenter :
             )
     }
 
-    override fun loop() {
-        println("loop")
+    override fun loop(selected: Boolean) {
+        listener.loop(selected)
     }
 
     override fun showWindow() {
@@ -143,7 +167,7 @@ class SpeechPresenter :
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
-            println("subchip.onPreviewClicked $sub")
+            log.d("subchip.onPreviewClicked $sub")
         }
     }
 
@@ -156,11 +180,11 @@ class SpeechPresenter :
     inner class WordChipListener : SubtitleChipView.Listener {
 
         override fun onItemClicked(sub: Subtitles.Subtitle) {
-            println("word.onItemClicked $sub")
+            log.d("word.onItemClicked $sub")
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
-            println("word.onPreviewClicked $sub")
+            log.d("word.onPreviewClicked $sub")
         }
     }
     // endregion

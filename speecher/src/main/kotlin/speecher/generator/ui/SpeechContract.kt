@@ -24,11 +24,12 @@ interface SpeechContract {
         fun deleteWord()
         fun initView()
         fun setSrtFile(file: File)
-        fun loop()
+        fun loop(selected: Boolean)
     }
 
     interface External {
         var playing: Boolean
+        var looping: Boolean
         var listener: Listener
         fun setSubs(subs: Subtitles)
         fun setSrtFile(file: File)
@@ -39,6 +40,7 @@ interface SpeechContract {
         fun sentenceChanged(sentence: Sentence)
         fun play()
         fun pause()
+        fun loop(l: Boolean)
     }
 
     enum class CursorPosition { START, LAST, NEXT, END }

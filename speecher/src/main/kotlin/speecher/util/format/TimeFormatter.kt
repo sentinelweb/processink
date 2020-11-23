@@ -12,6 +12,15 @@ class TimeFormatter {
     fun formatTime(timeSecs: Float): String =
         timeStampFormatter.format(LocalTime.ofNanoOfDay((timeSecs * 1_000_000_000).toLong())).strip00()
 
+    fun formatNow(): String =
+        timeStampFormatter.format(LocalTime.now()).strip00()
+
+    fun formatMillis(l: Long): String =
+        timeStampFormatter.format(LocalTime.ofNanoOfDay(l * 1_000_000)).strip00()
+
+    fun formatFrom(time: LocalTime): String =
+        timeStampFormatter.format(LocalTime.now().minusNanos(time.toNanoOfDay())).strip00()
+
     private fun String.strip00() = this.let {
         var formatted = it
         while (formatted.startsWith("00:")) {

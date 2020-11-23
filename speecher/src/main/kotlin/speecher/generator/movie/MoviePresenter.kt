@@ -97,6 +97,8 @@ class MoviePresenter(private val i: Int) : MovieContract.Presenter, MovieContrac
             .also { state.disposables.add(it) }
     }
 
+    // fixme can be thread synchronization issues when pausing all players together
+    // todo try out coroutines for these
     override fun pause() {
         Completable.fromCallable {
             state.movie.pause()
