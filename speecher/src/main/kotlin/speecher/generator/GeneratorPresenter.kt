@@ -41,13 +41,13 @@ class GeneratorPresenter constructor(
         log.tag(this::class)
     }
 
-    override val subtitle: String?
-        get() = if (state.playingWord > -1) subtitle(state.playingWord)?.text.toString() else "-"
+    override val subtitleToDisplay: String?
+        get() = state.movietoWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
 
     private val movies = mutableListOf<MovieContract.External>()
 
-    private fun subtitle(index: Int): Subtitles.Subtitle? = state.words?.words?.let {
-        if (index < it.size) it.get(index).sub else null
+    private fun wordAtIndex(index: Int): Sentence.Word? = state.words?.words?.let {
+        if (index < it.size) it.get(index) else null
     }
 
     private fun Int.wrapInc() = if (this + 1 < movies.size) this + 1 else 0
@@ -145,10 +145,10 @@ class GeneratorPresenter constructor(
         state.activeIndex = state.activeIndex.wrapInc()
 
         incrementWordIndex()
-        subtitle(state.wordIndex)?.let {
-            movies[lastIndex].setSubtitle(it)
-            state.movietoWordMap[lastIndex] = state.wordIndex
-            log.d(it.text[0])
+        wordAtIndex(state.wordIndex)?.let {
+            movies[lastIndex].setSubtitle(it.sub)
+            state.movietoWordMap[lastIndex] = it
+            log.d(it.sub.text[0])
         } ?: run {
             state.movietoWordMap[lastIndex] = null
             log.d("no more words to load")
@@ -167,18 +167,18 @@ class GeneratorPresenter constructor(
         log.startTime()
         state.wordIndex = 0
         state.activeIndex = 0
-        subtitle(state.wordIndex)?.apply {
-            state.movietoWordMap[state.activeIndex] = state.wordIndex
-            movies[state.activeIndex].setSubtitle(this)
+        wordAtIndex(state.wordIndex)?.let {
+            state.movietoWordMap[state.activeIndex] = it
+            movies[state.activeIndex].setSubtitle(it.sub)
         }
 
         movies[state.activeIndex].play()
         view.active = state.activeIndex
         (1..movies.size - 1).forEach { i ->
             incrementWordIndex()
-            subtitle(state.wordIndex)?.apply {
-                state.movietoWordMap[i] = state.wordIndex
-                movies[i].setSubtitle(this)
+            wordAtIndex(state.wordIndex)?.let {
+                state.movietoWordMap[i] = it
+                movies[i].setSubtitle(it.sub)
             }
         }
     }

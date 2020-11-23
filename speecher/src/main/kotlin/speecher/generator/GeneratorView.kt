@@ -50,7 +50,7 @@ class GeneratorView constructor(
         //movieViews.forEach { it.render() }
         if (active > -1) movieViews[active].render()
         fill(255f, 255f, 0f)
-        presenter.subtitle?.let { text(it, width / 2f, height - 25f) }
+        presenter.subtitleToDisplay?.let { text(it, width / 2f, height - 25f) }
     }
     // endregion
 

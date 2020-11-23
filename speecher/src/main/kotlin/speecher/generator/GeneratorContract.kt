@@ -13,7 +13,7 @@ interface GeneratorContract {
     }
 
     interface Presenter {
-        val subtitle: String?
+        val subtitleToDisplay: String?
 
         fun initialise()
         fun onMovieEvent(index: Int, pos: Float)
