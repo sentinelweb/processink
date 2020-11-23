@@ -1,5 +1,6 @@
 package speecher.generator.ui
 
+import org.drjekyll.fontchooser.FontDialog
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.editor.util.isSelected
@@ -10,10 +11,7 @@ import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.util.format.TimeFormatter
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.GridLayout
+import java.awt.*
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -36,6 +34,7 @@ class SpeechView constructor(
                 frame = JFrame("Speech editor")
                 frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
                 speechPanel = SpeechPanel()
+                //speechPanel.updateUI()
                 frame.add(speechPanel)
                 // Display the window.
                 frame.pack()
@@ -81,6 +80,9 @@ class SpeechView constructor(
         val sentencePanel: JPanel
         val subsPanel: JPanel
         val searchText: JTextField
+        val volumeSlider: JSlider
+        val fontButton: JButton
+        val fontColorButton: JButton
 
         init {
             preferredSize = Dimension(1024, 768)
@@ -93,10 +95,10 @@ class SpeechView constructor(
                 JPanel().apply {
                     layout = BorderLayout()
 
+                    // north panel - play control
                     JPanel().apply {
                         preferredSize = Dimension(1024, 80)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                        titledBorder("CURSOR")
                         add(JButton("|<").setup { presenter.moveCursor(START) })
                         add(JButton("<<").setup { presenter.moveCursor(LAST) })
                         add(JButton(">>").setup { presenter.moveCursor(NEXT) })
@@ -109,23 +111,64 @@ class SpeechView constructor(
                     JPanel().apply {
                         titledBorder("Control")
                         preferredSize = Dimension(124, 80)
-                        layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+                        layout = GridLayout(1, -1)
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
 
-                        playButton = JButton(">")
-                            .apply { preferredSize = Dimension(40, 40) }
-                            .setup { presenter.play() }
-                            .also { add(it) }
-                        pauseButton = JButton("||")
-                            .apply { preferredSize = Dimension(40, 40) }
-                            .setup { presenter.pause() }
-                            .also { add(it) }
-                            .let { it.isVisible = false; it }
-                        loopButton = JToggleButton("<->")
-                            .apply { preferredSize = Dimension(40, 40) }
-                            .setup { ae -> presenter.loop(isSelected(ae)) }
-                            .also { add(it) }
+                            playButton = JButton(">")
+                                .setup { presenter.play() }
+                                .also { add(it) }
+
+                            pauseButton = JButton("||")
+                                .setup { presenter.pause() }
+                                .also { add(it) }
+                                .let { it.isVisible = false; it }
+
+                            loopButton = JToggleButton("<->")
+                                .setup { ae -> presenter.loop(isSelected(ae)) }
+                                .also { add(it) }
+
+                            fontButton = JButton("Font")
+                                .apply { preferredSize = Dimension(40, 40) }.setup { ae ->
+                                    val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
+                                    dialog.selectedFont = presenter.selectedFont
+                                    dialog.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+                                    dialog.isVisible = true
+                                    if (!dialog.isCancelSelected) {
+                                        System.out.printf("Selected font is: %s%n", dialog.selectedFont)
+                                        presenter.selectedFont = dialog.selectedFont
+                                    }
+                                }
+                                .also { add(it) }
+
+                            fontColorButton = JButton("FC")
+                                .apply { preferredSize = Dimension(40, 40) }
+                                .setup { ae ->
+                                    val color =
+                                        JColorChooser.showDialog(this, "Font Color", presenter.selectedFontColor)
+                                    color?.let {
+                                        @Suppress("LABEL_NAME_CLASH")
+                                        this@apply.background = it
+                                        presenter.selectedFontColor = it
+                                    }
+                                }
+                                .also { add(it) }
+
+                        }.also { add(it) }
+
+                        volumeSlider = JSlider(0, 100, 100)
+                            .apply {
+                                preferredSize = Dimension(20, 200)
+                            }
+                            .setup(null, -1, -1, false) {
+                                val source = it.source as JSlider
+//                                if (source.getValueIsAdjusting()) {
+                                presenter.volume = source.value / 100f
+
+                            }.let { add(it); it.orientation = JSlider.VERTICAL; it }
                     }.also { add(it, BorderLayout.EAST) }
 
+                    // center panel - sentence
                     sentencePanel = JPanel().apply {
                         layout = WrapLayout()
                     }
@@ -135,6 +178,7 @@ class SpeechView constructor(
                             verticalScrollBar.unitIncrement = 32
                         }
                     }.also { add(it, BorderLayout.CENTER) }
+
                 }.also { add(it) }
             }.also { add(it) }
 

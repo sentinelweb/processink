@@ -16,6 +16,8 @@ import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
 import speecher.interactor.srt.SrtInteractor
 import speecher.util.format.TimeFormatter
 import speecher.util.wrapper.LogWrapper
+import java.awt.Color
+import java.awt.Font
 import java.io.File
 import java.lang.Integer.max
 import javax.swing.SwingUtilities
@@ -49,6 +51,18 @@ fun main() {
                 log.d("loop = $l")
             }
 
+            override fun updateFontColor() {
+                log.d("loop = $selectedFontColor")
+            }
+
+            override fun updateFont() {
+                log.d("font = $selectedFont")
+            }
+
+            override fun updateVolume() {
+                log.d("volume = $volume")
+            }
+
         }
         showWindow()
         SwingUtilities.invokeLater {
@@ -74,6 +88,27 @@ class SpeechPresenter constructor(
     }
 
     // region presenter
+    override var selectedFontColor: Color?
+        get() = state.selectedFontColor
+        set(value) {
+            state.selectedFontColor = value
+            listener.updateFontColor()
+        }
+
+    override var selectedFont: Font?
+        get() = state.selectedFont
+        set(value) {
+            state.selectedFont = value
+            listener.updateFont()
+        }
+
+    override var volume: Float
+        get() = state.volume
+        set(value) {
+            state.volume = value
+            listener.updateVolume()
+        }
+
     override fun moveCursor(pos: SpeechContract.CursorPosition) {
         when (pos) {
             START -> state.cursorPos = 0
@@ -135,6 +170,10 @@ class SpeechPresenter constructor(
             field = value
         }
 
+    override fun showWindow() {
+        view.showWindow()
+    }
+
     override fun setSubs(subs: Subtitles) {
         state.subs = subs
         updateSubs()
@@ -152,9 +191,6 @@ class SpeechPresenter constructor(
         listener.loop(selected)
     }
 
-    override fun showWindow() {
-        view.showWindow()
-    }
     // endregion
 
     // region SubtitleChipView.Listener [sub]

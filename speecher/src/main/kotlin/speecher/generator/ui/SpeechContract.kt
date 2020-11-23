@@ -2,6 +2,8 @@ package speecher.generator.ui
 
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import java.awt.Color
+import java.awt.Font
 import java.io.File
 
 interface SpeechContract {
@@ -15,6 +17,9 @@ interface SpeechContract {
     }
 
     interface Presenter {
+        var selectedFontColor: Color?
+        var selectedFont: Font?
+        var volume: Float
         fun moveCursor(pos: CursorPosition)
         fun sortOrder(order: SortOrder)
         fun play()
@@ -31,6 +36,9 @@ interface SpeechContract {
         var playing: Boolean
         var looping: Boolean
         var listener: Listener
+        var selectedFontColor: Color?
+        var selectedFont: Font?
+        var volume: Float
         fun setSubs(subs: Subtitles)
         fun setSrtFile(file: File)
         fun showWindow()
@@ -41,6 +49,9 @@ interface SpeechContract {
         fun play()
         fun pause()
         fun loop(l: Boolean)
+        fun updateFontColor()
+        fun updateFont()
+        fun updateVolume()
     }
 
     enum class CursorPosition { START, LAST, NEXT, END }

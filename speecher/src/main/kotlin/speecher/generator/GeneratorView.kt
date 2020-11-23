@@ -1,5 +1,6 @@
 package speecher.generator
 
+import net.robmunro.processing.util.toProcessing
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
@@ -18,6 +19,7 @@ class GeneratorView constructor(
     override var active: Int = -1
 
     private lateinit var f: PFont
+    private var subtitleColor: Int = color(255, 255, 255)
     private val movieViews: MutableList<MovieContract.View> = mutableListOf()
 
     init {
@@ -34,11 +36,9 @@ class GeneratorView constructor(
 
     override fun setup() {
         background(0)
-        f = createFont("Thonburi", 24f)
-        textFont(f)
-        textSize(20f)
-        textAlign(PConstants.CENTER, PConstants.CENTER)
+        setFont("Thonburi", 24f)
         presenter.initialise()
+        presenter.selectedFontColor?.let { subtitleColor = it.toProcessing(this) }
     }
 
     override fun draw() {
@@ -49,7 +49,8 @@ class GeneratorView constructor(
         fill(255f, 255f, 255f)
         //movieViews.forEach { it.render() }
         if (active > -1) movieViews[active].render()
-        fill(255f, 255f, 0f)
+        //fill(255f, 255f, 0f)
+        fill(subtitleColor)
         presenter.subtitleToDisplay?.let { text(it, width / 2f, height - 25f) }
     }
     // endregion
@@ -68,6 +69,17 @@ class GeneratorView constructor(
 
     override fun openMovie(i: Int, file: File) {
         // todo
+    }
+
+    override fun setFont(fontName: String, size: Float) {
+        f = createFont(fontName, size)
+        textFont(f)
+        textSize(size)
+        textAlign(CENTER, CENTER)
+    }
+
+    override fun updateFontColor() {
+        presenter.selectedFontColor?.let { subtitleColor = it.toProcessing(this) }
     }
     // endregion
 

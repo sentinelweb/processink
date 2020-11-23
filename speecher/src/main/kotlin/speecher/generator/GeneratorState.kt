@@ -13,5 +13,6 @@ data class GeneratorState constructor(
     var playingWord: Int = -1,// currently playing word
     val disposables: CompositeDisposable = CompositeDisposable(),
     var looping: Boolean = false,
-    var movietoWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf()
+    var movietoWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf(),
+    var volume: Float = 0f
 )
