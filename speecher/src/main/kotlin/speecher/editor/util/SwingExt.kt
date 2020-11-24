@@ -2,10 +2,14 @@ package speecher.editor.util
 
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.Font
 import java.awt.event.ActionEvent
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 import javax.swing.event.ChangeEvent
+import javax.swing.text.JTextComponent
+
+val backgroundColor = Color.WHITE
 
 fun JSlider.setup(
     initial: Int?,
@@ -39,24 +43,27 @@ fun JComponent.setup(): JComponent {
     return this
 }
 
+val defaultTextSize = 12
 fun JPanel.titledBorder(title: String, padding: Int = 10): JPanel {
     border = BorderFactory.createCompoundBorder(
         BorderFactory.createCompoundBorder(
             EmptyBorder(padding, padding, padding, padding),
             BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), title)
+                .apply { titleFont = defaultFont() }
         ), EmptyBorder(padding, padding, padding, padding)
     )
-    //background = Color.lightGray
+    background = backgroundColor
     return this
 }
 
 fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
     JPanel().apply {
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-        add(JLabel(label).apply {
+        background = backgroundColor
+        add(JLabel(label).style(bold = true).apply {
             preferredSize = Dimension(labelWidth, 20)
             border = EmptyBorder(0, 0, 0, 10)
-
+            background = backgroundColor
         })
         add(this@wrapWithLabel)
         return this
@@ -89,3 +96,21 @@ fun deselectOthers(jToggleButton: JToggleButton) {
         }
     }
 }
+
+inline fun <reified T : AbstractButton> T.style(size: Int = defaultTextSize, bold: Boolean = false): T {
+    apply { setFont(defaultFont(size, bold)) }
+    return this
+}
+
+fun JLabel.style(size: Int = defaultTextSize, bold: Boolean = false): JLabel {
+    apply { setFont(defaultFont(size, bold)) }
+    return this
+}
+
+inline fun <reified T : JTextComponent> T.style(size: Int = defaultTextSize, bold: Boolean = false): T {
+    apply { setFont(defaultFont(size, bold)) }
+    return this
+}
+
+fun defaultFont(size: Int = defaultTextSize, bold: Boolean = false) =
+    Font("Arial", if (bold) Font.BOLD else Font.PLAIN, size)

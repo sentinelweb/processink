@@ -1,24 +1,29 @@
 package speecher.generator
 
+import java.awt.Color
+import java.awt.Font
 import java.io.File
 
 interface GeneratorContract {
 
     interface View {
+        var presenter: Presenter
+        var active: Int
         fun run()
         fun openMovie(i: Int, file: File)
-        fun setMovieSpeed(i: Int, speed: Float)
-        fun play(i: Int)
-        fun pause(i: Int)
-        fun setActive(i: Int?)
-        fun volume(i: Int, vol: Float)
-        fun seekTo(i: Int, positionSec: Float)
+
+        fun setFont(fontName: String, size: Float)
+        fun updateFontColor()
+        fun recordNew(path: String)
+        fun recordStop()
     }
 
     interface Presenter {
-        val subtitle: String?
+        val subtitleToDisplay: String?
+        val selectedFontColor: Color?
+        val selectedFont: Font?
 
         fun initialise()
-        fun onMovieEvent(indexOf: Int, pos: Float)
+        fun onMovieEvent(index: Int, pos: Float)
     }
 }

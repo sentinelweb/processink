@@ -2,114 +2,244 @@ package speecher.generator
 
 import io.reactivex.Scheduler
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
+import org.koin.core.KoinComponent
+import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
+import org.koin.core.get
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import org.koin.ext.getOrCreateScope
+import processing.core.PApplet
 import speecher.di.Modules
+import speecher.domain.Sentence
 import speecher.domain.Subtitles
-import speecher.interactor.srt.SrtInteractor
+import speecher.generator.movie.MovieContract
+import speecher.generator.movie.MoviePresenter
+import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
+import speecher.util.wrapper.LogWrapper
+import java.awt.Color
+import java.awt.Font
 import java.io.File
 
 fun main() {
     startKoin {
         modules(Modules.allModules)
     }
-    GeneratorPresenter()
+    GeneratorPresenter(get().get())
 }
 
-class GeneratorPresenter : GeneratorContract.Presenter {
-    private val scope = this.getOrCreateScope()
-    private val view: GeneratorContract.View = scope.get()
-    private val state: GeneratorState = scope.get()
-    private val pScheduler: Scheduler = scope.get(named(PROCESSING))
-    private val swingScheduler: Scheduler = scope.get(named(SWING))
-    private val srtInteractor: SrtInteractor = scope.get()
+class GeneratorPresenter constructor(
+    private val log: LogWrapper
+) : GeneratorContract.Presenter, SpeechContract.Listener, KoinComponent, MovieContract.Parent {
 
-    override val subtitle: String?
-        get() = if (state.playIndex > -1) state.words[state.playIndex].text.toString() else "-"
-
-    private val disposables: CompositeDisposable = CompositeDisposable()
+    private val view: GeneratorContract.View = get()
+    private val state: GeneratorState = get()
+    private val pScheduler: Scheduler = get(named(PROCESSING))
+    private val swingScheduler: Scheduler = get(named(SWING))
+    private val speechUI: SpeechContract.External = get()
 
     init {
+        log.tag(this)
+    }
+
+    override val subtitleToDisplay: String?
+        get() = state.movieToWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
+    override val selectedFontColor: Color?
+        get() = speechUI.selectedFontColor
+    override val selectedFont: Font?
+        get() = speechUI.selectedFont
+    override val playEventLatency: Float?
+        get() = speechUI.playEventLatency
+
+    private val movies = mutableListOf<MovieContract.External>()
+
+    private fun wordAtIndex(index: Int): Sentence.Word? = state.words?.words?.let {
+        if (index < it.size) it.get(index) else null
+    }
+
+    private fun Int.wrapInc() = if (this + 1 < movies.size) this + 1 else 0
+
+    init {
+        view.presenter = this
         view.run()
+        speechUI.listener = this
+        speechUI.showWindow()
     }
 
     override fun initialise() {
-        Single.concat(
-            openMovieSingle(File(DEF_MOVIE_PATH)),
-            srtOpenSingle(File(DEF_WRITE_SRT_PATH))
-        )
-            .subscribeOn(Schedulers.computation())
-            .doOnComplete {
-                buildWordList()
-                state.playIndex = -1
-                state.startTime = System.currentTimeMillis()
-                view.setActive(0)
-                playNext()
+        openMovieSingle(File(DEF_MOVIE_PATH))
+            .doOnSuccess {
+                speechUI.setSrtFile(File(DEF_WRITE_SRT_PATH))
             }
-            .observeOn(Schedulers.computation())
-            .subscribe({
-                when (it) {
-                    is File -> println("Opened movie file : $it")
-                    is Subtitles -> println("Opened subtitles : ${it.timedTexts.size} subtitles")
+            //.observeOn(pScheduler)
+            .doOnSuccess {
+                state.wordIndex = -1
+                state.startTime = System.currentTimeMillis()
+                movies.forEachIndexed { i, movie ->
+                    movie.pause()
                 }
+            }
+            .subscribe({
+                println("Opened movie file : $it")
             }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+            .also { state.disposables.add(it) }
     }
 
-    private fun playNext() {
-        state.playIndex++
-        state.playIndex = state.playIndex % state.words.size
-        view.seekTo(0, state.words[state.playIndex].fromSec)
+    inner class MvListener(private val index: Int) : MovieContract.Listener {
+
+        override fun onReady() {
+
+        }
+
+        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
+            //log.d("onSubtitleStart ${state.activeIndex}")
+        }
+
+        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
+            log.d("onSubtitleFinished ${state.activeIndex}")
+            playNext()
+        }
+
+        override fun onPlaying() {
+            log.d("onPlaying($index active=${state.activeIndex})")
+            if (index == state.activeIndex) {
+                view.active = state.activeIndex
+            }
+        }
+
     }
 
-    override fun onMovieEvent(indexOf: Int, pos: Float) {
-        if (state.playIndex > -1) {
-            if (pos > state.words[state.playIndex].toSec) {
-                playNext()
+    override fun onMovieEvent(index: Int, pos: Float) {
+    }
+
+    // region Movie
+    private fun openMovieSingle(file: File): Single<File> {
+        return Single.just(file)
+            .doOnSuccess { state.movieFile = it }
+            .observeOn(pScheduler)
+            .doOnSuccess {
+                (0..10).forEach {
+                    makeMovie(it, file)
+                }
+            }
+    }
+
+    private fun makeMovie(i: Int, file: File) = MoviePresenter(i, log).apply {
+        listener = MvListener(i)
+        parent = this@GeneratorPresenter
+        movies.add(this)
+        openMovie(file)
+        volume(0f)
+//        pause()
+    }
+    // endregion
+
+    // region SpeechContract.External
+    override fun sentenceChanged(sentence: Sentence) {
+        state.words = sentence
+    }
+
+    override fun play() {
+        speechUI.playing = true
+        startPlaying()
+    }
+
+    override fun pause() {
+        movies.forEach { it.pause() }
+        speechUI.playing = false
+    }
+
+    override fun loop(l: Boolean) {
+        state.looping = l
+    }
+
+    override fun updateFontColor() {
+        view.updateFontColor()
+    }
+
+    override fun updateFont() {
+        updateViewFont()
+    }
+
+    override fun updateVolume() {
+        state.volume = speechUI.volume
+    }
+
+    private fun updateViewFont() {
+        view.setFont(selectedFont?.fontName ?: "Thonburi", selectedFont?.size?.toFloat() ?: 24f)
+    }
+
+    // endregion
+
+    // region playback
+    private fun startPlaying() {
+//        File(RECORD_PATH).mkdir()
+//        view.recordNew(RECORD_PATH)
+        log.startTime()
+        movies.forEach {
+            it.volume(state.volume)
+        }
+        state.wordIndex = 0
+        state.activeIndex = 0
+        wordAtIndex(state.wordIndex)?.let {
+            state.movieToWordMap[state.activeIndex] = it
+            movies[state.activeIndex].setSubtitle(it.sub)
+        }
+
+        movies[state.activeIndex].play()
+        (1..movies.size - 1).forEach { i ->
+            incrementWordIndex()
+            wordAtIndex(state.wordIndex)?.let {
+                log.d("next for $i ${it.sub}")
+                state.movieToWordMap[i] = it
+                movies[i].setSubtitle(it.sub)
             }
         }
     }
 
-    // region Movie
-    private fun setMovieFile(file: File) {
-        openMovieSingle(file)
-            .observeOn(swingScheduler)
-            .subscribe({
+    private fun playNext() {
+        //view.active = -1
+        log.d("finished(${state.activeIndex}) - $subtitleToDisplay")
+        movies[state.activeIndex].volume(0f)
+        movies[state.activeIndex].pause()
+        val lastIndex = state.activeIndex
+        state.activeIndex = state.activeIndex.wrapInc()
 
-            }, { it.printStackTrace() })
-            .also { disposables.add(it) }
+        state.movieToWordMap[state.activeIndex]?.let {
+            //view.active = state.activeIndex
+            movies[state.activeIndex].volume(state.volume)
+            movies[state.activeIndex].play()
+            log.d("playing(${state.activeIndex}) - ${it.sub.text}")
+        } ?: run {
+            log.d("Nothing to play")
+            speechUI.playing = false
+            view.active = -1
+            //view.recordStop()
+        }
+        loadNextWord(lastIndex)
     }
 
-    private fun openMovieSingle(file: File): Single<File> {
-        return Single.just(file)
-            .subscribeOn(Schedulers.io())
-            .doOnSuccess { state.movieFile = it }
-            .subscribeOn(pScheduler)
-            .doOnSuccess { view.openMovie(0, it) }
-
+    private fun loadNextWord(playerIndex: Int) {
+        incrementWordIndex()
+        wordAtIndex(state.wordIndex)?.let {
+            log.d("next for $playerIndex ${it.sub}")
+            movies[playerIndex].setSubtitle(it.sub)
+            state.movieToWordMap[playerIndex] = it
+            log.d(it.sub.text[0])
+        } ?: run {
+            state.movieToWordMap[playerIndex] = null
+            log.d("No more words to load playerIndex=${playerIndex} wordIndex=${state.wordIndex}")
+        }
     }
 
-    private fun buildWordList() {
-        state.words = state.speakString
-            .split(" ")
-            .map { word -> state.subs?.timedTexts?.find { it.text[0] == word } }
-            .filterNotNull()
+    private fun incrementWordIndex() {
+        state.wordIndex++
+        if (state.looping) {
+            state.wordIndex = state.wordIndex % (state.words?.words?.size ?: 0)
+        }
     }
-
-    private fun srtOpenSingle(file: File) =
-        srtInteractor.read(file)
-            .subscribeOn(Schedulers.io())
-            .doOnSuccess {
-                state.subs = it
-                state.srtFile = file
-            }
-
+    // endregion
 
     companion object {
 
@@ -118,27 +248,30 @@ class GeneratorPresenter : GeneratorContract.Presenter {
 
         //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
         //var DEF_BASE_PATH = "$BASE/ytcaptiondl/In full - Boris Johnson holds press conference as he defends virus strategy-8aY5J296p9Y"
-        var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
-        var DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
+        val DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
+        val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
 
-        var DEF_SRT_PATH = "$DEF_BASE_PATH.en.srt"
+        val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
 
-        var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+        val RECORD_PATH = "$BASE/record"
 
         @JvmStatic
-        val scopeModule = module {
-            scope(named<GeneratorPresenter>()) {
-                scoped<GeneratorContract.Presenter> { getSource() }
-                scoped<GeneratorContract.View> {
-                    GeneratorView(
-                        presenter = get(),
-                        state = get(),
-                        pExecutor = get()
-                    )
-                }
-                scoped { GeneratorState() }
+        val module = module {
+
+            single {
+                GeneratorView(
+                    state = get(),
+                    pExecutor = get(),
+                    log = get()
+                )
             }
+            factory<GeneratorContract.View> { get<GeneratorView>() }
+            single { GeneratorState() }
+            factory<PApplet> { get<GeneratorView>() }
+            factory<MovieContract.Sketch> { get<GeneratorView>() }
         }
+
     }
+
 }
 

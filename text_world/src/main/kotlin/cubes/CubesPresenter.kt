@@ -11,8 +11,8 @@ import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
-import cubes.util.ColorUtils.Companion.TRANSPARENT
 import io.reactivex.disposables.CompositeDisposable
+import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
 import java.awt.Color
 import java.awt.Font

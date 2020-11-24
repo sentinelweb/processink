@@ -1,4 +1,4 @@
-package cubes.util
+package net.robmunro.processing.util
 
 import processing.core.PApplet
 import java.awt.Color

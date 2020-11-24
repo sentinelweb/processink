@@ -9,7 +9,6 @@ data class Subtitles constructor(
         val toSec: Float,
         val text: List<String>
 
-
     ) {
         fun between(sec: Float): Boolean =
             fromSec < sec && toSec > sec

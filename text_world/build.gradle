@@ -21,6 +21,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(":processingShared")
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     // https://mvnrepository.com/artifact/org.processing/core
     implementation("org.processing:core:$processing_version") {

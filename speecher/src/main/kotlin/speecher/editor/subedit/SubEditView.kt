@@ -5,13 +5,12 @@ import speecher.di.Modules
 import speecher.domain.Subtitles
 import speecher.editor.subedit.word_timeline.WordTimelineContract
 import speecher.editor.subedit.word_timeline.WordTimelineView
-import speecher.editor.util.deselectOthers
-import speecher.editor.util.deselectOthersAction
-import speecher.editor.util.setup
+import speecher.editor.util.*
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.ui.multithumbslider.MultiThumbSlider
 import java.awt.*
 import javax.swing.*
+import javax.swing.BoxLayout.PAGE_AXIS
 
 fun main() {
     startKoin { modules(Modules.allModules) }
@@ -36,6 +35,7 @@ class SubEditView constructor(
 ) : SubEditContract.View {
 
     private lateinit var controlPanel: SubEditPanel
+    private val bgColor: Color = backgroundColor
     override val wordTimelineExt: WordTimelineContract.External
         get() = controlPanel.wordTimeline.external
 
@@ -43,7 +43,7 @@ class SubEditView constructor(
         SwingUtilities.invokeLater {
             val frame = JFrame("Edit subtitles")
             frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
-
+            frame.background = bgColor
             controlPanel = SubEditPanel()
             frame.add(controlPanel)
             frame.location = Point(300, 370)
@@ -65,21 +65,27 @@ class SubEditView constructor(
         val wordTimeline: WordTimelineView
 
         init {
+            background = bgColor
             add(JPanel().apply {
-                layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+                layout = BoxLayout(this, PAGE_AXIS)
                 preferredSize = Dimension(1024, 220)
-                wordPanel = JPanel().let {
-                    it.layout = WrapLayout()
-                    size = Dimension(1024, 1)
-                    add(it); it
-                }
-                add(JPanel().apply {
+                background = bgColor
+                wordPanel = JPanel().apply {
+                    layout = WrapLayout()
+                    background = bgColor
+                    size = Dimension(1024, 80)
+                }.also { add(it) }
+
+                JPanel().apply {
                     layout = BorderLayout()
+                    background = bgColor
                     startLimit = TimeLimitPanel(0).let { add(it, BorderLayout.WEST); it }
                     endLimit = TimeLimitPanel(1).let { add(it, BorderLayout.EAST); it }
-                })
-                add(JPanel().apply {
+                }.also { add(it) }
+
+                JPanel().apply {
                     layout = GridLayout(-1, 1)
+                    background = bgColor
                     slider = MultiThumbSlider<Float>(floatArrayOf(0.1f, 0.2f), arrayOf(1f, 2f))
                         .let {
                             // it.preferredSize = Dimension(1000, 60)
@@ -98,15 +104,16 @@ class SubEditView constructor(
                             add(it); it
                         }
                     wordTimeline = WordTimelineView().let { add(it); it }
-                    timeText = JLabel("00:00:00 -> 00:00:00").let { add(it); it }
-                })
+                    timeText = JLabel("00:00:00 -> 00:00:00").style().let { add(it); it }
+                }.also { add(it) }
 
-                add(JPanel().apply {
+                JPanel().apply {
                     layout = FlowLayout(FlowLayout.RIGHT)
-                    JButton("Write").setup { presenter.onWrite() }.let { add(it); it }
-                    saveButton = JButton("Save").setup { presenter.onSave(false) }.let { add(it); it }
-                    saveNextButton = JButton("Save/Next").setup { presenter.onSave(true) }.let { add(it); it }
-                })
+                    background = bgColor
+                    JButton("Write").style().setup { presenter.onWrite() }.let { add(it); it }
+                    saveButton = JButton("Save").style().setup { presenter.onSave(false) }.let { add(it); it }
+                    saveNextButton = JButton("Save/Next").style().setup { presenter.onSave(true) }.let { add(it); it }
+                }.also { add(it) }
             })
         }
     }
@@ -115,11 +122,13 @@ class SubEditView constructor(
         val timeText: JLabel
 
         init {
+            background = bgColor
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.X_AXIS)
-                JButton("-1").setup { presenter.adjustSliderLimit(index, -1f) }.let { add(it); it }
-                timeText = JLabel("00:00:00").let { add(it); it }
-                JButton("+1").setup { presenter.adjustSliderLimit(index, 1f) }.let { add(it); it }
+                background = bgColor
+                JButton("-1").style().setup { presenter.adjustSliderLimit(index, -1f) }.let { add(it); it }
+                timeText = JLabel("00:00:00").style().let { add(it); it }
+                JButton("+1").style().setup { presenter.adjustSliderLimit(index, 1f) }.let { add(it); it }
             })
         }
     }
@@ -137,7 +146,7 @@ class SubEditView constructor(
     override fun setWordList(words: List<String>) {
         controlPanel.wordPanel.removeAll()
         words.forEachIndexed { i, word ->
-            controlPanel.wordPanel.add(JToggleButton(word).setup {
+            controlPanel.wordPanel.add(JToggleButton(word).style().setup {
                 deselectOthersAction(it)
                 presenter.wordSelected(i)
             })

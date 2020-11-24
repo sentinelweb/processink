@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/first" />
+            <option value="$PROJECT_DIR$/processingShared" />
             <option value="$PROJECT_DIR$/speecher" />
             <option value="$PROJECT_DIR$/text_world" />
           </set>

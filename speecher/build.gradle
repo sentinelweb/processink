@@ -14,7 +14,6 @@ ext {
 group 'net.robmunro.processing'
 version '1.0-SNAPSHOT'
 
-
 sourceCompatibility = 1.8
 
 repositories {
@@ -23,6 +22,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(":processingShared")
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -36,6 +37,8 @@ dependencies {
     }
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
+
+    implementation "com.illposed.osc:javaosc:0.7"
 
     // https://gitlab.com/dheid/fontchooser
     implementation 'org.drjekyll:fontchooser:2.4'
