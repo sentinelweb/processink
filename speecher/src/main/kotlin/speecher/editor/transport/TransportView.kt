@@ -1,6 +1,5 @@
 package speecher.editor.transport
 
-import com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.Subject
@@ -9,10 +8,7 @@ import speecher.di.Modules
 import speecher.editor.transport.TransportContract.*
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEventType.*
-import speecher.editor.util.isSelected
-import speecher.editor.util.setup
-import speecher.editor.util.titledBorder
-import speecher.editor.util.wrapWithLabel
+import speecher.editor.util.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*
@@ -44,12 +40,12 @@ class TransportView(
     override lateinit var component: JComponent
 
     private val disposables: CompositeDisposable = CompositeDisposable()
-
+    private val bgColor: Color = backgroundColor
     override fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Transport")
             frame.defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-            addWindowListener(object : WindowAdapter() {
+            frame.addWindowListener(object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent) {
                     events.onNext(UiEvent(MENU_FILE_EXIT, null))
                 }
@@ -149,28 +145,29 @@ class TransportView(
             add(JPanel().apply {
                 layout = GridLayout(-1, 1)
                 titledBorder("PLAY CONTROLS")
+                background = bgColor
                 // east panel - shader
                 add(JPanel().apply {
                     preferredSize = Dimension(900, 80)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-
+                    background = bgColor
                     //add(JButton("|<").setup { events.onNext(UiEvent(LAST)) })
                     add(JButton("<<").setup { events.onNext(UiEvent(REW)) })
-                    playButton = JButton(">")
+                    playButton = JButton(">").style()
                         .setup { events.onNext(UiEvent(PLAY)) }
                         .let { add(it); it }
-                    pauseButton = JButton("||")
+                    pauseButton = JButton("||").style()
                         .setup { events.onNext(UiEvent(PAUSE)) }
                         .let { add(it); it }
                         .let { it.isVisible = false; it }
-                    add(JButton(">>").setup { events.onNext(UiEvent(FWD)) })
+                    add(JButton(">>").style().setup { events.onNext(UiEvent(FWD)) })
                     //add(JButton(">|").setup { events.onNext(UiEvent(NEXT)) })
 
-                    loopButton = JToggleButton("loop")
+                    loopButton = JToggleButton("loop").style()
                         .setup { events.onNext(UiEvent(UiEventType.LOOP, isSelected(it))) }
                         .let { add(it); it }
 
-                    speedLabel = JLabel("x 1")
+                    speedLabel = JLabel("x 1").style()
                         .let { add(it); it }
                 })
 
@@ -195,18 +192,19 @@ class TransportView(
                 add(JPanel().apply {
                     preferredSize = Dimension(900, 80)
                     layout = BorderLayout()
-                    positionLabel = JLabel("00:00:00.000")
+                    background = bgColor
+                    positionLabel = JLabel("00:00:00.000").style()
                         .let { add(it, BorderLayout.WEST); it }
-                    durationLabel = JLabel("00:00:00.000")
+                    durationLabel = JLabel("00:00:00.000").style()
                         .let { add(it, BorderLayout.EAST); it }
                 })
-                titleMovieLabel = JLabel("Title")
+                titleMovieLabel = JLabel("Title").style()
                     .let { add(it.wrapWithLabel("Movie")); it }
 
-                titleSrtReadLabel = JLabel("Read SRT")
+                titleSrtReadLabel = JLabel("Read SRT").style()
                     .let { add(it.wrapWithLabel("Read SRT")); it }
 
-                titleSrtWriteLabel = JLabel("Write SRT")
+                titleSrtWriteLabel = JLabel("Write SRT").style()
                     .let { add(it.wrapWithLabel("Write SRT")); it }
 
             }, BorderLayout.CENTER)
@@ -223,14 +221,15 @@ class TransportView(
                         events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
                     }.let { add(it, BorderLayout.CENTER); it }
 
-                muteButton = JToggleButton("Mute")
+                muteButton = JToggleButton("Mute").style()
                     .setup { events.onNext(UiEvent(MUTE, isSelected(it))) }
                     .let { add(it, BorderLayout.SOUTH); it }
 
             }, BorderLayout.EAST)
 
-            statusBar = JLabel().let {
+            statusBar = JLabel().style().let {
                 it.preferredSize = Dimension(1024, 30)
+                background = bgColor
                 it.border = CompoundBorder(
                     BevelBorder(BevelBorder.RAISED, Color.decode("#cccccc"), Color.decode("#888888")),
                     EmptyBorder(5, 5, 5, 5)
@@ -330,29 +329,29 @@ class TransportView(
         editSrtMenuItem.addActionListener(EventMenuItemListener(MENU_VIEW_EDIT_SUBLIST))
 
         //add menu items to menus
-        fileMenu.add(openMovieMenuItem)
+        fileMenu.add(openMovieMenuItem.style())
         fileMenu.addSeparator()
-        fileMenu.add(openReadSrtMenuItem)
+        fileMenu.add(openReadSrtMenuItem.style())
         fileMenu.addSeparator()
-        fileMenu.add(newSrtMenuItem)
-        fileMenu.add(openWriteSrtMenuItem)
-        fileMenu.add(saveSrtMenuItem)
-        fileMenu.add(saveAsSrtMenuItem)
+        fileMenu.add(newSrtMenuItem.style())
+        fileMenu.add(openWriteSrtMenuItem.style())
+        fileMenu.add(saveSrtMenuItem.style())
+        fileMenu.add(saveAsSrtMenuItem.style())
         fileMenu.addSeparator()
-        fileMenu.add(exitMenuItem)
+        fileMenu.add(exitMenuItem.style())
 
-        editMenu.add(cutMenuItem)
-        editMenu.add(copyMenuItem)
-        editMenu.add(pasteMenuItem)
+        editMenu.add(cutMenuItem.style())
+        editMenu.add(copyMenuItem.style())
+        editMenu.add(pasteMenuItem.style())
 
-        viewMenu.add(showReadSrtMenuItem)
-        viewMenu.add(showWriteSrtMenuItem)
-        viewMenu.add(editSrtMenuItem)
+        viewMenu.add(showReadSrtMenuItem.style())
+        viewMenu.add(showWriteSrtMenuItem.style())
+        viewMenu.add(editSrtMenuItem.style())
 
         //add menu to menubar
-        menuBar.add(fileMenu)
-        menuBar.add(editMenu)
-        menuBar.add(viewMenu)
+        menuBar.add(fileMenu.style())
+        menuBar.add(editMenu.style())
+        menuBar.add(viewMenu.style())
 
         //add menubar to the frame
         mainFrame.setJMenuBar(menuBar)

@@ -3,10 +3,7 @@ package speecher.generator.ui
 import org.drjekyll.fontchooser.FontDialog
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
-import speecher.editor.util.isSelected
-import speecher.editor.util.setup
-import speecher.editor.util.titledBorder
-import speecher.editor.util.wrapWithLabel
+import speecher.editor.util.*
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
@@ -21,12 +18,13 @@ class SpeechView constructor(
     private val presenter: SpeechContract.Presenter,
     private val timeFormatter: TimeFormatter,
     private val subChipListener: SubtitleChipView.Listener,
-    private val wordChipListener: SubtitleChipView.Listener
+    private val wordChipListener: WordChipView.Listener
 
 ) : SpeechContract.View {
 
     private lateinit var frame: JFrame
     lateinit var speechPanel: SpeechPanel
+    private val bgColor: Color = backgroundColor
 
     override fun showWindow() {
         SwingUtilities.invokeLater {
@@ -47,7 +45,7 @@ class SpeechView constructor(
     override fun updateSentence(sentence: List<Sentence.Word>) {
         speechPanel.sentencePanel.removeAll()
         sentence.forEachIndexed { i, word ->
-            SubtitleChipView(timeFormatter, word.sub, wordChipListener).also {
+            WordChipView(timeFormatter, word, i, wordChipListener).also {
                 if (word == SpeechPresenter.CURSOR) {
                     it.background = Color.LIGHT_GRAY
                     it.isEnabled = false
@@ -59,8 +57,8 @@ class SpeechView constructor(
     }
 
     override fun setPlaying(isPlaying: Boolean) {
-        speechPanel.playButton.isVisible = !isPlaying
-        speechPanel.pauseButton.isVisible = isPlaying
+        (speechPanel.playCtnr.layout as CardLayout)
+            .show(speechPanel.playCtnr, if (!isPlaying) PLAY_BUT else PAUSE_BUT)
     }
 
     override fun updateSubList(subs: List<Subtitles.Subtitle>) {
@@ -74,37 +72,41 @@ class SpeechView constructor(
     }
 
     inner class SpeechPanel : JPanel() {
-        val playButton: JButton
-        val pauseButton: JButton
-        val loopButton: JToggleButton
+
         val sentencePanel: JPanel
         val subsPanel: JPanel
-        val searchText: JTextField
-        val volumeSlider: JSlider
-        val latencySlider: JSlider
-        val fontButton: JButton
-        val fontColorButton: JButton
+        val playCtnr: JPanel
+
+        private val playButton: JButton
+        private val pauseButton: JButton
+        private val loopButton: JToggleButton
+        private val searchText: JTextField
+        private val volumeSlider: JSlider
+        private val latencySlider: JSlider
+        private val fontButton: JButton
+        private val fontColorButton: JButton
 
         init {
-            preferredSize = Dimension(1024, 768)
+            preferredSize = Dimension(1500, 768)
             layout = GridLayout(-1, 1)
-
+            background = bgColor
             JPanel().apply {
                 layout = GridLayout(-1, 1)
                 titledBorder("SENTENCE")
-
+                background = bgColor
                 JPanel().apply {
                     layout = BorderLayout()
-
+                    background = bgColor
                     // north panel - play control
                     JPanel().apply {
-                        preferredSize = Dimension(1024, 80)
+                        //preferredSize = Dimension(1024, 40)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                        add(JButton("|<").setup { presenter.moveCursor(START) })
-                        add(JButton("<<").setup { presenter.moveCursor(LAST) })
-                        add(JButton(">>").setup { presenter.moveCursor(NEXT) })
-                        add(JButton(">|").setup { presenter.moveCursor(END) })
-                        add(JButton("DEL").setup { presenter.deleteWord() })
+                        background = bgColor
+                        add(JButton("|<").style().setup { presenter.moveCursor(START) })
+                        add(JButton("<<").style().setup { presenter.moveCursor(LAST) })
+                        add(JButton(">>").style().setup { presenter.moveCursor(NEXT) })
+                        add(JButton(">|").style().setup { presenter.moveCursor(END) })
+                        add(JButton("DEL").style().setup { presenter.deleteWord() })
                     }.wrapWithLabel("Cursor")
                         .also { add(it, BorderLayout.NORTH) }
 
@@ -113,23 +115,32 @@ class SpeechView constructor(
                         titledBorder("Control")
                         preferredSize = Dimension(180, 80)
                         layout = GridLayout(1, -1)
+                        background = bgColor
                         JPanel().apply {
-                            layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+                            layout = GridLayout(-1, 1)
+                            preferredSize = Dimension(50, 100)
+                            background = bgColor
+                            playCtnr = JPanel().apply {
+                                layout = CardLayout()
+                                background = bgColor
+                                playButton = JButton(">")
+                                    .style()
+                                    .setup { presenter.play() }
+                                    .also { add(it, PLAY_BUT) }
 
-                            playButton = JButton(">")
-                                .setup { presenter.play() }
-                                .also { add(it) }
+                                pauseButton = JButton("||")
+                                    .style()
+                                    .setup { presenter.pause() }
+                                    .also { add(it, PAUSE_BUT) }
 
-                            pauseButton = JButton("||")
-                                .setup { presenter.pause() }
-                                .also { add(it) }
-                                .let { it.isVisible = false; it }
-
+                            }.also { add(it) }
                             loopButton = JToggleButton("<->")
+                                .style()
                                 .setup { ae -> presenter.loop(isSelected(ae)) }
                                 .also { add(it) }
 
                             fontButton = JButton("Font")
+                                .style()
                                 .apply { preferredSize = Dimension(40, 40) }.setup { ae ->
                                     val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
                                     dialog.selectedFont = presenter.selectedFont
@@ -143,6 +154,7 @@ class SpeechView constructor(
                                 .also { add(it) }
 
                             fontColorButton = JButton("FC")
+                                .style()
                                 .apply { preferredSize = Dimension(40, 40) }
                                 .setup { ae ->
                                     val color =
@@ -160,6 +172,7 @@ class SpeechView constructor(
                         volumeSlider = JSlider(0, 100, 100)
                             .apply {
                                 preferredSize = Dimension(20, 200)
+                                background = bgColor
                             }
                             .setup(null, -1, -1, false) {
                                 val source = it.source as JSlider
@@ -171,6 +184,7 @@ class SpeechView constructor(
                         latencySlider = JSlider(0, 100, 100)
                             .apply {
                                 preferredSize = Dimension(20, 200)
+                                background = bgColor
                                 majorTickSpacing = 10
                                 paintTicks = true
                                 value = presenter.playEventLatency?.let { (it * 1000).toInt() } ?: 0
@@ -187,10 +201,12 @@ class SpeechView constructor(
                     // center panel - sentence
                     sentencePanel = JPanel().apply {
                         layout = WrapLayout()
+                        background = bgColor
                     }
                     sentencePanel.let {
                         JScrollPane(it).apply {
                             layout = ScrollPaneLayout()
+                            background = bgColor
                             verticalScrollBar.unitIncrement = 32
                         }
                     }.also { add(it, BorderLayout.CENTER) }
@@ -207,10 +223,13 @@ class SpeechView constructor(
                 JPanel().apply {
                     preferredSize = Dimension(1024, 30)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                    background = bgColor
                     searchText = JTextField("")
+                        .style()
                         .apply {
                             toolTipText = "search"
                             preferredSize = Dimension(80, 30)
+                            background = bgColor
                             document.addDocumentListener(object : DocumentListener {
                                 override fun insertUpdate(e: DocumentEvent) {
                                     presenter.searchText(e.document.getText(0, e.document.length))
@@ -227,18 +246,20 @@ class SpeechView constructor(
                             })
                         }
                         .also { add(it) }
-                    add(JButton("Natural").setup { presenter.sortOrder(NATURAL) })
-                    add(JButton("A-Z").setup { presenter.sortOrder(A_Z) })
-                    add(JButton("Z-A").setup { presenter.sortOrder(Z_A) })
-                    add(JButton("...").setup { presenter.openSubs() })
+                    add(JButton("Natural").setup { presenter.sortOrder(NATURAL) }.style())
+                    add(JButton("A-Z").setup { presenter.sortOrder(A_Z) }.style())
+                    add(JButton("Z-A").setup { presenter.sortOrder(Z_A) }.style())
+                    add(JButton("...").setup { presenter.openSubs() }.style())
                 }.also { add(it, BorderLayout.NORTH) }
 
                 subsPanel = JPanel().apply {
                     layout = WrapLayout()
+                    background = bgColor
                 }
                 subsPanel.let {
                     JScrollPane(it).apply {
                         layout = ScrollPaneLayout()
+                        background = bgColor
                         verticalScrollBar.unitIncrement = 32
                     }
                 }.also { add(it, BorderLayout.CENTER) }
@@ -258,5 +279,14 @@ class SpeechView constructor(
         }
     }
 
+    override fun selectWord(index: Int, selected: Boolean) {
+        speechPanel.sentencePanel.components[index].let {
+            (it as WordChipView).interfaceVisible = selected
+        }
+    }
 
+    companion object {
+        private const val PLAY_BUT = "playBut"
+        private const val PAUSE_BUT = "pauseBut"
+    }
 }

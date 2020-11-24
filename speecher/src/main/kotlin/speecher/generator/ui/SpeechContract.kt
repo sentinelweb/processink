@@ -14,6 +14,7 @@ interface SpeechContract {
         fun updateSubList(subs: List<Subtitles.Subtitle>)
         fun setPlaying(isPlaying: Boolean)
         fun showOpenDialog(title: String, currentDir: File?)
+        fun selectWord(index: Int, selected: Boolean)
     }
 
     interface Presenter {

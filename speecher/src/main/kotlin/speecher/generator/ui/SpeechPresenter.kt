@@ -66,9 +66,11 @@ fun main() {
         }
         showWindow()
         SwingUtilities.invokeLater {
-            setSubs(Subtitles((0..300).mapIndexed { i, e ->
+            val subs = Subtitles((0..300).mapIndexed { i, e ->
                 Subtitles.Subtitle(e.toFloat(), e.toFloat() + 1, listOf("subtitle $i"))
-            }))
+            })
+            setSubs(subs)
+            setWords(subs.timedTexts.subList(0, 20).map { Sentence.Word(it) })
         }
     }
 }
@@ -221,22 +223,48 @@ class SpeechPresenter constructor(
     // endregion
 
     // region SubtitleChipView.Listener [word]
-    inner class WordChipListener : SubtitleChipView.Listener {
+    inner class WordChipListener : WordChipView.Listener {
 
-        override fun onItemClicked(sub: Subtitles.Subtitle) {
-            log.d("word.onItemClicked $sub")
+        override fun onItemClicked(index: Int) {
+            log.d("word.onItemClicked $index")
+            val word = state.wordListWithCursor[index]
+            if (word != CURSOR) {
+                if (state.selectedWord == index) {
+                    state.selectedWord = null
+                    view.selectWord(index, false)
+                } else {
+                    state.selectedWord?.let { view.selectWord(it, false) }
+                    state.selectedWord = index
+                    view.selectWord(index, true)
+                }
+            }
         }
 
-        override fun onPreviewClicked(sub: Subtitles.Subtitle) {
-            log.d("word.onPreviewClicked $sub")
+        override fun onPreviewClicked(index: Int) {
+            log.d("word.onPreviewClicked $index")
+        }
+
+        override fun before(index: Int, value: Float) {
+            log.d("word.before $value")
+        }
+
+        override fun after(index: Int, value: Float) {
+            log.d("word.after $value")
+        }
+
+        override fun speed(index: Int, value: Float) {
+            log.d("word.speed $value")
+        }
+
+        override fun vol(index: Int, value: Float) {
+            log.d("word.vol $value")
         }
     }
     // endregion
 
     private fun buildSentence() {
-        view.updateSentence(
-            state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
-        )
+        state.wordListWithCursor = state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
+        view.updateSentence(state.wordListWithCursor)
         pushSentence()
     }
 
@@ -279,6 +307,11 @@ class SpeechPresenter constructor(
         buildSentence()
     }
 
+    fun setWords(words: List<Sentence.Word>) {
+        state.wordList = words
+        buildSentence()
+    }
+
     companion object {
         val CURSOR = Sentence.Word(Subtitles.Subtitle(0f, 0f, listOf("Cursor")))
         const val CHIP_SUB = "Subs"
@@ -289,7 +322,7 @@ class SpeechPresenter constructor(
             scope(named<SpeechPresenter>()) {
                 scoped<SpeechContract.Presenter> { getSource() }
                 scoped<SubtitleChipView.Listener>(named(CHIP_SUB)) { getSource<SpeechPresenter>().SubChipListener() }
-                scoped<SubtitleChipView.Listener>(named(CHIP_WORD)) { getSource<SpeechPresenter>().WordChipListener() }
+                scoped<WordChipView.Listener>(named(CHIP_WORD)) { getSource<SpeechPresenter>().WordChipListener() }
                 scoped<SpeechContract.View> {
                     SpeechView(
                         presenter = get(),

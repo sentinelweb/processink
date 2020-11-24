@@ -3,6 +3,8 @@ package speecher.editor.subedit.word_timeline
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ext.getOrCreateScope
+import speecher.editor.util.backgroundColor
+import speecher.editor.util.defaultFont
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Rectangle
@@ -20,6 +22,7 @@ class WordTimelineView() : JPanel(), WordTimelineContract.View {
     private val clickRegions: MutableList<Rectangle> = mutableListOf()
 
     init {
+        background = backgroundColor
         addMouseListener(object : MouseAdapter() {
 
             override fun mousePressed(e: MouseEvent) {
@@ -36,8 +39,9 @@ class WordTimelineView() : JPanel(), WordTimelineContract.View {
 
     override fun paint(g: Graphics) {
         super.paint(g)
-        g.color = Color.RED
+        g.color = backgroundColor
         g.drawRect(0, 0, width, height)
+        g.font = defaultFont()
         val distSec = state.limits[1] - state.limits[0]
         if (distSec > 0) {
             clickRegions.clear()

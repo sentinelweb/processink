@@ -35,7 +35,6 @@ class MovieView constructor(
             state.screenRect?.apply {
                 p.image(state.movie, x, y, width, height)
             }
-
         }
     }
 

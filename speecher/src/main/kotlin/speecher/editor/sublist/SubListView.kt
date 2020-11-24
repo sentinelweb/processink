@@ -3,6 +3,8 @@ package speecher.editor.sublist
 import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Subtitles
+import speecher.editor.util.backgroundColor
+import speecher.editor.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.Color
 import java.awt.Dimension
@@ -49,6 +51,8 @@ class SubListView(
 
     private lateinit var frame: JFrame
     lateinit var listPanel: JPanel
+
+    private val bgColor: Color = backgroundColor
 
     override fun showWindow(x: Int, y: Int) {
         SwingUtilities.invokeLater {
@@ -100,12 +104,14 @@ class SubListView(
             layout = GridLayout(1, 1)
             listPanel = JPanel().apply {
                 layout = GridLayout(-1, 1)
+                background = bgColor
                 //add(JLabel("init"))
             }
             add(
                 JScrollPane(listPanel).apply {
                     layout = ScrollPaneLayout()
                     verticalScrollBar.unitIncrement = 32
+                    background = bgColor
                 }
             )
         }
@@ -117,7 +123,7 @@ class SubListView(
     ) : JPanel() {
 
         private val colorSelected = Color.decode("#cccccc")
-        private val colorNormal = Color.decode("#eeeeee")
+        private val colorNormal = bgColor
         private val colorClick = Color.decode("#aaaaaa")
 
         private var mouseDown = false
@@ -130,9 +136,8 @@ class SubListView(
 
         init {
             layout = GridLayout(-1, 1)
-
-            add(JLabel("${timeFormatter.formatTime(item.fromSec)} -> ${timeFormatter.formatTime(item.toSec)}s"))
-            item.text.forEach { add(JLabel(it)) }
+            add(JLabel("${timeFormatter.formatTime(item.fromSec)} -> ${timeFormatter.formatTime(item.toSec)}s").style())
+            item.text.forEach { add(JLabel(it).style()) }
             border = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY)
             background = if (selected) colorSelected else colorNormal
 
