@@ -59,4 +59,7 @@ interface SpeechContract {
 
     enum class CursorPosition { START, LAST, NEXT, END }
     enum class SortOrder { NATURAL, A_Z, Z_A }
+    enum class WordParamType {
+        BEFORE, AFTER, SPEED, VOL, FROM, TO
+    }
 }

@@ -12,6 +12,7 @@ import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
+import speecher.generator.ui.SpeechContract.WordParamType.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
 import speecher.interactor.srt.SrtInteractor
 import speecher.util.format.TimeFormatter
@@ -244,21 +245,25 @@ class SpeechPresenter constructor(
             log.d("word.onPreviewClicked $index")
         }
 
-        override fun before(index: Int, value: Float) {
-            log.d("word.before $value")
+        override fun changed(index: Int, type: SpeechContract.WordParamType, value: Float) {
+            log.d("word.changed $index $type $value")
+            val word = state.wordListWithCursor[index]
+            if (word != CURSOR) {
+                state.wordList = state.wordListWithCursor.toMutableList().apply {
+                    when (type) {
+                        BEFORE -> set(index, word.copy(spaceBefore = value))
+                        AFTER -> set(index, word.copy(spaceAfter = value))
+                        FROM -> set(index, word.copy(sub = word.sub.copy(fromSec = value)))
+                        TO -> set(index, word.copy(sub = word.sub.copy(toSec = value)))
+                        SPEED -> set(index, word.copy(speed = value))
+                        VOL -> set(index, word.copy(vol = value))
+                    }
+                    remove(CURSOR)
+                }
+                pushSentence()
+            }
         }
 
-        override fun after(index: Int, value: Float) {
-            log.d("word.after $value")
-        }
-
-        override fun speed(index: Int, value: Float) {
-            log.d("word.speed $value")
-        }
-
-        override fun vol(index: Int, value: Float) {
-            log.d("word.vol $value")
-        }
     }
     // endregion
 

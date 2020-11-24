@@ -5,6 +5,7 @@ import speecher.domain.Subtitles
 import speecher.editor.util.backgroundColor
 import speecher.editor.util.setup
 import speecher.editor.util.style
+import speecher.generator.ui.SpeechContract.WordParamType.*
 import speecher.util.format.TimeFormatter
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -48,10 +49,7 @@ class WordChipView constructor(
     }
 
     interface Listener {
-        fun before(index: Int, value: Float)
-        fun after(index: Int, value: Float)
-        fun speed(index: Int, value: Float)
-        fun vol(index: Int, value: Float)
+        fun changed(index: Int, type: SpeechContract.WordParamType, value: Float)
         fun onItemClicked(index: Int)
         fun onPreviewClicked(index: Int)
     }
@@ -75,24 +73,24 @@ class WordChipView constructor(
                 JPanel().apply {
                     background = bgColor
                     layout = GridLayout(1, -1)
-                    beforeToggle = ToggleButtons(value = word.spaceBefore, type = ToggleType.BEFORE, tooltip = "Before")
+                    beforeToggle = ToggleButtons(value = word.spaceBefore, type = BEFORE, tooltip = "Before")
                         .also { add(it) }
-                    volToggle = ToggleButtons(value = word.vol, type = ToggleType.VOL, tooltip = "Vol")
-                        .also { add(it) }
-
-                    speedToggle = ToggleButtons(value = word.speed, type = ToggleType.SPEED, tooltip = "Speed")
+                    volToggle = ToggleButtons(value = word.vol, type = VOL, tooltip = "Vol")
                         .also { add(it) }
 
-                    afterToggle = ToggleButtons(value = word.spaceAfter, type = ToggleType.AFTER, tooltip = "After")
+                    speedToggle = ToggleButtons(value = word.speed, type = SPEED, tooltip = "Speed")
+                        .also { add(it) }
+
+                    afterToggle = ToggleButtons(value = word.spaceAfter, type = AFTER, tooltip = "After")
                         .also { add(it) }
                 }.also { add(it) }
                 JPanel().apply {
                     background = bgColor
                     layout = GridLayout(1, -1)
                     fromToggle =
-                        ToggleButtons(value = word.sub.fromSec, type = ToggleType.FROM, wid = 40, tooltip = "From")
+                        ToggleButtons(value = word.sub.fromSec, type = FROM, wid = 40, tooltip = "From")
                             .also { add(it) }
-                    toToggle = ToggleButtons(value = word.sub.toSec, type = ToggleType.TO, wid = 40, tooltip = "To")
+                    toToggle = ToggleButtons(value = word.sub.toSec, type = TO, wid = 40, tooltip = "To")
                         .also { add(it) }
                 }.also { add(it) }
             }.also { add(it, "toggle") }
@@ -104,17 +102,13 @@ class WordChipView constructor(
         (toggleContainer.layout as CardLayout).show(toggleContainer, if (value) TOGGLE else CHIP)
     }
 
-    enum class ToggleType {
-        BEFORE, AFTER, SPEED, VOL, FROM, TO
-    }
-
     inner class ToggleButtons constructor(
         private var value: Float = 0f,
         private var increment: Float = 0.01f,
         private var incrementBig: Float = 0.1f,
-        private val type: ToggleType,
+        private val type: SpeechContract.WordParamType,
         private val horizontal: Boolean = false,
-        private val wid: Int = 20,
+        private val wid: Int = 25,
         private val tooltip: String? = null
     ) : JPanel() {
 
@@ -157,19 +151,12 @@ class WordChipView constructor(
 
 
         fun updateVal(newValue: Float) {
-            value = "%.4f".format(newValue).toFloat()
+            value = "%.2f".format(newValue).toFloat()
             valueLabel.text = value.toString()
         }
 
         private fun sendValue() {
-            when (type) {
-                ToggleType.SPEED -> listener.speed(index, value)
-                ToggleType.VOL -> listener.vol(index, value)
-                ToggleType.BEFORE -> listener.before(index, value)
-                ToggleType.AFTER -> listener.after(index, value)
-                ToggleType.FROM -> listener.after(index, value)
-                ToggleType.TO -> listener.after(index, value)
-            }
+            listener.changed(index, type, value)
         }
     }
 
