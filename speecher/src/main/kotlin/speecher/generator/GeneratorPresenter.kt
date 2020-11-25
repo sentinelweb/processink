@@ -67,71 +67,12 @@ class GeneratorPresenter constructor(
         speechUI.showWindow()
     }
 
+    // region Presenter
     override fun initialise() {
-        openMovieSingle(File(DEF_MOVIE_PATH))
-            .doOnSuccess {
-                speechUI.setSrtFile(File(DEF_WRITE_SRT_PATH))
-            }
-            //.observeOn(pScheduler)
-            .doOnSuccess {
-                state.wordIndex = -1
-                state.startTime = System.currentTimeMillis()
-                movies.forEachIndexed { i, movie ->
-                    movie.pause()
-                }
-            }
-            .subscribe({
-                println("Opened movie file : $it")
-            }, { it.printStackTrace() })
-            .also { state.disposables.add(it) }
-    }
-
-    inner class MvListener(private val index: Int) : MovieContract.Listener {
-
-        override fun onReady() {
-
-        }
-
-        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
-            //log.d("onSubtitleStart ${state.activeIndex}")
-        }
-
-        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
-            log.d("onSubtitleFinished ${state.activeIndex}")
-            playNext()
-        }
-
-        override fun onPlaying() {
-            log.d("onPlaying($index active=${state.activeIndex})")
-            if (index == state.activeIndex) {
-                view.active = state.activeIndex
-            }
-        }
-
+        speechUI.initialise()
     }
 
     override fun onMovieEvent(index: Int, pos: Float) {
-    }
-
-    // region Movie
-    private fun openMovieSingle(file: File): Single<File> {
-        return Single.just(file)
-            .doOnSuccess { state.movieFile = it }
-            .observeOn(pScheduler)
-            .doOnSuccess {
-                (0..10).forEach {
-                    makeMovie(it, file)
-                }
-            }
-    }
-
-    private fun makeMovie(i: Int, file: File) = MoviePresenter(i, log).apply {
-        listener = MvListener(i)
-        parent = this@GeneratorPresenter
-        movies.add(this)
-        openMovie(file)
-        volume(0f)
-//        pause()
     }
     // endregion
 
@@ -164,6 +105,21 @@ class GeneratorPresenter constructor(
 
     override fun updateVolume() {
         state.volume = speechUI.volume
+    }
+
+    override fun loadMovieFile(movie: File) {
+        openMovieSingle(movie)
+            .doOnSuccess {
+                state.wordIndex = -1
+                state.startTime = System.currentTimeMillis()
+                movies.forEachIndexed { i, movie ->
+                    movie.pause()
+                }
+            }
+            .subscribe({
+                println("Opened movie file : $it")
+            }, { it.printStackTrace() })
+            .also { state.disposables.add(it) }
     }
 
     private fun updateViewFont() {
@@ -241,19 +197,55 @@ class GeneratorPresenter constructor(
     }
     // endregion
 
+    // region Movie
+    private fun openMovieSingle(file: File): Single<File> {
+        return Single.just(file)
+            .observeOn(pScheduler)
+            .doOnSuccess {
+                (0..10).forEach {
+                    makeMovie(it, file)
+                }
+            }
+    }
+
+    private fun makeMovie(i: Int, file: File) = MoviePresenter(i, log).apply {
+        listener = MvListener(i)
+        parent = this@GeneratorPresenter
+        movies.add(this)
+        openMovie(file)
+        volume(0f)
+//        pause()
+    }
+
+    inner class MvListener(private val index: Int) : MovieContract.Listener {
+
+        override fun onReady() {
+
+        }
+
+        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
+            //log.d("onSubtitleStart ${state.activeIndex}")
+        }
+
+        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
+            log.d("onSubtitleFinished ${state.activeIndex}")
+            playNext()
+        }
+
+        override fun onPlaying() {
+            log.d("onPlaying($index active=${state.activeIndex})")
+            if (index == state.activeIndex) {
+                view.active = state.activeIndex
+            }
+        }
+
+    }
+    // endregion
+
     companion object {
 
-        val BASE = "${System.getProperty("user.dir")}/speecher"
-        private val BASE_RESOURCES = "$BASE/src/main/resources"
-
-        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM"
-        //var DEF_BASE_PATH = "$BASE/ytcaptiondl/In full - Boris Johnson holds press conference as he defends virus strategy-8aY5J296p9Y"
-        val DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
-        val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
-
-        val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
-
-        val RECORD_PATH = "$BASE/record"
+        internal val BASE = "${System.getProperty("user.dir")}/speecher"
+        internal val RECORD_PATH = "$BASE/record"
 
         @JvmStatic
         val module = module {

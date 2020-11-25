@@ -1,7 +1,9 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm'
+    id 'kotlinx-serialization'
 }
+
 
 ext {
     // this is the path to the native libs in the p3 installation
@@ -9,6 +11,11 @@ ext {
     processing_version="3.3.7"
     jna_version="3.4.0"
     ver_koin='2.1.6'
+    ver_kotlinx_serialization_runtime="0.20.0"
+    ver_osc="0.7"
+    ver_fontchooser="2.4"
+    ver_rxjava="2.2.16"
+    ver_rxjava_kotlin="2.4.0"
 }
 
 group 'net.robmunro.processing'
@@ -19,6 +26,7 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
     jcenter()
+    maven { url "https://kotlin.bintray.com/kotlinx" }
 }
 
 dependencies {
@@ -27,6 +35,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$ver_kotlinx_serialization_runtime"
+
     // https://mvnrepository.com/artifact/org.processing/core
     implementation ("org.processing:core:$processing_version") {
         exclude group: 'net.java.dev.jna'
@@ -38,14 +49,14 @@ dependencies {
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
 
-    implementation "com.illposed.osc:javaosc:0.7"
+    implementation "com.illposed.osc:javaosc:$ver_osc"
 
     // https://gitlab.com/dheid/fontchooser
-    implementation 'org.drjekyll:fontchooser:2.4'
+    implementation "org.drjekyll:fontchooser:$ver_fontchooser"
 
     // use coroutines
-    implementation "io.reactivex.rxjava2:rxjava:2.2.16"
-    implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
+    implementation "io.reactivex.rxjava2:rxjava:$ver_rxjava"
+    implementation "io.reactivex.rxjava2:rxkotlin:$ver_rxjava_kotlin"
     implementation "org.koin:koin-core:$ver_koin"
 
     runtime files("$processing_native_lib_path")

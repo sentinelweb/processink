@@ -32,6 +32,7 @@ interface SpeechContract {
         fun initView()
         fun setSrtFile(file: File)
         fun loop(selected: Boolean)
+        fun shutdown()
     }
 
     interface External {
@@ -45,6 +46,8 @@ interface SpeechContract {
         fun setSubs(subs: Subtitles)
         fun setSrtFile(file: File)
         fun showWindow()
+        fun shutdown()
+        fun initialise()
     }
 
     interface Listener {
@@ -55,6 +58,7 @@ interface SpeechContract {
         fun updateFontColor()
         fun updateFont()
         fun updateVolume()
+        fun loadMovieFile(movie: File)
     }
 
     enum class CursorPosition { START, LAST, NEXT, END }

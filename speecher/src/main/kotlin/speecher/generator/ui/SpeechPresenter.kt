@@ -1,5 +1,6 @@
 package speecher.generator.ui
 
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
@@ -10,6 +11,7 @@ import org.koin.ext.getOrCreateScope
 import speecher.di.Modules
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.generator.GeneratorPresenter
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechContract.WordParamType.*
@@ -64,6 +66,10 @@ fun main() {
                 log.d("volume = $volume")
             }
 
+            override fun loadMovieFile(movie: File) {
+                log.d("loadMovieFile = $movie")
+            }
+
         }
         showWindow()
         SwingUtilities.invokeLater {
@@ -83,8 +89,9 @@ class SpeechPresenter constructor(
 
     private val scope = this.getOrCreateScope()
     private val view: SpeechContract.View = scope.get()
-    private val state: SpeechState = scope.get()
+    private var state: SpeechState = scope.get()
     private val srtInteractor: SrtInteractor = scope.get()
+    private val speechStateMapper: SpeechStateMapper = scope.get()
 
     init {
         log.tag(this)
@@ -148,7 +155,7 @@ class SpeechPresenter constructor(
     }
 
     override fun openSubs() {
-        view.showOpenDialog("Open SRT", state.srtFile?.parentFile)
+        view.showOpenDialog("Open SRT", state.srtWordFile?.parentFile)
     }
 
     override fun deleteWord() {
@@ -195,13 +202,45 @@ class SpeechPresenter constructor(
             .subscribe(
                 { println("opened SRT = $file") },
                 { it.printStackTrace() }
-            )
+            ).also { state.disposables.add(it) }
     }
 
     override fun loop(selected: Boolean) {
         listener.loop(selected)
     }
 
+    override fun initialise() {
+        val rcFile = File(RC)
+        if (rcFile.exists()) {
+            Single.fromCallable {
+                speechStateMapper.deserializeSpeechState(rcFile.readText())
+            }.doOnSuccess { state = it }
+        } else {
+            Single.fromCallable {
+                state.srtWordFile = File(DEF_WRITE_SRT_PATH)
+                state.movieFile = File(DEF_MOVIE_PATH)
+            }
+        }
+            .flatMap { srtOpenSingle(File(DEF_WRITE_SRT_PATH)) }
+            .doOnSuccess { listener.loadMovieFile(File(DEF_MOVIE_PATH)) }
+            .subscribe({
+                log.d("initialised state")
+            }, { t -> t.printStackTrace() }
+            )
+            .also { state.disposables.add(it) }
+    }
+
+    override fun shutdown() {
+        Single.just(File(RC))
+            .doOnSuccess {
+                it.writeText(state.copy(subs = null).serialise())
+            }
+            .subscribe({
+                log.d("saved state")
+                System.exit(0)
+            }, { it.printStackTrace() })
+            .also { state.disposables.add(it) }
+    }
     // endregion
 
     // region SubtitleChipView.Listener [sub]
@@ -294,8 +333,8 @@ class SpeechPresenter constructor(
             .doOnSuccess {
                 state.subs = it
                 updateSubs()
-                state.speakString?.let { buildWordList(it) }
-                state.srtFile = file
+                //state.speakString?.let { buildWordList(it) }
+                state.srtWordFile = file
             }
 
     private fun buildWordList(s: String) {
@@ -318,9 +357,17 @@ class SpeechPresenter constructor(
     }
 
     companion object {
-        val CURSOR = Sentence.Word(Subtitles.Subtitle(0f, 0f, listOf("Cursor")))
-        const val CHIP_SUB = "Subs"
-        const val CHIP_WORD = "Sentence"
+        internal val CURSOR = Sentence.Word(Subtitles.Subtitle(0f, 0f, listOf("Cursor")))
+        private const val CHIP_SUB = "Subs"
+        private const val CHIP_WORD = "Sentence"
+
+        internal val DEF_BASE_PATH =
+            "${GeneratorPresenter.BASE}/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
+        internal val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
+
+        internal val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+
+        internal val RC = "${System.getProperty("user.home")}/.speecherrc.json"
 
         @JvmStatic
         val scope = module {
@@ -336,6 +383,7 @@ class SpeechPresenter constructor(
                         wordChipListener = get(named(CHIP_WORD))
                     )
                 }
+                scoped { SpeechStateMapper() }
                 scoped { SpeechState() }
             }
         }

@@ -9,6 +9,8 @@ import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.util.format.TimeFormatter
 import java.awt.*
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -19,7 +21,6 @@ class SpeechView constructor(
     private val timeFormatter: TimeFormatter,
     private val subChipListener: SubtitleChipView.Listener,
     private val wordChipListener: WordChipView.Listener
-
 ) : SpeechContract.View {
 
     private lateinit var frame: JFrame
@@ -30,13 +31,17 @@ class SpeechView constructor(
         SwingUtilities.invokeLater {
             if (!this::frame.isInitialized) {
                 frame = JFrame("Speech editor")
-                frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+                frame.defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
+                frame.addWindowListener(object : WindowAdapter() {
+                    override fun windowClosing(e: WindowEvent) {
+                        presenter.shutdown()
+                    }
+                })
                 speechPanel = SpeechPanel()
-                //speechPanel.updateUI()
                 frame.add(speechPanel)
-                // Display the window.
                 frame.pack()
             }
+            // Display the window.
             frame.isVisible = true
             presenter.initView()
         }
