@@ -5,14 +5,14 @@ import speecher.editor.EditorView
 import speecher.editor.subedit.SubEditContract
 import speecher.editor.subedit.SubEditPresenter
 import speecher.editor.subedit.word_timeline.WordTimelineView
-import speecher.editor.sublist.SubListContract
-import speecher.editor.sublist.SubListPresenter
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
 import speecher.generator.GeneratorPresenter
 import speecher.generator.movie.MoviePresenter
 import speecher.generator.ui.SpeechContract
 import speecher.generator.ui.SpeechPresenter
+import speecher.generator.ui.sentence_list.SentenceListContract
+import speecher.generator.ui.sentence_list.SentenceListPresenter
 import speecher.interactor.srt.SrtFileReader
 import speecher.interactor.srt.SrtFileWriter
 import speecher.interactor.srt.SrtInteractor
@@ -27,14 +27,14 @@ object Modules {
 
     private val scopedModules = listOf(
         EditorView.viewModule,
-        SubListPresenter.scope,
+        SentenceListPresenter.scope,
         TransportPresenter.scope,
         SubEditPresenter.scope,
         WordTimelineView.scope
     )
 
     private val subViewModules = module {
-        factory<SubListContract.External> { SubListPresenter() }
+        factory<SentenceListContract.External> { SentenceListPresenter() }
         factory<TransportContract.External> { TransportPresenter() }
         factory<SubEditContract.External> { SubEditPresenter() }
         factory<SpeechContract.External> { SpeechPresenter(get()) }
