@@ -1,6 +1,8 @@
 package speecher.generator.ui
 
+import io.reactivex.Scheduler
 import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
@@ -17,6 +19,7 @@ import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechContract.WordParamType.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
 import speecher.interactor.srt.SrtInteractor
+import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
@@ -92,6 +95,9 @@ class SpeechPresenter constructor(
     private var state: SpeechState = scope.get()
     private val srtInteractor: SrtInteractor = scope.get()
     private val speechStateMapper: SpeechStateMapper = scope.get()
+    private val swingScheduler: Scheduler = scope.get(named(SchedulerModule.SWING))
+
+    val disposables: CompositeDisposable = CompositeDisposable()
 
     init {
         log.tag(this)
@@ -133,7 +139,7 @@ class SpeechPresenter constructor(
             NEXT -> state.cursorPos = min(state.wordList.size, state.cursorPos + 1)
             END -> state.cursorPos = state.wordList.size
         }
-        buildSentence()
+        buildSentenceWithCursor()
     }
 
     override fun sortOrder(order: SpeechContract.SortOrder) {
@@ -161,12 +167,12 @@ class SpeechPresenter constructor(
     override fun deleteWord() {
         if (state.cursorPos < state.wordList.size) {
             state.wordList = state.wordList.toMutableList().apply { removeAt(state.cursorPos) }
-            buildSentence()
+            buildSentenceWithCursor()
         }
     }
 
     override fun initView() {
-        buildSentence()
+        buildSentenceWithCursor()
     }
 
     // endregion
@@ -202,7 +208,7 @@ class SpeechPresenter constructor(
             .subscribe(
                 { println("opened SRT = $file") },
                 { it.printStackTrace() }
-            ).also { state.disposables.add(it) }
+            ).also { disposables.add(it) }
     }
 
     override fun loop(selected: Boolean) {
@@ -211,35 +217,56 @@ class SpeechPresenter constructor(
 
     override fun initialise() {
         val rcFile = File(RC)
-        if (rcFile.exists()) {
+        val initSingle = if (rcFile.exists()) {
             Single.fromCallable {
                 speechStateMapper.deserializeSpeechState(rcFile.readText())
-            }.doOnSuccess { state = it }
+            }.subscribeOn(Schedulers.io())
+                .doOnSuccess {
+                    state = it
+                    view.restoreState(
+                        state.volume,
+                        state.playEventLatency,
+                        state.searchText,
+                        state.sortOrder
+                    )
+                    listener.apply {
+                        updateFont()
+                        updateFontColor()
+                        updateVolume()
+                    }
+                    updateSubs()
+                    buildSentenceWithCursor()
+                }
+                .subscribeOn(swingScheduler)
         } else {
             Single.fromCallable {
                 state.srtWordFile = File(DEF_WRITE_SRT_PATH)
                 state.movieFile = File(DEF_MOVIE_PATH)
             }
         }
+        initSingle
             .flatMap { srtOpenSingle(File(DEF_WRITE_SRT_PATH)) }
-            .doOnSuccess { listener.loadMovieFile(File(DEF_MOVIE_PATH)) }
-            .subscribe({
-                log.d("initialised state")
-            }, { t -> t.printStackTrace() }
+            .doOnSuccess {
+                state.movieFile?.apply { listener.loadMovieFile(this) }
+            }
+            .subscribe(
+                {
+                    log.d("initialised state")
+                }, { t -> t.printStackTrace() }
             )
-            .also { state.disposables.add(it) }
+            .also { disposables.add(it) }
     }
 
     override fun shutdown() {
         Single.just(File(RC))
             .doOnSuccess {
-                it.writeText(state.copy(subs = null).serialise())
+                it.writeText(speechStateMapper.serializeSpeechState(state))
             }
             .subscribe({
                 log.d("saved state")
                 System.exit(0)
             }, { it.printStackTrace() })
-            .also { state.disposables.add(it) }
+            .also { disposables.add(it) }
     }
     // endregion
 
@@ -249,7 +276,7 @@ class SpeechPresenter constructor(
             //println("subchip.onItemClicked $sub")
             state.wordList = state.wordList.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
             state.cursorPos++
-            buildSentence()
+            buildSentenceWithCursor()
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
@@ -306,7 +333,7 @@ class SpeechPresenter constructor(
     }
     // endregion
 
-    private fun buildSentence() {
+    private fun buildSentenceWithCursor() {
         state.wordListWithCursor = state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
         view.updateSentence(state.wordListWithCursor)
         pushSentence()
@@ -348,12 +375,12 @@ class SpeechPresenter constructor(
             state.cursorPos = elements1.size
 
         }
-        buildSentence()
+        buildSentenceWithCursor()
     }
 
     fun setWords(words: List<Sentence.Word>) {
         state.wordList = words
-        buildSentence()
+        buildSentenceWithCursor()
     }
 
     companion object {
@@ -383,7 +410,7 @@ class SpeechPresenter constructor(
                         wordChipListener = get(named(CHIP_WORD))
                     )
                 }
-                scoped { SpeechStateMapper() }
+                scoped { SpeechStateMapper(get()) }
                 scoped { SpeechState() }
             }
         }

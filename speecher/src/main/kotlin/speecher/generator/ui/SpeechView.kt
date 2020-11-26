@@ -81,13 +81,16 @@ class SpeechView constructor(
         val sentencePanel: JPanel
         val subsPanel: JPanel
         val playCtnr: JPanel
+        val searchText: JTextField
+        val volumeSlider: JSlider
+        val latencySlider: JSlider
+        val sortNatural: JToggleButton
+        val sortAZ: JToggleButton
+        val sortZA: JToggleButton
 
         private val playButton: JButton
         private val pauseButton: JButton
         private val loopButton: JToggleButton
-        private val searchText: JTextField
-        private val volumeSlider: JSlider
-        private val latencySlider: JSlider
         private val fontButton: JButton
         private val fontColorButton: JButton
 
@@ -174,7 +177,7 @@ class SpeechView constructor(
 
                         }.also { add(it) }
 
-                        volumeSlider = JSlider(0, 100, 100)
+                        volumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
                             .apply {
                                 preferredSize = Dimension(20, 200)
                                 background = bgColor
@@ -182,7 +185,7 @@ class SpeechView constructor(
                             .setup(null, -1, -1, false) {
                                 val source = it.source as JSlider
 //                                if (source.getValueIsAdjusting()) {
-                                presenter.volume = source.value / 100f
+                                presenter.volume = source.value / VOL_SCALE
 
                             }.let { add(it); it.orientation = JSlider.VERTICAL; it }
 
@@ -192,12 +195,12 @@ class SpeechView constructor(
                                 background = bgColor
                                 majorTickSpacing = 10
                                 paintTicks = true
-                                value = presenter.playEventLatency?.let { (it * 1000).toInt() } ?: 0
+                                value = presenter.playEventLatency?.let { (it * PLAT_SCALE).toInt() } ?: 0
                             }
                             .setup(null, -1, -1, false) {
                                 val source = it.source as JSlider
                                 if (source.getValueIsAdjusting()) {
-                                    presenter.playEventLatency = source.value / 1000f
+                                    presenter.playEventLatency = source.value / PLAT_SCALE
                                 }
 
                             }.let { add(it); it.orientation = JSlider.VERTICAL; it }
@@ -251,10 +254,19 @@ class SpeechView constructor(
                             })
                         }
                         .also { add(it) }
-                    add(JButton("Natural").setup { presenter.sortOrder(NATURAL) }.style())
-                    add(JButton("A-Z").setup { presenter.sortOrder(A_Z) }.style())
-                    add(JButton("Z-A").setup { presenter.sortOrder(Z_A) }.style())
-                    add(JButton("...").setup { presenter.openSubs() }.style())
+                    sortNatural = JToggleButton("Natural")
+                        .setup { presenter.sortOrder(NATURAL) }
+                        .style()
+                        .also { add(it) }
+                    sortAZ = JToggleButton("A-Z")
+                        .setup { presenter.sortOrder(A_Z) }
+                        .style()
+                        .also { add(it) }
+                    sortZA = JToggleButton("Z-A")
+                        .setup { presenter.sortOrder(Z_A) }
+                        .style()
+                        .also { add(it) }
+                    JButton("...").setup { presenter.openSubs() }.style().also { add(it) }
                 }.also { add(it, BorderLayout.NORTH) }
 
                 subsPanel = JPanel().apply {
@@ -290,8 +302,26 @@ class SpeechView constructor(
         }
     }
 
+    override fun restoreState(
+        vol: Float,
+        playEventLatency: Float?,
+        searchText: String?,
+        sortOrder: SpeechContract.SortOrder
+    ) {
+        speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
+        playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
+        speechPanel.searchText.text = searchText
+        when (sortOrder) {
+            NATURAL -> speechPanel.sortNatural.isSelected = true
+            A_Z -> speechPanel.sortAZ.isSelected = true
+            Z_A -> speechPanel.sortZA.isSelected = true
+        }
+    }
+
     companion object {
         private const val PLAY_BUT = "playBut"
         private const val PAUSE_BUT = "pauseBut"
+        private const val VOL_SCALE = 100f
+        private const val PLAT_SCALE = 1000f
     }
 }

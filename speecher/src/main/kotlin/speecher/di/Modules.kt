@@ -19,6 +19,10 @@ import speecher.interactor.srt.SrtInteractor
 import speecher.interactor.srt.SrtMapper
 import speecher.scheduler.SchedulerModule
 import speecher.util.format.TimeFormatter
+import speecher.util.serialization.ColorSerializer
+import speecher.util.serialization.FileSerializer
+import speecher.util.serialization.FontSerializer
+import speecher.util.serialization.GsonSerializer
 import speecher.util.subs.SubFinder
 import speecher.util.subs.SubTracker
 import speecher.util.wrapper.LogWrapper
@@ -51,6 +55,7 @@ object Modules {
         factory { SubFinder() }
         factory { SubTracker() }
         factory { LogWrapper(get()) }
+        factory { GsonSerializer(FileSerializer, FontSerializer, ColorSerializer).gson }
     }
 
     private val srtModule = module {

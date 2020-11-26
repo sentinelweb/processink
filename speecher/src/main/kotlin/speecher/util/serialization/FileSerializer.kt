@@ -10,9 +10,15 @@ object FileSerializer : KSerializer<File> {
         PrimitiveDescriptor("WithCustomDefault", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: File) {
-        encoder.encodeString(value.absolutePath)
+        encoder.encodeString(makeString(value))
     }
 
-    override fun deserialize(decoder: Decoder): File =
-        File(decoder.decodeString())
+    fun makeString(value: File) = value.absolutePath
+
+    override fun deserialize(decoder: Decoder): File {
+        val decodeString = decoder.decodeString()
+        return parseString(decodeString)
+    }
+
+    fun parseString(decodeString: String) = File(decodeString)
 }

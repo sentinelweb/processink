@@ -16,6 +16,7 @@ ext {
     ver_fontchooser="2.4"
     ver_rxjava="2.2.16"
     ver_rxjava_kotlin="2.4.0"
+    ver_gson="2.8.6"
 }
 
 group 'net.robmunro.processing'
@@ -37,6 +38,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$ver_kotlinx_serialization_runtime"
+    implementation "com.google.code.gson:gson:$ver_gson"
 
     // https://mvnrepository.com/artifact/org.processing/core
     implementation ("org.processing:core:$processing_version") {

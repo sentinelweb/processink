@@ -15,6 +15,12 @@ interface SpeechContract {
         fun setPlaying(isPlaying: Boolean)
         fun showOpenDialog(title: String, currentDir: File?)
         fun selectWord(index: Int, selected: Boolean)
+        fun restoreState(
+            vol: Float,
+            playEventLatency: Float?,
+            searchText: String?,
+            sortOrder: SortOrder
+        )
     }
 
     interface Presenter {

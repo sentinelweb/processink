@@ -10,12 +10,17 @@ object FontSerializer : KSerializer<Font> {
         PrimitiveDescriptor("WithCustomDefault", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Font) {
-        val value1 = "${value.fontName}:${value.style}:${value.size}"
+        val value1 = makeString(value)
         encoder.encodeString(value1)
     }
 
+    fun makeString(value: Font) = "${value.family}:${value.style}:${value.size}"
+
     override fun deserialize(decoder: Decoder): Font =
-        decoder.decodeString().split(':').let {
-            Font(it[0], it[1].toInt(), it[2].toInt())
-        }
+        parseString(decoder.decodeString())
+
+    fun parseString(str: String): Font = str.split(':').let {
+        Font(it[0], it[1].toInt(), it[2].toInt())
+    }
+
 }

@@ -76,7 +76,7 @@ class GeneratorPresenter constructor(
     }
     // endregion
 
-    // region SpeechContract.External
+    // region SpeechContract.Listener
     override fun sentenceChanged(sentence: Sentence) {
         state.words = sentence
     }
