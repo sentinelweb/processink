@@ -14,6 +14,9 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
+import javax.swing.border.BevelBorder
+import javax.swing.border.CompoundBorder
+import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -78,6 +81,18 @@ class SpeechView constructor(
         speechPanel.subsPanel.updateUI()
     }
 
+    override fun setSentenceId(currentSentenceId: String?) {
+        speechPanel.sentenceIdText.text = currentSentenceId
+    }
+
+    override fun setStatus(status: String) {
+        speechPanel.statusBar.text = status
+    }
+
+    override fun clearStatus() {
+        speechPanel.statusBar.text = ""
+    }
+
     inner class SpeechPanel : JPanel() {
 
         val sentencePanel: JPanel
@@ -89,6 +104,8 @@ class SpeechView constructor(
         val sortNatural: JToggleButton
         val sortAZ: JToggleButton
         val sortZA: JToggleButton
+        val sentenceIdText: JTextField
+        val statusBar: JLabel
 
         private val playButton: JButton
         private val pauseButton: JButton
@@ -116,7 +133,32 @@ class SpeechView constructor(
                         add(JButton("<<").style().setup { presenter.moveCursor(LAST) })
                         add(JButton(">>").style().setup { presenter.moveCursor(NEXT) })
                         add(JButton(">|").style().setup { presenter.moveCursor(END) })
+                        add(JButton("<-").style().setup { presenter.backSpace() })
                         add(JButton("DEL").style().setup { presenter.deleteWord() })
+                        add(JButton("New").style().setup { presenter.newSentence() })
+                        add(JButton("Commit").style().setup { presenter.commitSentence() })
+                        sentenceIdText = JTextField("")
+                            .style()
+                            .apply {
+                                toolTipText = "sentence ID"
+                                preferredSize = Dimension(50, 20)
+                                background = bgColor
+                                document.addDocumentListener(object : DocumentListener {
+                                    override fun insertUpdate(e: DocumentEvent) {
+                                        presenter.sentenceId(e.document.getText(0, e.document.length))
+                                    }
+
+                                    override fun removeUpdate(e: DocumentEvent) {
+                                        presenter.sentenceId(e.document.getText(0, e.document.length))
+                                    }
+
+                                    override fun changedUpdate(e: DocumentEvent) {
+                                        presenter.sentenceId(e.document.getText(0, e.document.length))
+                                    }
+
+                                })
+                            }
+                            .also { add(it) }
                     }.wrapWithLabel("Cursor")
                         .also { add(it, BorderLayout.NORTH) }
 
@@ -285,6 +327,17 @@ class SpeechView constructor(
                         verticalScrollBar.unitIncrement = 32
                     }
                 }.also { add(it, BorderLayout.CENTER) }
+
+                statusBar = JLabel().style().apply {
+                    preferredSize = Dimension(1024, 30)
+                    background = bgColor
+                    border = CompoundBorder(
+                        BevelBorder(BevelBorder.RAISED, Color.decode("#cccccc"), Color.decode("#888888")),
+                        EmptyBorder(5, 5, 5, 5)
+                    )
+                    foreground = Color.RED
+                }.also { add(it, BorderLayout.SOUTH) }
+
             }.also { add(it) }
         }
     }
@@ -321,7 +374,12 @@ class SpeechView constructor(
         val saveSentencesMenuItem = JMenuItem("Save Sentences")
         saveSentencesMenuItem.mnemonic = KeyEvent.VK_S
         saveSentencesMenuItem.actionCommand = "Save"
-        saveSentencesMenuItem.addActionListener { presenter.saveSentences() }
+        saveSentencesMenuItem.addActionListener { presenter.saveSentences(false) }
+
+        val saveSentencesAsMenuItem = JMenuItem("Save Sentences As ...")
+        saveSentencesAsMenuItem.mnemonic = KeyEvent.VK_A
+        saveSentencesAsMenuItem.actionCommand = "Save As"
+        saveSentencesAsMenuItem.addActionListener { presenter.saveSentences(true) }
 
         val exitMenuItem = JMenuItem("Exit")
         exitMenuItem.mnemonic = KeyEvent.VK_X
@@ -358,6 +416,7 @@ class SpeechView constructor(
         fileMenu.addSeparator()
         fileMenu.add(openSentencesMenuItem.style())
         fileMenu.add(saveSentencesMenuItem.style())
+        fileMenu.add(saveSentencesAsMenuItem.style())
         fileMenu.addSeparator()
         fileMenu.add(exitMenuItem.style())
 
@@ -388,6 +447,23 @@ class SpeechView constructor(
         }
     }
 
+    override fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir?.let { if (it.isDirectory) currentDirectory = it else selectedFile = it }
+            val result = showSaveDialog(frame)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                chosen(selectedFile)
+            }
+        }
+    }
+
+    override fun clearFocus() {
+        speechPanel.sentenceIdText.requestFocusInWindow()
+        speechPanel.searchText.requestFocusInWindow()
+    }
+
     override fun updateMultiSelection(keys: MutableSet<Int>) {
         speechPanel.sentencePanel.components.forEachIndexed { i, wv ->
             (wv as WordChipView).selected = keys.contains(i)
@@ -404,7 +480,8 @@ class SpeechView constructor(
         vol: Float,
         playEventLatency: Float?,
         searchText: String?,
-        sortOrder: SpeechContract.SortOrder
+        sortOrder: SpeechContract.SortOrder,
+        currentSentenceId: String?
     ) {
         speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
         playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
@@ -414,6 +491,7 @@ class SpeechView constructor(
             A_Z -> speechPanel.sortAZ.isSelected = true
             Z_A -> speechPanel.sortZA.isSelected = true
         }
+        speechPanel.sentenceIdText.text = currentSentenceId
     }
 
     companion object {

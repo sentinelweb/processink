@@ -65,6 +65,7 @@ class SentenceListView(
                 frame.defaultCloseOperation = JFrame.HIDE_ON_CLOSE
 
                 frame.add(SubListPanel())
+                frame.setLocation(1500, 0)
                 // Display the window.
                 frame.pack()
             }
@@ -92,6 +93,9 @@ class SentenceListView(
             sentences.keys.forEachIndexed { i, k ->
                 keyToIndexMap[k] = i
                 listPanel.add(SentenceItem(k, sentences[k]!!))
+            }
+            if (sentences.size < 5) {
+                (sentences.size..5).forEach { listPanel.add(JPanel()) }
             }
             frame.rootPane.updateUI()
         }
@@ -135,28 +139,68 @@ class SentenceListView(
 
         init {
             layout = GridLayout(-1, 1)
-            add(JLabel(key).style())
-            add(JLabel(item).style())
-            border = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY)
-            background = if (selected) colorSelected else colorNormal
-
-            addMouseListener(object : MouseAdapter() {
-
+            val mouseListener = object : MouseAdapter() {
+                private var menu: JPopupMenu? = null
                 override fun mousePressed(e: MouseEvent) {
-                    mouseDown = true
-                    setBackground()
-                    presenter.onItemClicked(key)
+                    if (e.isPopupTrigger()) {
+                        menu = PopUp(key).apply { show(e.component, e.x, e.y) }
+                    } else {
+                        mouseDown = true
+                        setBackground()
+                        presenter.onItemClicked(key)
+                    }
                 }
 
                 override fun mouseReleased(e: MouseEvent) {
-                    mouseDown = false
-                    setBackground()
+                    if (e.isPopupTrigger()) {
+                        menu?.hide()
+                    } else {
+                        mouseDown = false
+                        setBackground()
+                    }
                 }
-            })
+            }
+
+            JLabel(key).style().also { add(it) }
+            JTextArea(item).style().apply {
+                wrapStyleWord = true
+                lineWrap = true
+                isEditable = false
+                addMouseListener(mouseListener)
+            }.also { add(it) }
+
+//            JLabel(String.format(
+//                "<html><body style=\"text-align: justify;  text-justify: inter-word;\">%s</body></html>",
+//                item
+//            )).also { add(it) }
+
+            border = BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.GRAY)
+            background = if (selected) colorSelected else colorNormal
+
+            addMouseListener(mouseListener)
         }
 
         private fun setBackground() {
             background = if (mouseDown) colorClick else if (selected) colorSelected else colorNormal
+        }
+
+        inner class PopUp(private val key: String) : JPopupMenu() {
+            var anItem: JMenuItem
+
+            init {
+                anItem = JMenuItem("Delete").style()
+                anItem.addActionListener { ae ->
+                    presenter.onDelete(key)
+                }
+                add(anItem)
+            }
+        }
+    }
+
+    override fun showDeleteConfirm(msg: String, confirm: () -> Unit) {
+        val res = JOptionPane.showConfirmDialog(null, msg, "Confirm delete ...", JOptionPane.YES_NO_OPTION)
+        if (res == JOptionPane.OK_OPTION) {
+            confirm()
         }
     }
 }

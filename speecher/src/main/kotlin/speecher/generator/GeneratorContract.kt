@@ -16,6 +16,7 @@ interface GeneratorContract {
         fun updateFontColor()
         fun recordNew(path: String)
         fun recordStop()
+        fun cleanup()
     }
 
     interface Presenter {

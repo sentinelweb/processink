@@ -6,6 +6,7 @@ interface SentenceListContract {
 
     interface Presenter {
         fun onItemClicked(key: String)
+        fun onDelete(key: String)
     }
 
     interface External {
@@ -13,6 +14,8 @@ interface SentenceListContract {
         fun setList(sentences: Map<String, Sentence>)
         fun showWindow()
         fun setSelected(key: String?)
+        fun putSentence(id: String, wordSentence: Sentence)
+        fun getList(): Map<String, Sentence>
     }
 
     interface Listener {
@@ -24,5 +27,6 @@ interface SentenceListContract {
         fun showWindow()
         fun setSelected(key: String)
         fun clearSelected(key: String)
+        fun showDeleteConfirm(msg: String, confirm: () -> Unit)
     }
 }

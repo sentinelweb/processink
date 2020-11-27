@@ -20,16 +20,31 @@ class SentenceListPresenter : SentenceListContract.Presenter, SentenceListContra
             listener.onItemSelected(key, sent)
         }
     }
+
+    override fun onDelete(key: String) {
+        view.showDeleteConfirm("Delete $key?") {
+            state.sentences.remove(key)
+            updateSentenceList()
+        }
+    }
     // endregion
 
     // region SentenceListContract.External
     override fun setList(sentences: Map<String, Sentence>) {
-        state.sentences = sentences
-        view.buildList(sentences.mapValues { (_, v) -> v.words.joinToString { it.sub.text[0] } })
+        state.sentences.apply {
+            clear()
+            putAll(sentences)
+            updateSentenceList()
+        }
+    }
+
+    private fun updateSentenceList() {
+        view.buildList(state.sentences.mapValues { (_, v) -> v.words.map { it.sub.text[0] }.joinToString(" ") })
     }
 
     override fun showWindow() {
         view.showWindow()
+        updateSentenceList()
     }
 
     override fun setSelected(key: String?) {
@@ -37,6 +52,13 @@ class SentenceListPresenter : SentenceListContract.Presenter, SentenceListContra
         key?.let { view.setSelected(it) }
         state.selectedKey = key
     }
+
+    override fun putSentence(id: String, wordSentence: Sentence) {
+        state.sentences[id] = wordSentence
+        updateSentenceList()
+    }
+
+    override fun getList(): Map<String, Sentence> = state.sentences
     // endregion
 
     companion object {

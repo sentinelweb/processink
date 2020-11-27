@@ -40,7 +40,11 @@ class MovieView constructor(
 
     override fun cleanup() {
         if (state.isMovieInitialised()) {
-            state.movie.stop()
+            try {
+                state.movie.stop()
+            } catch (t: Throwable) {
+                log.e("Exception cleaning up:${t::class.simpleName}")
+            }
             state.movie.dispose()
         }
     }

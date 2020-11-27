@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.serializersModuleOf
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.interactor.sentence.SentencesData
 import java.awt.Color
 import java.awt.Font
 import java.io.File
@@ -43,6 +44,7 @@ internal val JSON = Json(
             Subtitles.Subtitle::class to Subtitles.Subtitle.serializer(),
             Font::class to FontSerializer,
             Color::class to ColorSerializer,
+            SentencesData::class to SentencesData.serializer(),
             File::class to FileSerializer
         )
     )

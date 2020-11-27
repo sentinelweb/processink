@@ -110,6 +110,7 @@ class GeneratorView constructor(
 
     override fun cleanup() {
         movieViews.forEach { it.cleanup() }
+        movieViews.clear()
     }
 
     companion object {

@@ -15,6 +15,7 @@ import speecher.generator.ui.SpeechContract
 import speecher.generator.ui.SpeechPresenter
 import speecher.generator.ui.sentence_list.SentenceListContract
 import speecher.generator.ui.sentence_list.SentenceListPresenter
+import speecher.interactor.sentence.SentencesInteractor
 import speecher.interactor.srt.SrtFileReader
 import speecher.interactor.srt.SrtFileWriter
 import speecher.interactor.srt.SrtInteractor
@@ -22,10 +23,7 @@ import speecher.interactor.srt.SrtMapper
 import speecher.scheduler.SchedulerModule
 import speecher.util.format.FilenameFormatter
 import speecher.util.format.TimeFormatter
-import speecher.util.serialization.ColorSerializer
-import speecher.util.serialization.FileSerializer
-import speecher.util.serialization.FontSerializer
-import speecher.util.serialization.GsonSerializer
+import speecher.util.serialization.*
 import speecher.util.subs.SubFinder
 import speecher.util.subs.SubTracker
 import speecher.util.wrapper.LogWrapper
@@ -61,17 +59,19 @@ object Modules {
         factory { LogWrapper(get()) }
         factory { FilenameFormatter() }
         factory { GsonSerializer(FileSerializer, FontSerializer, ColorSerializer).gson }
+        single { JSON }
     }
 
-    private val srtModule = module {
+    private val interactorModule = module {
         factory { SrtInteractor(get(), get()) }
         factory { SrtFileReader(get()) }
         factory { SrtFileWriter(get()) }
         factory { SrtMapper() }
+        factory { SentencesInteractor(get()) }
     }
 
     val allModules = listOf(utilModule)
-        .plus(srtModule)
+        .plus(interactorModule)
         .plus(subViewModules)
         .plus(scopedModules)
         .plus(SchedulerModule.module)

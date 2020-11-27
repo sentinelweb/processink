@@ -18,10 +18,17 @@ interface SpeechContract {
             vol: Float,
             playEventLatency: Float?,
             searchText: String?,
-            sortOrder: SortOrder
+            sortOrder: SortOrder,
+            currentSentenceId: String?
         )
+
         fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit)
+        fun showSaveDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit)
         fun updateMultiSelection(keys: MutableSet<Int>)
+        fun setStatus(status: String)
+        fun clearStatus()
+        fun setSentenceId(currentSentenceId: String?)
+        fun clearFocus()
     }
 
     interface Presenter {
@@ -42,11 +49,15 @@ interface SpeechContract {
         fun shutdown()
         fun openMovie()
         fun openSentences()
-        fun saveSentences()
+        fun saveSentences(saveAs: Boolean)
         fun cut()
         fun copy()
         fun paste()
         fun showSentences()
+        fun newSentence()
+        fun commitSentence()
+        fun backSpace()
+        fun sentenceId(text: String)
     }
 
     interface External {
@@ -62,6 +73,7 @@ interface SpeechContract {
         fun showWindow()
         fun shutdown()
         fun initialise()
+        fun setStatus(status: String)
     }
 
     interface Listener {

@@ -5,7 +5,6 @@ import speecher.domain.Sentence
 
 data class GeneratorState constructor(
     var words: Sentence? = null,
-    var startTime: Long = 0,
     var wordIndex: Int = -1, // currently loading word
     var activeIndex: Int = -1,// currently playing player
     var playingWord: Int = -1,// currently playing word

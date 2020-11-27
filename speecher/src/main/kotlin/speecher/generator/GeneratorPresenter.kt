@@ -111,7 +111,6 @@ class GeneratorPresenter constructor(
         openMovieSingle(movie)
             .doOnSuccess {
                 state.wordIndex = -1
-                state.startTime = System.currentTimeMillis()
                 movies.forEachIndexed { i, movie ->
                     movie.pause()
                 }
@@ -201,6 +200,13 @@ class GeneratorPresenter constructor(
     private fun openMovieSingle(file: File): Single<File> {
         return Single.just(file)
             .observeOn(pScheduler)
+            .doOnSuccess {
+                movies.forEachIndexed { i, movie ->
+                    movie.cleanup()
+                }
+                movies.clear()
+                view.cleanup()
+            }
             .doOnSuccess {
                 (0..10).forEach {
                     makeMovie(it, file)
