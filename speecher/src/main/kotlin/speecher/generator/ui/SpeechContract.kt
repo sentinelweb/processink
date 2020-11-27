@@ -20,8 +20,8 @@ interface SpeechContract {
             searchText: String?,
             sortOrder: SortOrder
         )
-
         fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit)
+        fun updateMultiSelection(keys: MutableSet<Int>)
     }
 
     interface Presenter {
@@ -75,9 +75,20 @@ interface SpeechContract {
         fun loadMovieFile(movie: File)
     }
 
+    interface WordListener {
+        fun changed(index: Int, type: WordParamType, value: Float)
+        fun onItemClicked(index: Int, metas: List<MetaKey>)
+        fun onPreviewClicked(index: Int)
+    }
+
+    interface SubListener {
+        fun onItemClicked(sub: Subtitles.Subtitle, metas: List<MetaKey>)
+        fun onPreviewClicked(sub: Subtitles.Subtitle)
+    }
+
     enum class CursorPosition { START, LAST, NEXT, END }
     enum class SortOrder { NATURAL, A_Z, Z_A }
-    enum class WordParamType {
-        BEFORE, AFTER, SPEED, VOL, FROM, TO
-    }
+    enum class WordParamType { BEFORE, AFTER, SPEED, VOL, FROM, TO }
+    enum class MetaKey { SHIFT, CTRL, ALT, META }
+
 }

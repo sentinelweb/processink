@@ -15,6 +15,7 @@ import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.generator.GeneratorPresenter
 import speecher.generator.ui.SpeechContract.CursorPosition.*
+import speecher.generator.ui.SpeechContract.MetaKey
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechContract.WordParamType.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
@@ -195,29 +196,50 @@ class SpeechPresenter constructor(
     }
 
     override fun openSentences() {
-        println("openSentences")
+        view.showOpenDialog("Open Sentences", state.srtWordFile?.parentFile) {
+
+        }
     }
 
     override fun saveSentences() {
         println("saveSentences")
     }
 
-    override fun cut() {
-        println("cut")
-    }
-
-    override fun copy() {
-        println("copy")
-    }
-
-    override fun paste() {
-        println("paste")
-    }
-
     override fun showSentences() {
         sentences.showWindow()
     }
+    // endregion
 
+    // region Clipboard
+    override fun cut() {
+        makeWordSelection()?.apply {
+            state.clipboard = values.toList()
+            state.wordSentence = state.wordSentence.toMutableList().apply { removeAll(values) }
+            state.cursorPos -= keys.count { it < state.cursorPos }
+            buildSentenceWithCursor()
+        }
+    }
+
+    override fun copy() {
+        makeWordSelection()?.apply {
+            state.clipboard = values.toList()
+        }
+    }
+
+    override fun paste() {
+        state.clipboard?.let {
+            state.wordSentence = state.wordSentence.toMutableList().apply { addAll(state.cursorPos, it) }
+            state.cursorPos += it.size
+            buildSentenceWithCursor()
+        }
+    }
+
+    private fun makeWordSelection(): Map<Int, Sentence.Word>? =
+        if (state.wordSelection.size > 0) {
+            state.wordSelection
+        } else if (state.cursorPos + 1 < state.wordSentenceWithCursor.size) {
+            mapOf(state.cursorPos + 1 to state.wordSentenceWithCursor[state.cursorPos + 1])
+        } else null
     // endregion
 
     // region External
@@ -286,8 +308,8 @@ class SpeechPresenter constructor(
     // endregion
 
     // region SubtitleChipView.Listener [sub]
-    inner class SubChipListener : SubtitleChipView.Listener {
-        override fun onItemClicked(sub: Subtitles.Subtitle) {
+    inner class SubChipListener : SpeechContract.SubListener {
+        override fun onItemClicked(sub: Subtitles.Subtitle, metas: List<MetaKey>) {
             //println("subchip.onItemClicked $sub")
             state.wordSentence = state.wordSentence.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
             state.cursorPos++
@@ -299,25 +321,36 @@ class SpeechPresenter constructor(
         }
     }
 
-    private fun pushSentence() {
-        listener.sentenceChanged(Sentence(state.wordSentence))
-    }
     // endregion
 
     // region SubtitleChipView.Listener [word]
-    inner class WordChipListener : WordChipView.Listener {
+    inner class WordChipListener : SpeechContract.WordListener {
 
-        override fun onItemClicked(index: Int) {
+        override fun onItemClicked(index: Int, metas: List<MetaKey>) {
             log.d("word.onItemClicked $index")
             val word = state.wordSentenceWithCursor[index]
             if (word != CURSOR) {
-                if (state.selectedWord == index) {
-                    state.selectedWord = null
-                    view.selectWord(index, false)
-                } else {
-                    state.selectedWord?.let { view.selectWord(it, false) }
-                    state.selectedWord = index
-                    view.selectWord(index, true)
+                if (metas.size == 0) {
+                    state.cursorPos = if (state.cursorPos < index) index - 1 else index
+                    buildSentenceWithCursor()
+                } else {// selection tools
+                    if (metas.contains(MetaKey.META)) {
+                        if (state.wordSelection.containsKey(index)) {
+                            state.wordSelection.remove(index)
+                        } else {
+                            state.wordSelection.put(index, word)
+                        }
+                        view.updateMultiSelection(state.wordSelection.keys)
+                    } else {
+                        if (state.selectedWord == index) {
+                            state.selectedWord = null
+                            view.selectWord(index, false)
+                        } else {
+                            state.selectedWord?.let { view.selectWord(it, false) }
+                            state.selectedWord = index
+                            view.selectWord(index, true)
+                        }
+                    }
                 }
             }
         }
@@ -348,10 +381,15 @@ class SpeechPresenter constructor(
     }
     // endregion
 
-    private fun buildSentenceWithCursor() {
+    private fun buildSentenceWithCursor(clearSelection: Boolean = true) {
+        if (clearSelection) state.wordSelection.clear()
         state.wordSentenceWithCursor = state.wordSentence.toMutableList().apply { add(state.cursorPos, CURSOR) }
         view.updateSentence(state.wordSentenceWithCursor)
         pushSentence()
+    }
+
+    private fun pushSentence() {
+        listener.sentenceChanged(Sentence(state.wordSentence))
     }
 
     private fun updateSubs() {
@@ -400,6 +438,7 @@ class SpeechPresenter constructor(
                     }
                     updateSubs()
                     buildSentenceWithCursor()
+                    view.updateMultiSelection(state.wordSelection.keys)
                 }
                 .subscribeOn(swingScheduler)
         } else {
@@ -447,8 +486,8 @@ class SpeechPresenter constructor(
         val scope = module {
             scope(named<SpeechPresenter>()) {
                 scoped<SpeechContract.Presenter> { getSource() }
-                scoped<SubtitleChipView.Listener>(named(CHIP_SUB)) { getSource<SpeechPresenter>().SubChipListener() }
-                scoped<WordChipView.Listener>(named(CHIP_WORD)) { getSource<SpeechPresenter>().WordChipListener() }
+                scoped<SpeechContract.SubListener>(named(CHIP_SUB)) { getSource<SpeechPresenter>().SubChipListener() }
+                scoped<SpeechContract.WordListener>(named(CHIP_WORD)) { getSource<SpeechPresenter>().WordChipListener() }
                 scoped<SpeechContract.View> {
                     SpeechView(
                         presenter = get(),

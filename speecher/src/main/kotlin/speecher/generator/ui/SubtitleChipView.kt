@@ -3,9 +3,11 @@ package speecher.generator.ui
 import speecher.domain.Subtitles
 import speecher.editor.util.backgroundColor
 import speecher.editor.util.style
+import speecher.generator.ui.SpeechContract.MetaKey.*
 import speecher.util.format.TimeFormatter
 import java.awt.Color
 import java.awt.GridLayout
+import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
@@ -14,7 +16,7 @@ import javax.swing.border.BevelBorder
 class SubtitleChipView constructor(
     timeFormatter: TimeFormatter,
     item: Subtitles.Subtitle,
-    private val listner: Listener
+    private val listner: SpeechContract.SubListener
 ) : JPanel() {
 
     private val bgColor: Color = backgroundColor
@@ -51,7 +53,7 @@ class SubtitleChipView constructor(
                 } else {
                     mouseDown = true
                     setBackground()
-                    listner.onItemClicked(item)
+                    listner.onItemClicked(item, getMetas(e))
                 }
             }
 
@@ -66,13 +68,17 @@ class SubtitleChipView constructor(
         })
     }
 
-    private fun setBackground() {
-        background = if (mouseDown) colorClick else if (selected) colorSelected else colorNormal
+    private fun getMetas(e: MouseEvent): List<SpeechContract.MetaKey> {
+        val metas = mutableListOf<SpeechContract.MetaKey>()
+        if (e.modifiers and ActionEvent.SHIFT_MASK == ActionEvent.SHIFT_MASK) metas.add(SHIFT)
+        if (e.modifiers and ActionEvent.CTRL_MASK == ActionEvent.CTRL_MASK) metas.add(CTRL)
+        if (e.modifiers and ActionEvent.ALT_MASK == ActionEvent.ALT_MASK) metas.add(ALT)
+        if (e.modifiers and ActionEvent.META_MASK == ActionEvent.META_MASK) metas.add(META)
+        return metas
     }
 
-    interface Listener {
-        fun onItemClicked(sub: Subtitles.Subtitle)
-        fun onPreviewClicked(sub: Subtitles.Subtitle)
+    private fun setBackground() {
+        background = if (mouseDown) colorClick else if (selected) colorSelected else colorNormal
     }
 
     inner class PopUp(private val sub: Subtitles.Subtitle) : JPopupMenu() {

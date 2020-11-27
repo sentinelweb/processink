@@ -23,5 +23,7 @@ data class SpeechState(
     // var speakString: String? = "This is the year in which we mourn the passing of thought humanity dissenters and media to the applause of crowds",
     var playEventLatency: Float? = 0.05f,
     var selectedWord: Int? = null,
-    var wordSentenceWithCursor: List<Sentence.Word> = listOf()
+    var wordSentenceWithCursor: List<Sentence.Word> = listOf(),
+    var wordSelection: MutableMap<Int, Sentence.Word> = mutableMapOf(),
+    var clipboard: List<Sentence.Word>? = null
 )

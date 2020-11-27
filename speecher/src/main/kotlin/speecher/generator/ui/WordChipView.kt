@@ -17,7 +17,7 @@ class WordChipView constructor(
     private val timeFormatter: TimeFormatter,
     private val word: Sentence.Word,
     private val index: Int,
-    private val listener: Listener
+    private val listener: SpeechContract.WordListener
 ) : JPanel() {
 
     var interfaceVisible: Boolean = false
@@ -37,21 +37,21 @@ class WordChipView constructor(
     private val toToggle: ToggleButtons
     private val toggleContainer: JPanel
 
-    private val subtitleChipViewListener = object : SubtitleChipView.Listener {
+    var selected = false
+        set(value) {
+            field = value
+            subChip.selected = value
+        }
 
-        override fun onItemClicked(sub: Subtitles.Subtitle) {
-            listener.onItemClicked(index)
+    private val subtitleChipViewListener = object : SpeechContract.SubListener {
+
+        override fun onItemClicked(sub: Subtitles.Subtitle, metas: List<SpeechContract.MetaKey>) {
+            listener.onItemClicked(index, metas)
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
             listener.onPreviewClicked(index)
         }
-    }
-
-    interface Listener {
-        fun changed(index: Int, type: SpeechContract.WordParamType, value: Float)
-        fun onItemClicked(index: Int)
-        fun onPreviewClicked(index: Int)
     }
 
     init {

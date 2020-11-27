@@ -20,8 +20,8 @@ import javax.swing.event.DocumentListener
 class SpeechView constructor(
     private val presenter: SpeechContract.Presenter,
     private val timeFormatter: TimeFormatter,
-    private val subChipListener: SubtitleChipView.Listener,
-    private val wordChipListener: WordChipView.Listener
+    private val subChipListener: SpeechContract.SubListener,
+    private val wordChipListener: SpeechContract.WordListener
 ) : SpeechContract.View {
 
     private lateinit var frame: JFrame
@@ -385,6 +385,12 @@ class SpeechView constructor(
             if (result == JFileChooser.APPROVE_OPTION) {
                 chosen(selectedFile)
             }
+        }
+    }
+
+    override fun updateMultiSelection(keys: MutableSet<Int>) {
+        speechPanel.sentencePanel.components.forEachIndexed { i, wv ->
+            (wv as WordChipView).selected = keys.contains(i)
         }
     }
 
