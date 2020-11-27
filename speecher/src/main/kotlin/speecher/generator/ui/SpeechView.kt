@@ -9,6 +9,7 @@ import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.util.format.TimeFormatter
 import java.awt.*
+import java.awt.event.KeyEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.File
@@ -39,6 +40,7 @@ class SpeechView constructor(
                 })
                 speechPanel = SpeechPanel()
                 frame.add(speechPanel)
+                addMenu(frame)
                 frame.pack()
             }
             // Display the window.
@@ -287,14 +289,101 @@ class SpeechView constructor(
         }
     }
 
-    override fun showOpenDialog(title: String, currentDir: File?) {
+    private fun addMenu(mainFrame: JFrame) {
+        //create a menu bar
+        val menuBar = JMenuBar()
+
+        //create menus
+        val fileMenu = JMenu("File")
+        fileMenu.mnemonic = KeyEvent.VK_F
+        //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_DOWN_MASK)
+        val editMenu = JMenu("Edit")
+        editMenu.mnemonic = KeyEvent.VK_E
+        val viewMenu = JMenu("View")
+        editMenu.mnemonic = KeyEvent.VK_V
+        //fileMenu.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
+        //create menu items
+        val openMovieMenuItem = JMenuItem("Open Movie")
+        openMovieMenuItem.mnemonic = KeyEvent.VK_M
+        openMovieMenuItem.actionCommand = "Open"
+        openMovieMenuItem.addActionListener { presenter.openMovie() }
+
+        val openReadSrtMenuItem = JMenuItem("Open SRT Words")
+        openReadSrtMenuItem.mnemonic = KeyEvent.VK_W
+        openReadSrtMenuItem.actionCommand = "Open"
+        openReadSrtMenuItem.addActionListener { presenter.openWords() }
+
+        val openSentencesMenuItem = JMenuItem("Opwn Sentences")
+        openSentencesMenuItem.mnemonic = KeyEvent.VK_O
+        openSentencesMenuItem.actionCommand = "Save"
+        openSentencesMenuItem.addActionListener { presenter.openSentences() }
+
+        val saveSentencesMenuItem = JMenuItem("Save Sentences")
+        saveSentencesMenuItem.mnemonic = KeyEvent.VK_S
+        saveSentencesMenuItem.actionCommand = "Save"
+        saveSentencesMenuItem.addActionListener { presenter.saveSentences() }
+
+        val exitMenuItem = JMenuItem("Exit")
+        exitMenuItem.mnemonic = KeyEvent.VK_X
+        exitMenuItem.actionCommand = "Exit"
+        exitMenuItem.addActionListener { presenter.shutdown() }
+
+        val cutMenuItem = JMenuItem("Cut")
+        cutMenuItem.mnemonic = KeyEvent.VK_X
+        cutMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK)
+        cutMenuItem.actionCommand = "Cut"
+        cutMenuItem.addActionListener { presenter.cut() }
+
+        val copyMenuItem = JMenuItem("Copy")
+        copyMenuItem.mnemonic = KeyEvent.VK_C
+        copyMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK)
+        copyMenuItem.actionCommand = "Copy"
+        copyMenuItem.addActionListener { presenter.copy() }
+
+        val pasteMenuItem = JMenuItem("Paste")
+        pasteMenuItem.mnemonic = KeyEvent.VK_V
+        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
+        pasteMenuItem.actionCommand = "Paste"
+        pasteMenuItem.addActionListener { presenter.paste() }
+
+        val showReadSrtMenuItem = JMenuItem("Show sentences")
+        showReadSrtMenuItem.mnemonic = KeyEvent.VK_R
+        showReadSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_DOWN_MASK)
+        showReadSrtMenuItem.addActionListener { presenter.showSentences() }
+
+        //add menu items to menus
+        fileMenu.add(openMovieMenuItem.style())
+        fileMenu.addSeparator()
+        fileMenu.add(openReadSrtMenuItem.style())
+        fileMenu.addSeparator()
+        fileMenu.add(openSentencesMenuItem.style())
+        fileMenu.add(saveSentencesMenuItem.style())
+        fileMenu.addSeparator()
+        fileMenu.add(exitMenuItem.style())
+
+        editMenu.add(cutMenuItem.style())
+        editMenu.add(copyMenuItem.style())
+        editMenu.add(pasteMenuItem.style())
+
+        viewMenu.add(showReadSrtMenuItem.style())
+
+        //add menu to menubar
+        menuBar.add(fileMenu.style())
+        menuBar.add(editMenu.style())
+        menuBar.add(viewMenu.style())
+
+        //add menubar to the frame
+        mainFrame.setJMenuBar(menuBar)
+    }
+
+    override fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit) {
         JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.FILES_ONLY
             currentDir?.let { currentDirectory = it }
             val result = showOpenDialog(frame)
             if (result == JFileChooser.APPROVE_OPTION) {
-                presenter.setSrtFile(selectedFile)
+                chosen(selectedFile)
             }
         }
     }

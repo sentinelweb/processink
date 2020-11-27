@@ -11,7 +11,7 @@ class SpeechStateMapper(private val gson: Gson) {
     fun deserializeSpeechState(input: String) = gson.fromJson(input, SpeechState::class.java)
 
     fun serializeSpeechState(state: SpeechState) =
-        gson.toJson(state.copy(subs = null, subsDisplay = null, wordListWithCursor = listOf()))
+        gson.toJson(state.copy(words = null, wordsDisplay = null, wordSentenceWithCursor = listOf()))
 //  fun deserializeSpeechState(input: String) = JSON.parse(
 //        SpeechState.serializer(), input.toString()
 //    )

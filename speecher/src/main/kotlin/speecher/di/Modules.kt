@@ -5,6 +5,8 @@ import speecher.editor.EditorView
 import speecher.editor.subedit.SubEditContract
 import speecher.editor.subedit.SubEditPresenter
 import speecher.editor.subedit.word_timeline.WordTimelineView
+import speecher.editor.sublist.SubListContract
+import speecher.editor.sublist.SubListPresenter
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
 import speecher.generator.GeneratorPresenter
@@ -18,6 +20,7 @@ import speecher.interactor.srt.SrtFileWriter
 import speecher.interactor.srt.SrtInteractor
 import speecher.interactor.srt.SrtMapper
 import speecher.scheduler.SchedulerModule
+import speecher.util.format.FilenameFormatter
 import speecher.util.format.TimeFormatter
 import speecher.util.serialization.ColorSerializer
 import speecher.util.serialization.FileSerializer
@@ -38,10 +41,11 @@ object Modules {
     )
 
     private val subViewModules = module {
-        factory<SentenceListContract.External> { SentenceListPresenter() }
+        factory<SubListContract.External> { SubListPresenter() }
         factory<TransportContract.External> { TransportPresenter() }
         factory<SubEditContract.External> { SubEditPresenter() }
         factory<SpeechContract.External> { SpeechPresenter(get()) }
+        factory<SentenceListContract.External> { SentenceListPresenter() }
     }
 
     private val generatorModules = listOf(
@@ -55,6 +59,7 @@ object Modules {
         factory { SubFinder() }
         factory { SubTracker() }
         factory { LogWrapper(get()) }
+        factory { FilenameFormatter() }
         factory { GsonSerializer(FileSerializer, FontSerializer, ColorSerializer).gson }
     }
 

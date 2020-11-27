@@ -18,8 +18,11 @@ import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.generator.ui.SpeechContract.WordParamType.*
 import speecher.generator.ui.SpeechPresenter.Companion.CURSOR
+import speecher.generator.ui.sentence_list.SentenceListContract
 import speecher.interactor.srt.SrtInteractor
 import speecher.scheduler.SchedulerModule
+import speecher.util.format.FilenameFormatter
+import speecher.util.format.FilenameFormatter.Companion.DEF_WORDS_SRT_EXT
 import speecher.util.format.TimeFormatter
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
@@ -96,6 +99,8 @@ class SpeechPresenter constructor(
     private val srtInteractor: SrtInteractor = scope.get()
     private val speechStateMapper: SpeechStateMapper = scope.get()
     private val swingScheduler: Scheduler = scope.get(named(SchedulerModule.SWING))
+    private val filenameFormatter: FilenameFormatter = scope.get()
+    private val sentences: SentenceListContract.External = scope.get()
 
     val disposables: CompositeDisposable = CompositeDisposable()
 
@@ -136,8 +141,8 @@ class SpeechPresenter constructor(
         when (pos) {
             START -> state.cursorPos = 0
             LAST -> state.cursorPos = max(0, state.cursorPos - 1)
-            NEXT -> state.cursorPos = min(state.wordList.size, state.cursorPos + 1)
-            END -> state.cursorPos = state.wordList.size
+            NEXT -> state.cursorPos = min(state.wordSentence.size, state.cursorPos + 1)
+            END -> state.cursorPos = state.wordSentence.size
         }
         buildSentenceWithCursor()
     }
@@ -160,19 +165,57 @@ class SpeechPresenter constructor(
         updateSubs()
     }
 
-    override fun openSubs() {
-        view.showOpenDialog("Open SRT", state.srtWordFile?.parentFile)
+    override fun openWords() {
+        view.showOpenDialog("Open SRT", state.srtWordFile?.parentFile) {
+            setWordsFile(it)
+        }
     }
 
     override fun deleteWord() {
-        if (state.cursorPos < state.wordList.size) {
-            state.wordList = state.wordList.toMutableList().apply { removeAt(state.cursorPos) }
+        if (state.cursorPos < state.wordSentence.size) {
+            state.wordSentence = state.wordSentence.toMutableList().apply { removeAt(state.cursorPos) }
             buildSentenceWithCursor()
         }
     }
 
     override fun initView() {
         buildSentenceWithCursor()
+    }
+
+    override fun openMovie() {
+        // todo test later
+        view.showOpenDialog("Open SRT", state.srtWordFile?.parentFile) {
+            state.movieFile = it
+            state.movieFile?.apply { listener.loadMovieFile(this) }
+            val wordsFile = filenameFormatter.movieToWords(it)
+            if (wordsFile.exists()) {
+                setWordsFile(it)
+            }
+        }
+    }
+
+    override fun openSentences() {
+        println("openSentences")
+    }
+
+    override fun saveSentences() {
+        println("saveSentences")
+    }
+
+    override fun cut() {
+        println("cut")
+    }
+
+    override fun copy() {
+        println("copy")
+    }
+
+    override fun paste() {
+        println("paste")
+    }
+
+    override fun showSentences() {
+        sentences.showWindow()
     }
 
     // endregion
@@ -199,11 +242,11 @@ class SpeechPresenter constructor(
     }
 
     override fun setSubs(subs: Subtitles) {
-        state.subs = subs
+        state.words = subs
         updateSubs()
     }
 
-    override fun setSrtFile(file: File) {
+    override fun setWordsFile(file: File) {
         srtOpenSingle(file)
             .subscribe(
                 { println("opened SRT = $file") },
@@ -246,7 +289,7 @@ class SpeechPresenter constructor(
     inner class SubChipListener : SubtitleChipView.Listener {
         override fun onItemClicked(sub: Subtitles.Subtitle) {
             //println("subchip.onItemClicked $sub")
-            state.wordList = state.wordList.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
+            state.wordSentence = state.wordSentence.toMutableList().apply { add(state.cursorPos, Sentence.Word(sub)) }
             state.cursorPos++
             buildSentenceWithCursor()
         }
@@ -257,7 +300,7 @@ class SpeechPresenter constructor(
     }
 
     private fun pushSentence() {
-        listener.sentenceChanged(Sentence(state.wordList))
+        listener.sentenceChanged(Sentence(state.wordSentence))
     }
     // endregion
 
@@ -266,7 +309,7 @@ class SpeechPresenter constructor(
 
         override fun onItemClicked(index: Int) {
             log.d("word.onItemClicked $index")
-            val word = state.wordListWithCursor[index]
+            val word = state.wordSentenceWithCursor[index]
             if (word != CURSOR) {
                 if (state.selectedWord == index) {
                     state.selectedWord = null
@@ -285,9 +328,9 @@ class SpeechPresenter constructor(
 
         override fun changed(index: Int, type: SpeechContract.WordParamType, value: Float) {
             log.d("word.changed $index $type $value")
-            val word = state.wordListWithCursor[index]
+            val word = state.wordSentenceWithCursor[index]
             if (word != CURSOR) {
-                state.wordList = state.wordListWithCursor.toMutableList().apply {
+                state.wordSentence = state.wordSentenceWithCursor.toMutableList().apply {
                     when (type) {
                         BEFORE -> set(index, word.copy(spaceBefore = value))
                         AFTER -> set(index, word.copy(spaceAfter = value))
@@ -306,31 +349,31 @@ class SpeechPresenter constructor(
     // endregion
 
     private fun buildSentenceWithCursor() {
-        state.wordListWithCursor = state.wordList.toMutableList().apply { add(state.cursorPos, CURSOR) }
-        view.updateSentence(state.wordListWithCursor)
+        state.wordSentenceWithCursor = state.wordSentence.toMutableList().apply { add(state.cursorPos, CURSOR) }
+        view.updateSentence(state.wordSentenceWithCursor)
         pushSentence()
     }
 
     private fun updateSubs() {
         val subs = state.searchText
             ?.let { searchText ->
-                state.subs?.timedTexts?.filter { it.text[0].contains(searchText) }
-            } ?: state.subs?.timedTexts
+                state.words?.timedTexts?.filter { it.text[0].contains(searchText) }
+            } ?: state.words?.timedTexts
 
         when (state.sortOrder) {
-            NATURAL -> state.subsDisplay = subs
-            A_Z -> state.subsDisplay = subs?.sortedBy { it.text[0] }
-            Z_A -> state.subsDisplay = subs?.sortedBy { it.text[0] }?.reversed()
+            NATURAL -> state.wordsDisplay = subs
+            A_Z -> state.wordsDisplay = subs?.sortedBy { it.text[0] }
+            Z_A -> state.wordsDisplay = subs?.sortedBy { it.text[0] }?.reversed()
         }
 
-        view.updateSubList(state.subsDisplay ?: listOf())
+        view.updateSubList(state.wordsDisplay ?: listOf())
     }
 
     private fun srtOpenSingle(file: File) =
         srtInteractor.read(file)
             .subscribeOn(Schedulers.io())
             .doOnSuccess {
-                state.subs = it
+                state.words = it
                 updateSubs()
                 //state.speakString?.let { buildWordList(it) }
                 state.srtWordFile = file
@@ -369,15 +412,15 @@ class SpeechPresenter constructor(
     }
 
     fun setWords(words: List<Sentence.Word>) {
-        state.wordList = words
+        state.wordSentence = words
         buildSentenceWithCursor()
     }
 
     private fun buildWordList(s: String) {
-        state.wordList = state.wordList.toMutableList().apply {
+        state.wordSentence = state.wordSentence.toMutableList().apply {
             val elements = s
                 .split(" ")
-                .map { word -> state.subs?.timedTexts?.find { it.text[0] == word } }
+                .map { word -> state.words?.timedTexts?.find { it.text[0] == word } }
                 .filterNotNull()
             val elements1 = elements.map { Sentence.Word(it) }
             addAll(state.cursorPos, elements1)
@@ -396,7 +439,7 @@ class SpeechPresenter constructor(
             "${GeneratorPresenter.BASE}/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
         internal val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
 
-        internal val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.words.srt"
+        internal val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH$DEF_WORDS_SRT_EXT"
 
         internal val RC = "${System.getProperty("user.home")}/.speecherrc.json"
 

@@ -263,19 +263,19 @@ class TransportView(
         openReadSrtMenuItem.mnemonic = KeyEvent.VK_O
         openMovieMenuItem.actionCommand = "Open"
 
-        val newSrtMenuItem = JMenuItem("New SRT Write")
+        val newSrtMenuItem = JMenuItem("New SRT Words")
         newSrtMenuItem.mnemonic = KeyEvent.VK_N
         newSrtMenuItem.actionCommand = "New"
 
-        val openWriteSrtMenuItem = JMenuItem("Open SRT Write")
+        val openWriteSrtMenuItem = JMenuItem("Open SRT Words")
         openWriteSrtMenuItem.mnemonic = KeyEvent.VK_W
         openMovieMenuItem.actionCommand = "Open"
 
-        val saveSrtMenuItem = JMenuItem("Save SRT")
+        val saveSrtMenuItem = JMenuItem("Save SRT Words")
         saveSrtMenuItem.mnemonic = KeyEvent.VK_S
         saveSrtMenuItem.actionCommand = "Save"
 
-        val saveAsSrtMenuItem = JMenuItem("Save SRT As ...")
+        val saveAsSrtMenuItem = JMenuItem("Save SRT Words As ...")
         saveAsSrtMenuItem.mnemonic = KeyEvent.VK_A
         saveAsSrtMenuItem.actionCommand = "Save As ..."
 

@@ -13,7 +13,6 @@ interface SpeechContract {
         fun updateSentence(sentence: List<Sentence.Word>)
         fun updateSubList(subs: List<Subtitles.Subtitle>)
         fun setPlaying(isPlaying: Boolean)
-        fun showOpenDialog(title: String, currentDir: File?)
         fun selectWord(index: Int, selected: Boolean)
         fun restoreState(
             vol: Float,
@@ -21,6 +20,8 @@ interface SpeechContract {
             searchText: String?,
             sortOrder: SortOrder
         )
+
+        fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit)
     }
 
     interface Presenter {
@@ -33,12 +34,19 @@ interface SpeechContract {
         fun play()
         fun pause()
         fun searchText(text: String)
-        fun openSubs()
+        fun openWords()
         fun deleteWord()
         fun initView()
-        fun setSrtFile(file: File)
+        fun setWordsFile(file: File)
         fun loop(selected: Boolean)
         fun shutdown()
+        fun openMovie()
+        fun openSentences()
+        fun saveSentences()
+        fun cut()
+        fun copy()
+        fun paste()
+        fun showSentences()
     }
 
     interface External {
@@ -50,7 +58,7 @@ interface SpeechContract {
         var selectedFont: Font?
         var volume: Float
         fun setSubs(subs: Subtitles)
-        fun setSrtFile(file: File)
+        fun setWordsFile(file: File)
         fun showWindow()
         fun shutdown()
         fun initialise()
