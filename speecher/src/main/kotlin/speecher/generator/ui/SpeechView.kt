@@ -254,19 +254,22 @@ class SpeechView constructor(
                             })
                         }
                         .also { add(it) }
-                    sortNatural = JToggleButton("Natural")
-                        .setup { presenter.sortOrder(NATURAL) }
-                        .style()
+                    JPanel().apply {
+                        background = bgColor
+                        sortNatural = JToggleButton("Natural")
+                            .setup { deselectOthersAction(it);presenter.sortOrder(NATURAL) }
+                            .style()
+                            .also { add(it) }
+                        sortAZ = JToggleButton("A-Z")
+                            .setup { deselectOthersAction(it);presenter.sortOrder(A_Z) }
+                            .style()
+                            .also { add(it) }
+                        sortZA = JToggleButton("Z-A")
+                            .setup { deselectOthersAction(it);presenter.sortOrder(Z_A) }
+                            .style()
+                            .also { add(it) }
+                    }
                         .also { add(it) }
-                    sortAZ = JToggleButton("A-Z")
-                        .setup { presenter.sortOrder(A_Z) }
-                        .style()
-                        .also { add(it) }
-                    sortZA = JToggleButton("Z-A")
-                        .setup { presenter.sortOrder(Z_A) }
-                        .style()
-                        .also { add(it) }
-                    JButton("...").setup { presenter.openSubs() }.style().also { add(it) }
                 }.also { add(it, BorderLayout.NORTH) }
 
                 subsPanel = JPanel().apply {

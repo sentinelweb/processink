@@ -216,35 +216,7 @@ class SpeechPresenter constructor(
     }
 
     override fun initialise() {
-        val rcFile = File(RC)
-        val initSingle = if (rcFile.exists()) {
-            Single.fromCallable {
-                speechStateMapper.deserializeSpeechState(rcFile.readText())
-            }.subscribeOn(Schedulers.io())
-                .doOnSuccess {
-                    state = it
-                    view.restoreState(
-                        state.volume,
-                        state.playEventLatency,
-                        state.searchText,
-                        state.sortOrder
-                    )
-                    listener.apply {
-                        updateFont()
-                        updateFontColor()
-                        updateVolume()
-                    }
-                    updateSubs()
-                    buildSentenceWithCursor()
-                }
-                .subscribeOn(swingScheduler)
-        } else {
-            Single.fromCallable {
-                state.srtWordFile = File(DEF_WRITE_SRT_PATH)
-                state.movieFile = File(DEF_MOVIE_PATH)
-            }
-        }
-        initSingle
+        initSingle()
             .flatMap { srtOpenSingle(File(DEF_WRITE_SRT_PATH)) }
             .doOnSuccess {
                 state.movieFile?.apply { listener.loadMovieFile(this) }
@@ -364,6 +336,43 @@ class SpeechPresenter constructor(
                 state.srtWordFile = file
             }
 
+    private fun initSingle(): Single<out Any> {
+        val rcFile = File(RC)
+        val initSingle = if (rcFile.exists()) {
+            Single.fromCallable {
+                speechStateMapper.deserializeSpeechState(rcFile.readText())
+            }.subscribeOn(Schedulers.io())
+                .doOnSuccess {
+                    state = it
+                    view.restoreState(
+                        state.volume,
+                        state.playEventLatency,
+                        state.searchText,
+                        state.sortOrder
+                    )
+                    listener.apply {
+                        updateFont()
+                        updateFontColor()
+                        updateVolume()
+                    }
+                    updateSubs()
+                    buildSentenceWithCursor()
+                }
+                .subscribeOn(swingScheduler)
+        } else {
+            Single.fromCallable {
+                state.srtWordFile = File(DEF_WRITE_SRT_PATH)
+                state.movieFile = File(DEF_MOVIE_PATH)
+            }
+        }
+        return initSingle
+    }
+
+    fun setWords(words: List<Sentence.Word>) {
+        state.wordList = words
+        buildSentenceWithCursor()
+    }
+
     private fun buildWordList(s: String) {
         state.wordList = state.wordList.toMutableList().apply {
             val elements = s
@@ -378,11 +387,6 @@ class SpeechPresenter constructor(
         buildSentenceWithCursor()
     }
 
-    fun setWords(words: List<Sentence.Word>) {
-        state.wordList = words
-        buildSentenceWithCursor()
-    }
-
     companion object {
         internal val CURSOR = Sentence.Word(Subtitles.Subtitle(0f, 0f, listOf("Cursor")))
         private const val CHIP_SUB = "Subs"
@@ -392,7 +396,7 @@ class SpeechPresenter constructor(
             "${GeneratorPresenter.BASE}/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
         internal val DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
 
-        internal val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+        internal val DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.words.srt"
 
         internal val RC = "${System.getProperty("user.home")}/.speecherrc.json"
 

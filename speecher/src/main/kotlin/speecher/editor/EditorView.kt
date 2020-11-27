@@ -211,7 +211,7 @@ class EditorView() : PApplet(), EditorContract.View, KoinComponent {
         var DEF_BASE_PATH = "$BASE/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0"
         var DEF_MOVIE_PATH = "$DEF_BASE_PATH.mp4"
         var DEF_SRT_PATH = "$DEF_BASE_PATH.en.srt"
-        var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.write.srt"
+        var DEF_WRITE_SRT_PATH = "$DEF_BASE_PATH.words.srt"
 
         private val LIB_PATH =
             "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
