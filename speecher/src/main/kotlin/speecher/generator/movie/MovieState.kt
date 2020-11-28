@@ -5,7 +5,7 @@ import speecher.domain.Subtitles
 import java.awt.Dimension
 import java.awt.geom.Rectangle2D
 
-data class MovieState constructor(
+data class MovieState(
     var movieDimension: Dimension? = null,
     var screenRect: Rectangle2D.Float? = null,
     var duration: Float? = null,
@@ -18,7 +18,9 @@ data class MovieState constructor(
     var ready: Boolean = false,
     val disposables: CompositeDisposable = CompositeDisposable(),
     var volume: Float = 0f,
-    var onPlayEventCalled: Boolean = false
+    var onPlayEventCalled: Boolean = false,
+    var bounds: Rectangle2D.Float? = null,
+    var pauseAfterSeekComplete: Boolean = false
 ) {
 
     lateinit var movie: MovieWrapper

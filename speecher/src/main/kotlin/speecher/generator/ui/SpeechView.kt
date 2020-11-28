@@ -94,6 +94,10 @@ class SpeechView constructor(
         speechPanel.statusBar.text = ""
     }
 
+    override fun showPreviewing(value: Boolean) {
+        speechPanel.previewButton.isSelected = value
+    }
+
     inner class SpeechPanel : JPanel() {
 
         val sentencePanel: JPanel
@@ -107,6 +111,7 @@ class SpeechView constructor(
         val sortZA: JToggleButton
         val sentenceIdText: JTextField
         val statusBar: JLabel
+        val previewButton: JToggleButton
 
         private val playButton: JButton
         private val pauseButton: JButton
@@ -130,26 +135,50 @@ class SpeechView constructor(
                         //preferredSize = Dimension(1024, 40)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                         background = bgColor
-                        add(
-                            JButton().icon("baseline_first_page_black_18.png").style()
-                                .setup { presenter.moveCursor(START) })
-                        add(
-                            JButton().icon("baseline_arrow_back_black_18.png").style()
-                                .setup { presenter.moveCursor(LAST) })
-                        add(
-                            JButton().icon("baseline_arrow_forward_black_18.png").style()
-                                .setup { presenter.moveCursor(NEXT) })
-                        add(
-                            JButton().icon("baseline_last_page_black_18.png").style()
-                                .setup { presenter.moveCursor(END) })
-                        add(JButton().icon("baseline_sort_black_18.png").style().setup { presenter.backSpace() })
-                        add(
-                            JButton().icon("baseline_cancel_presentation_black_18.png").style()
-                                .setup { presenter.deleteWord() })
-                        add(JButton().icon("baseline_fiber_new_black_18.png").style().setup { presenter.newSentence() })
-                        add(
-                            JButton().icon("baseline_save_alt_black_18.png").style()
-                                .setup { presenter.commitSentence() })
+                        JButton().icon("baseline_first_page_black_18.png")
+                            .style()
+                            .setup { presenter.moveCursor(START) }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_arrow_back_black_18.png")
+                            .style()
+                            .setup { presenter.moveCursor(LAST) }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_arrow_forward_black_18.png")
+                            .style()
+                            .setup { presenter.moveCursor(NEXT) }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_last_page_black_18.png")
+                            .style()
+                            .setup { presenter.moveCursor(END) }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_sort_black_18.png")
+                            .style()
+                            .setup { presenter.backSpace() }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_cancel_presentation_black_18.png")
+                            .style()
+                            .setup { presenter.deleteWord() }.also { add(it) }
+
+                        JButton().icon("baseline_fiber_new_black_18.png")
+                            .style()
+                            .setup { presenter.newSentence() }
+                            .also { add(it) }
+
+                        JButton().icon("baseline_save_alt_black_18.png")
+                            .style()
+                            .setup { presenter.commitSentence() }
+                            .also { add(it) }
+
+                        previewButton = JToggleButton("X").icon("baseline_preview_black_18.png")
+                            .style()
+                            .setup { presenter.stopPreview() }
+                            .also { add(it) }
+
                         sentenceIdText = JTextField("")
                             .style()
                             .apply {

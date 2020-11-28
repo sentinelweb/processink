@@ -2,12 +2,14 @@ package speecher.generator.movie
 
 import processing.video.Movie
 import speecher.domain.Subtitles
+import java.awt.geom.Rectangle2D
 import java.io.File
 
 class MovieContract {
 
     data class Config constructor(
-        var playEventLatency: Float? = 0.05f
+        var playEventLatency: Float? = 0.05f,
+        var bounds: Rectangle2D.Float? = null
     )
 
     interface View {
@@ -29,7 +31,9 @@ class MovieContract {
         val position: Float
         val duration: Float
         val playState: State
-        val parent: Parent?
+        val view: View
+
+        //val parent: Parent?
         fun openMovie(file: File)
         fun setMovieSpeed(speed: Float)
         fun play()
@@ -40,20 +44,12 @@ class MovieContract {
         fun cleanup()
     }
 
-    interface Parent {
-
-    }
 
     interface Listener {
         fun onReady()
         fun onSubtitleStart(sub: Subtitles.Subtitle)
         fun onSubtitleFinished(sub: Subtitles.Subtitle)
         fun onPlaying()
-    }
-
-    interface Sketch {
-        fun addView(v: View)
-        fun cleanup()
     }
 
     enum class State { NOT_INIT, INIT, LOADED, PLAYING, PAUSED, STOPPED, SEEKING }

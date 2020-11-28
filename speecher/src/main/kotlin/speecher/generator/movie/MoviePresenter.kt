@@ -5,7 +5,6 @@ import io.reactivex.Scheduler
 import io.reactivex.Single
 import org.gstreamer.State
 import org.koin.core.qualifier.named
-import org.koin.dsl.module
 import org.koin.ext.getOrCreateScope
 import speecher.domain.Subtitles
 import speecher.generator.movie.MovieContract.State.*
@@ -15,20 +14,24 @@ import java.io.File
 
 class MoviePresenter(
     private val index: Int,
-    private val log: LogWrapper,
-    internal val sketch: MovieContract.Sketch
+    private val log: LogWrapper
 ) : MovieContract.Presenter, MovieContract.External {
 
     private val scope = this.getOrCreateScope()
-    private val view: MovieContract.View = scope.get()
+    override val view: MovieContract.View = scope.get()
     private val state: MovieState = scope.get()
     private val processingScheduler: Scheduler = scope.get(named(SchedulerModule.PROCESSING))
     private val playerScheduler: Scheduler = scope.get(named(SchedulerModule.PLAYER))
 
     override var config: MovieContract.Config = MovieContract.Config()
+        get() = field
+        set(value) {
+            field = value
+            state.bounds = config.bounds
+
+        }
 
     override var listener: MovieContract.Listener? = null
-    override var parent: MovieContract.Parent? = null
     override val position: Float
         get() = state.position ?: 0f
     override val duration: Float
@@ -110,12 +113,19 @@ class MoviePresenter(
     // fixme can be thread synchronization issues when pausing all players together
     // todo try out coroutines for these
     override fun pause() {
-        Completable.fromCallable {
-            state.movie.pause()
+        if (!state.seeking) {
+            Completable.fromCallable {
+                state.movie.pause()
+            }
+                .subscribeOn(playerScheduler)
+                .subscribe({
+                    state.pauseAfterSeekComplete = false
+                    log.d("Paused ($index)")
+                }, { it.printStackTrace() })
+                .also { state.disposables.add(it) }
+        } else {
+            state.pauseAfterSeekComplete = true
         }
-            .subscribeOn(playerScheduler)
-            .subscribe({ log.d("Paused ($index)") }, { it.printStackTrace() })
-            .also { state.disposables.add(it) }
     }
 
     override fun volume(vol: Float) {
@@ -135,6 +145,9 @@ class MoviePresenter(
             .subscribe({
                 state.seeking = false
                 log.d("Jump finished: ($index) t = ${System.currentTimeMillis() - it}")
+                if (state.pauseAfterSeekComplete) {
+                    pause()
+                }
             }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
@@ -147,28 +160,9 @@ class MoviePresenter(
     }
 
     override fun cleanup() {
-        state.disposables.dispose()
+        state.disposables.dispose() // todo cleanup when idle - accumulates subs
         view.cleanup()
     }
     // endregion
 
-    companion object {
-        @JvmStatic
-        val scopeModule = module {
-            scope(named<MoviePresenter>()) {
-                scoped<MovieContract.Presenter> { getSource() }
-                scoped<MovieContract.Sketch> { getSource<MoviePresenter>().sketch }
-                scoped<MovieContract.View> {
-                    MovieView(
-                        presenter = get(),
-                        state = get(),
-                        p = get(),
-                        sketch = get(),
-                        log = get()
-                    )
-                }
-                scoped { MovieState() }
-            }
-        }
-    }
 }

@@ -10,7 +10,8 @@ import speecher.editor.sublist.SubListPresenter
 import speecher.editor.transport.TransportContract
 import speecher.editor.transport.TransportPresenter
 import speecher.generator.GeneratorPresenter
-import speecher.generator.movie.MoviePresenter
+import speecher.generator.bank.MovieBankCreator
+import speecher.generator.movie.MovieCreator
 import speecher.generator.ui.SpeechContract
 import speecher.generator.ui.SpeechPresenter
 import speecher.generator.ui.sentence_list.SentenceListContract
@@ -32,7 +33,6 @@ object Modules {
 
     private val scopedModules = listOf(
         EditorView.viewModule,
-        SentenceListPresenter.scope,
         SubListPresenter.scope,
         TransportPresenter.scope,
         SubEditPresenter.scope,
@@ -48,9 +48,16 @@ object Modules {
     }
 
     private val generatorModules = listOf(
-        MoviePresenter.scopeModule,
+        MovieCreator.scopeModule,
         GeneratorPresenter.module,
-        SpeechPresenter.scope
+        SpeechPresenter.scope,
+        SentenceListPresenter.scope,
+        module {
+            factory {
+                MovieBankCreator()
+                MovieCreator()
+            }
+        }
     )
 
     private val utilModule = module {

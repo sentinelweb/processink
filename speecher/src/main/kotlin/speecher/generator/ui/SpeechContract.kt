@@ -29,6 +29,7 @@ interface SpeechContract {
         fun clearStatus()
         fun setSentenceId(currentSentenceId: String?)
         fun clearFocus()
+        fun showPreviewing(value: Boolean)
     }
 
     interface Presenter {
@@ -59,6 +60,7 @@ interface SpeechContract {
         fun backSpace()
         fun sentenceId(text: String)
         fun reloadWords()
+        fun stopPreview()
     }
 
     interface External {
@@ -69,7 +71,8 @@ interface SpeechContract {
         var selectedFontColor: Color?
         var selectedFont: Font?
         var volume: Float
-        fun setSubs(subs: Subtitles)
+        var previewing: Boolean
+
         fun setWordsFile(file: File)
         fun showWindow()
         fun shutdown()
@@ -85,6 +88,7 @@ interface SpeechContract {
         fun updateFont()
         fun updateBank()
         fun loadMovieFile(movie: File)
+        fun preview(word: Sentence.Word?)
     }
 
     interface WordListener {

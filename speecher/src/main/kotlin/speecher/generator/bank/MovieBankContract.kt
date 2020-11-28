@@ -26,16 +26,19 @@ interface MovieBankContract {
         fun pause()
         fun loadMovieFile(movie: File)
         fun startPlaying()
+        fun cleanup()
     }
 
     interface Listener {
         fun onPlayFinished()
     }
 
-    interface View : MovieContract.Sketch {
+    interface View {
         var active: Int
         fun render()
         fun movieEvent(m: Movie)
+        fun addMovieView(view: MovieContract.View)
+        fun cleanup()
     }
 
     data class State constructor(

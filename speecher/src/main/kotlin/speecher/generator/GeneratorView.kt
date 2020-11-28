@@ -6,6 +6,7 @@ import processing.core.PConstants
 import processing.core.PFont
 import processing.video.Movie
 import speecher.generator.bank.MovieBankContract
+import speecher.generator.movie.MovieContract
 import speecher.scheduler.ProcessingExecutor
 import speecher.util.wrapper.LogWrapper
 import java.io.File
@@ -16,8 +17,10 @@ class GeneratorView constructor(
 ) : PApplet(), GeneratorContract.View {
 
     override lateinit var presenter: GeneratorContract.Presenter
+    override var showPrewiew: Boolean = false
 
-    override var bankView: MovieBankContract.View? = null
+    private var bankView: MovieBankContract.View? = null
+    private var preView: MovieContract.View? = null
 
     private lateinit var f: PFont
     private var subtitleColor: Int = color(255, 255, 255)
@@ -56,7 +59,15 @@ class GeneratorView constructor(
     }
 
     override fun cleanup() {
-        bankView?.cleanup()
+        TODO("Not yet implemented")
+    }
+
+    override fun setPreview(view: MovieContract.View) {
+        preView = view
+    }
+
+    override fun setBankview(view: MovieBankContract.View) {
+        bankView = view
     }
 
 
@@ -69,9 +80,12 @@ class GeneratorView constructor(
         //log.d("active = $active")
         //if (active > -1) movieViews[active].render()
         bankView?.render()
-
+        if (showPrewiew) {
+            preView?.render()
+        }
         fill(subtitleColor)
         presenter.subtitleToDisplay.let { text(it, width / 2f, height - 25f) }
+
         recordPath?.apply {
             saveFrame(File(recordPath, "frame_$recordFrameCount").absolutePath)
             recordFrameCount++
@@ -83,6 +97,7 @@ class GeneratorView constructor(
     fun movieEvent(m: Movie) {
         m.read()
         bankView?.movieEvent(m)
+        preView?.apply { if (hasMovie(m)) movieEvent(m) }
     }
     // endregion
 

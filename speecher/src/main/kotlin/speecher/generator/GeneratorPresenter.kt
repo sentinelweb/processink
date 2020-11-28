@@ -10,16 +10,18 @@ import org.koin.dsl.module
 import processing.core.PApplet
 import speecher.di.Modules
 import speecher.domain.Sentence
+import speecher.domain.Subtitles
 import speecher.generator.bank.MovieBankContract
-import speecher.generator.bank.MovieBankPresenter
-import speecher.generator.bank.MovieBankView
+import speecher.generator.bank.MovieBankCreator
 import speecher.generator.movie.MovieContract
+import speecher.generator.movie.MovieCreator
 import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Font
+import java.awt.geom.Rectangle2D
 import java.io.File
 
 fun main() {
@@ -31,16 +33,21 @@ fun main() {
 
 class GeneratorPresenter constructor(
     private val log: LogWrapper
-) : GeneratorContract.Presenter, SpeechContract.Listener, KoinComponent, MovieContract.Parent {
+) : GeneratorContract.Presenter,
+    SpeechContract.Listener,
+    KoinComponent,
+    MovieBankContract.Listener {
 
     private val view: GeneratorContract.View = get()
     private val state: GeneratorState = get()
     private val pScheduler: Scheduler = get(named(PROCESSING))
     private val swingScheduler: Scheduler = get(named(SWING))
     private val speechUI: SpeechContract.External = get()
-
+    private val bankCreator: MovieBankCreator = MovieBankCreator()// todo inject
+    private val movieCreator: MovieCreator = get()
 
     private var bank: MovieBankContract.External? = null
+    private var preview: MovieContract.External? = null
 
     override val subtitleToDisplay: String
         get() = bank?.subtitleToDisplay ?: "-"
@@ -48,8 +55,6 @@ class GeneratorPresenter constructor(
         get() = speechUI.selectedFontColor
     override val selectedFont: Font?
         get() = speechUI.selectedFont
-//    override val playEventLatency: Float?
-//        get() = speechUI.playEventLatency
 
     init {
         log.tag(this)
@@ -57,29 +62,21 @@ class GeneratorPresenter constructor(
         view.run()
         speechUI.listener = this
         speechUI.showWindow()
-
-    }
-
-    private fun makeBank() {
-        view.bankView = MovieBankView().also { view ->
-            bank = MovieBankPresenter(MovieBankContract.State(), view, 10).also { bank ->
-                bank.listener = object : MovieBankContract.Listener {
-                    override fun onPlayFinished() {
-                        speechUI.playing = false
-                        // view.recordStop()
-                    }
-                }
-            }
-        }
     }
 
     // region Presenter
     override fun initialise() {
         speechUI.initialise()
-        makeBank()
+        bankCreator.create(this).also { (e, v) ->
+            bank = e
+            view.setBankview(v)
+        }
     }
-
     // endregion
+
+    override fun onPlayFinished() {
+        speechUI.playing = false
+    }
 
     // region SpeechContract.Listener
     override fun sentenceChanged(sentence: Sentence) {
@@ -103,14 +100,6 @@ class GeneratorPresenter constructor(
         speechUI.playing = false
     }
 
-    override fun updateFontColor() {
-        view.updateFontColor()
-    }
-
-    override fun updateFont() {
-        updateViewFont()
-    }
-
     override fun updateBank() {
         bank?.apply {
             config = config.copy(
@@ -123,8 +112,64 @@ class GeneratorPresenter constructor(
     }
 
     override fun loadMovieFile(movie: File) {
-        view.cleanup()
+        bank?.cleanup()
         bank?.loadMovieFile(movie)
+        preview?.cleanup()
+        log.d("preview creating")
+        preview = movieCreator.create(0, log, previewListener).also {
+            log.d("preview created")
+            it.config = it.config.copy(bounds = Rectangle2D.Float(0f, 0f, 320f, 240f))
+            it.openMovie(movie)
+            it.volume(0f)
+            it.pause()
+            view.setPreview(it.view)
+        }
+    }
+
+    private val previewListener = object : MovieContract.Listener {
+        override fun onReady() {
+
+        }
+
+        override fun onSubtitleStart(sub: Subtitles.Subtitle) {
+
+        }
+
+        override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
+            state.previewWord?.let {
+                preview?.setSubtitle(it.sub)
+            }
+        }
+
+        override fun onPlaying() {
+            preview?.volume(0.2f)
+        }
+
+    }
+
+    override fun preview(word: Sentence.Word?) {
+        state.previewWord = word
+        word?.let {
+            preview?.apply {
+                if (playState != MovieContract.State.PLAYING) {
+                    setSubtitle(word.sub)
+                    play()
+                    volume(0.2f)
+                }
+                this@GeneratorPresenter.view.showPrewiew = true
+            }
+        } ?: run {
+            preview?.pause()
+            this@GeneratorPresenter.view.showPrewiew = false
+        }
+    }
+
+    override fun updateFontColor() {
+        view.updateFontColor()
+    }
+
+    override fun updateFont() {
+        updateViewFont()
     }
 
     private fun updateViewFont() {

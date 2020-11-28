@@ -40,4 +40,8 @@ class TestListener constructor(private val p: SpeechPresenter) : SpeechContract.
     override fun loadMovieFile(movie: File) {
         log.d("loadMovieFile = $movie")
     }
+
+    override fun preview(word: Sentence.Word?) {
+        log.d("preview = $word")
+    }
 }

@@ -3,7 +3,7 @@ package speecher.generator.bank
 import processing.video.Movie
 import speecher.generator.movie.MovieContract
 
-class MovieBankView : MovieBankContract.View, MovieContract.Sketch {
+class MovieBankView : MovieBankContract.View {
 
     override var active: Int = -1
     private val movieViews: MutableList<MovieContract.View> = mutableListOf()
@@ -19,9 +19,8 @@ class MovieBankView : MovieBankContract.View, MovieContract.Sketch {
     }
     // endregion
 
-    // region MovieContract.Sketch
-    override fun addView(v: MovieContract.View) {
-        movieViews.add(v)
+    override fun addMovieView(view: MovieContract.View) {
+        movieViews.add(view)
     }
 
     override fun cleanup() {

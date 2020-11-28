@@ -9,7 +9,6 @@ import java.io.File
 
 class MovieView constructor(
     private val p: PApplet,
-    private val sketch: MovieContract.Sketch,
     private val presenter: MovieContract.Presenter,
     private val state: MovieState,
     private val log: LogWrapper
@@ -22,7 +21,6 @@ class MovieView constructor(
     override fun createMovie(file: File) {
         state.movie = MovieWrapper(p, file.absolutePath)
         state.movie.play()
-        sketch.addView(this)
     }
 
     override fun render() {
@@ -65,12 +63,15 @@ class MovieView constructor(
         if (state.movie.width > 0 && state.movie.height > 0) {
             state.movieDimension = Dimension(state.movie.width, state.movie.height)
             val movieAspect = state.movieDimension!!.width / state.movieDimension!!.height.toFloat()
+            val screen = state.bounds ?: Rectangle2D.Float(0f, 0f, p.width.toFloat(), p.height.toFloat())
             val screenAspect = p.width / p.height.toFloat()
+            val yOffset = (p.height - p.height * screenAspect / movieAspect) / 2f
+            log.d("init. screen =$screen , bounds = ${state.bounds}")
             state.screenRect = Rectangle2D.Float(
-                0f,
-                ((p.height - p.height * screenAspect / movieAspect) / 2f),
-                p.width.toFloat(),
-                (p.width / movieAspect)
+                screen.x,
+                screen.y + yOffset,
+                screen.width,
+                (screen.width / movieAspect)
             )
             state.duration = state.movie.duration()
             presenter.flagReady()

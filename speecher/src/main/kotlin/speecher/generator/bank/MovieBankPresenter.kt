@@ -8,7 +8,7 @@ import org.koin.core.qualifier.named
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.generator.movie.MovieContract
-import speecher.generator.movie.MoviePresenter
+import speecher.generator.movie.MovieCreator
 import speecher.scheduler.SchedulerModule
 import speecher.util.wrapper.LogWrapper
 import java.io.File
@@ -18,12 +18,13 @@ class MovieBankPresenter(
     private val state: MovieBankContract.State,
     private val view: MovieBankContract.View,
     private val bankSize: Int
-) : MovieBankContract.Presenter, MovieBankContract.External, MovieContract.Parent {
+) : MovieBankContract.Presenter, MovieBankContract.External {
 
     private val koin = get()
     private val pScheduler: Scheduler = koin.get(named(SchedulerModule.PROCESSING))
     private val swingScheduler: Scheduler = koin.get(named(SchedulerModule.SWING))
     private val log: LogWrapper = koin.get()
+    private val movieCreator: MovieCreator = koin.get()
 
     //override val playEventLatency: Float? = 0.05f // todo link to
 
@@ -31,21 +32,6 @@ class MovieBankPresenter(
 
     override var listener: MovieBankContract.Listener? = null
 
-    //    override var words: Sentence?
-//        get() = state.words
-//        set(value) {
-//            state.words = value
-//        }
-//    override var looping: Boolean
-//        get() = state.looping
-//        set(value) {
-//            state.looping = value
-//        }
-//    override var volume: Float
-//        get() = state.volume
-//        set(value) {
-//            state.volume = value
-//        }
     override var config: MovieBankContract.Config = MovieBankContract.Config()
         get() = field
         set(value) {
@@ -150,8 +136,8 @@ class MovieBankPresenter(
     // endregion
 
     // region Movie
-    private fun openMovieSingle(file: File): Single<File> {
-        return Single.just(file)
+    private fun openMovieSingle(file: File): Single<File> =
+        Single.just(file)
             .observeOn(pScheduler)
             .doOnSuccess {
                 movies.forEachIndexed { i, movie ->
@@ -165,15 +151,17 @@ class MovieBankPresenter(
                     makeMovie(it, file)
                 }
             }
+
+    private fun makeMovie(i: Int, file: File) = movieCreator.create(i, log, MvListener(i)).also {
+        movies.add(it)
+        it.openMovie(file)
+        it.volume(0f)
+        view.addMovieView(it.view)
     }
 
-    private fun makeMovie(i: Int, file: File) = MoviePresenter(i, log, view).apply {
-        listener = MvListener(i)
-        parent = this@MovieBankPresenter
-        movies.add(this)
-        openMovie(file)
-        volume(0f)
-//        pause()
+    override fun cleanup() {
+        movies.forEach { it.cleanup() }
+        view.cleanup()
     }
 
     inner class MvListener(private val index: Int) : MovieContract.Listener {

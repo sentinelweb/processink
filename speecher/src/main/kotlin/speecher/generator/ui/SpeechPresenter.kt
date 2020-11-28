@@ -94,6 +94,12 @@ class SpeechPresenter constructor(
             state.volume = value
             listener.updateBank()
         }
+    override var previewing: Boolean = false
+        get() = field
+        set(value) {
+            field = value
+            view.showPreviewing(value)
+        }
 
     override var playEventLatency: Float?
         get() = state.playEventLatency
@@ -311,7 +317,7 @@ class SpeechPresenter constructor(
         view.showWindow()
     }
 
-    override fun setSubs(subs: Subtitles) {
+    internal fun setSubs(subs: Subtitles) {
         state.words = subs
         updateWordList()
     }
@@ -379,7 +385,7 @@ class SpeechPresenter constructor(
         }
 
         override fun onPreviewClicked(sub: Subtitles.Subtitle) {
-            log.d("subchip.onPreviewClicked $sub")
+            listener.preview(Sentence.Word(sub))
         }
     }
 
@@ -405,7 +411,7 @@ class SpeechPresenter constructor(
                             state.wordSelection.put(index, word)
                         }
                         view.updateMultiSelection(state.wordSelection.keys)
-                    } else if (metas.contains(MetaKey.CTRL)) {
+                    } else if (metas.contains(MetaKey.ALT)) {
                         if (state.editingWord == index) {
                             state.editingWord = null
                             view.selectWord(index, false)
@@ -420,28 +426,40 @@ class SpeechPresenter constructor(
         }
 
         override fun onPreviewClicked(index: Int) {
-            log.d("word.onPreviewClicked $index")
+            state.wordSentenceWithCursor[index].let {
+                listener.preview(it)
+                state.previewingWord = index
+            }
         }
 
         override fun changed(index: Int, type: SpeechContract.WordParamType, value: Float) {
             log.d("word.changed $index $type $value")
             val word = state.wordSentenceWithCursor[index]
             if (word != CURSOR) {
-                state.wordSentence = state.wordSentenceWithCursor.toMutableList().apply {
-                    when (type) {
-                        BEFORE -> set(index, word.copy(spaceBefore = value))
-                        AFTER -> set(index, word.copy(spaceAfter = value))
-                        FROM -> set(index, word.copy(sub = word.sub.copy(fromSec = value)))
-                        TO -> set(index, word.copy(sub = word.sub.copy(toSec = value)))
-                        SPEED -> set(index, word.copy(speed = value))
-                        VOL -> set(index, word.copy(vol = value))
-                    }
-                    remove(CURSOR)
+                val modWord = when (type) {
+                    BEFORE -> word.copy(spaceBefore = value)
+                    AFTER -> word.copy(spaceAfter = value)
+                    FROM -> word.copy(sub = word.sub.copy(fromSec = value))
+                    TO -> word.copy(sub = word.sub.copy(toSec = value))
+                    SPEED -> word.copy(speed = value)
+                    VOL -> word.copy(vol = value)
                 }
+                state.wordSentenceWithCursor.apply {
+                    set(index, modWord)
+                }
+                state.wordSentence = state.wordSentenceWithCursor.toMutableList().apply { remove(CURSOR) }
                 pushSentence()
+                if (state.previewingWord == index) {
+                    listener.preview(modWord)
+                }
             }
         }
 
+    }
+
+    override fun stopPreview() {
+        listener.preview(null)
+        state.previewingWord = null
     }
     // endregion
 
