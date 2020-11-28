@@ -15,7 +15,8 @@ import java.io.File
 
 class MoviePresenter(
     private val index: Int,
-    private val log: LogWrapper
+    private val log: LogWrapper,
+    internal val sketch: MovieContract.Sketch
 ) : MovieContract.Presenter, MovieContract.External {
 
     private val scope = this.getOrCreateScope()
@@ -99,7 +100,6 @@ class MoviePresenter(
             state.movie.play()
             state.movie.volume(state.volume)
         }
-            //.doOnComplete{listener?.onPlaying()}
             .subscribeOn(playerScheduler)
             .subscribe({ log.d("Playing ($index)") }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
@@ -155,6 +155,7 @@ class MoviePresenter(
         val scopeModule = module {
             scope(named<MoviePresenter>()) {
                 scoped<MovieContract.Presenter> { getSource() }
+                scoped<MovieContract.Sketch> { getSource<MoviePresenter>().sketch }
                 scoped<MovieContract.View> {
                     MovieView(
                         presenter = get(),

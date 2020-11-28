@@ -5,24 +5,22 @@ import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
 import processing.video.Movie
-import speecher.generator.movie.MovieContract
+import speecher.generator.bank.MovieBankContract
 import speecher.scheduler.ProcessingExecutor
 import speecher.util.wrapper.LogWrapper
 import java.io.File
 
 class GeneratorView constructor(
-//    private val presenter: GeneratorContract.Presenter,
-    private val state: GeneratorState,
     private val pExecutor: ProcessingExecutor,
     private val log: LogWrapper
-) : PApplet(), GeneratorContract.View, MovieContract.Sketch {
+) : PApplet(), GeneratorContract.View {
 
     override lateinit var presenter: GeneratorContract.Presenter
-    override var active: Int = -1
+
+    override var bankView: MovieBankContract.View? = null
 
     private lateinit var f: PFont
     private var subtitleColor: Int = color(255, 255, 255)
-    private val movieViews: MutableList<MovieContract.View> = mutableListOf()
 
     private var recordFrameCount = 0
     private var recordPath: File? = null
@@ -57,6 +55,10 @@ class GeneratorView constructor(
         log.d("recorded: $recordFrameCount frames")
     }
 
+    override fun cleanup() {
+        bankView?.cleanup()
+    }
+
 
     override fun draw() {
         while (pExecutor.workQueue.size > 0) {
@@ -65,9 +67,11 @@ class GeneratorView constructor(
         background(0)
         fill(255f, 255f, 255f)
         //log.d("active = $active")
-        if (active > -1) movieViews[active].render()
+        //if (active > -1) movieViews[active].render()
+        bankView?.render()
+
         fill(subtitleColor)
-        presenter.subtitleToDisplay?.let { text(it, width / 2f, height - 25f) }
+        presenter.subtitleToDisplay.let { text(it, width / 2f, height - 25f) }
         recordPath?.apply {
             saveFrame(File(recordPath, "frame_$recordFrameCount").absolutePath)
             recordFrameCount++
@@ -78,7 +82,7 @@ class GeneratorView constructor(
     // region movie
     fun movieEvent(m: Movie) {
         m.read()
-        movieViews.find { it.hasMovie(m) }?.movieEvent(m)
+        bankView?.movieEvent(m)
     }
     // endregion
 
@@ -102,16 +106,6 @@ class GeneratorView constructor(
         presenter.selectedFontColor?.let { subtitleColor = it.toProcessing(this) }
     }
     // endregion
-
-    // region MovieContract.Sketch
-    override fun addView(v: MovieContract.View) {
-        movieViews.add(v)
-    }
-
-    override fun cleanup() {
-        movieViews.forEach { it.cleanup() }
-        movieViews.clear()
-    }
 
     companion object {
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"

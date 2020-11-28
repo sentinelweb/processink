@@ -1,5 +1,6 @@
 package speecher.generator
 
+import speecher.generator.bank.MovieBankContract
 import java.awt.Color
 import java.awt.Font
 import java.io.File
@@ -8,7 +9,9 @@ interface GeneratorContract {
 
     interface View {
         var presenter: Presenter
-        var active: Int
+
+        //var active: Int
+        var bankView: MovieBankContract.View?
         fun run()
         fun openMovie(i: Int, file: File)
 
@@ -20,11 +23,10 @@ interface GeneratorContract {
     }
 
     interface Presenter {
-        val subtitleToDisplay: String?
+        val subtitleToDisplay: String
         val selectedFontColor: Color?
         val selectedFont: Font?
 
         fun initialise()
-        fun onMovieEvent(index: Int, pos: Float)
     }
 }
