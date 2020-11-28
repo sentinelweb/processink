@@ -6,6 +6,7 @@ import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.ui.image.Image
 import speecher.ui.util.backgroundColor
+import speecher.ui.util.icon
 import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.Color
@@ -189,7 +190,7 @@ class SentenceListView(
             var anItem: JMenuItem
 
             init {
-                anItem = JMenuItem("Delete").style()
+                anItem = JMenuItem("Delete").icon("baseline_delete_black_18.png").style()
                 anItem.addActionListener { ae ->
                     presenter.onDelete(key)
                 }

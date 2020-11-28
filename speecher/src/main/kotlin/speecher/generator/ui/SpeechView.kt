@@ -375,54 +375,64 @@ class SpeechView constructor(
         val openMovieMenuItem = JMenuItem("Open Movie")
         openMovieMenuItem.mnemonic = KeyEvent.VK_M
         openMovieMenuItem.actionCommand = "Open"
+        openMovieMenuItem.icon("baseline_movie_black_18.png")
         openMovieMenuItem.addActionListener { presenter.openMovie() }
 
         val openReadSrtMenuItem = JMenuItem("Open SRT Words")
         openReadSrtMenuItem.mnemonic = KeyEvent.VK_W
         openReadSrtMenuItem.actionCommand = "Open"
+        openReadSrtMenuItem.icon("baseline_subtitles_black_18.png")
         openReadSrtMenuItem.addActionListener { presenter.openWords() }
 
-        val openSentencesMenuItem = JMenuItem("Opwn Sentences")
+        val openSentencesMenuItem = JMenuItem("Open Sentences")
         openSentencesMenuItem.mnemonic = KeyEvent.VK_O
-        openSentencesMenuItem.actionCommand = "Save"
+        openSentencesMenuItem.actionCommand = "Open Setences"
+        openSentencesMenuItem.icon("baseline_text_snippet_black_18.png")
         openSentencesMenuItem.addActionListener { presenter.openSentences() }
 
         val saveSentencesMenuItem = JMenuItem("Save Sentences")
         saveSentencesMenuItem.mnemonic = KeyEvent.VK_S
         saveSentencesMenuItem.actionCommand = "Save"
+        saveSentencesMenuItem.icon("baseline_save_black_18.png")
         saveSentencesMenuItem.addActionListener { presenter.saveSentences(false) }
 
         val saveSentencesAsMenuItem = JMenuItem("Save Sentences As ...")
         saveSentencesAsMenuItem.mnemonic = KeyEvent.VK_A
         saveSentencesAsMenuItem.actionCommand = "Save As"
+        saveSentencesAsMenuItem.icon("content-save-as_black_18.png")
         saveSentencesAsMenuItem.addActionListener { presenter.saveSentences(true) }
 
         val exitMenuItem = JMenuItem("Exit")
         exitMenuItem.mnemonic = KeyEvent.VK_X
         exitMenuItem.actionCommand = "Exit"
+        exitMenuItem.icon("baseline_exit_to_app_black_18.png")
         exitMenuItem.addActionListener { presenter.shutdown() }
 
         val cutMenuItem = JMenuItem("Cut")
         cutMenuItem.mnemonic = KeyEvent.VK_X
         cutMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK)
         cutMenuItem.actionCommand = "Cut"
+        cutMenuItem.icon("baseline_content_cut_black_18.png")
         cutMenuItem.addActionListener { presenter.cut() }
 
         val copyMenuItem = JMenuItem("Copy")
         copyMenuItem.mnemonic = KeyEvent.VK_C
         copyMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK)
         copyMenuItem.actionCommand = "Copy"
+        copyMenuItem.icon("baseline_content_copy_black_18.png")
         copyMenuItem.addActionListener { presenter.copy() }
 
         val pasteMenuItem = JMenuItem("Paste")
         pasteMenuItem.mnemonic = KeyEvent.VK_V
         pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
         pasteMenuItem.actionCommand = "Paste"
+        pasteMenuItem.icon("baseline_content_paste_black_18.png")
         pasteMenuItem.addActionListener { presenter.paste() }
 
         val showReadSrtMenuItem = JMenuItem("Show sentences")
         showReadSrtMenuItem.mnemonic = KeyEvent.VK_R
         showReadSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_DOWN_MASK)
+        showReadSrtMenuItem.icon("baseline_list_black_18.png")
         showReadSrtMenuItem.addActionListener { presenter.showSentences() }
 
         //add menu items to menus

@@ -3,6 +3,7 @@ package speecher.generator.ui
 import speecher.domain.Subtitles
 import speecher.generator.ui.SpeechContract.MetaKey.*
 import speecher.ui.util.backgroundColor
+import speecher.ui.util.icon
 import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.Color
@@ -85,7 +86,7 @@ class SubtitleChipView constructor(
         var anItem: JMenuItem
 
         init {
-            anItem = JMenuItem("Preview").style()
+            anItem = JMenuItem("Preview").icon("baseline_preview_black_18.png").style()
             anItem.addActionListener { ae ->
                 listner.onPreviewClicked(sub)
             }
