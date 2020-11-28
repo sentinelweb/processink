@@ -6,6 +6,10 @@ import java.io.File
 
 class MovieContract {
 
+    data class Config constructor(
+        var playEventLatency: Float? = 0.05f
+    )
+
     interface View {
         fun createMovie(file: File)
         fun render()
@@ -20,6 +24,7 @@ class MovieContract {
     }
 
     interface External {
+        var config: Config
         var listener: Listener?
         val position: Float
         val duration: Float
@@ -36,7 +41,7 @@ class MovieContract {
     }
 
     interface Parent {
-        val playEventLatency: Float?
+
     }
 
     interface Listener {

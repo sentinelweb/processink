@@ -12,7 +12,6 @@ import speecher.di.Modules
 import speecher.domain.Sentence
 import speecher.generator.bank.MovieBankContract
 import speecher.generator.bank.MovieBankPresenter
-import speecher.generator.bank.MovieBankState
 import speecher.generator.bank.MovieBankView
 import speecher.generator.movie.MovieContract
 import speecher.generator.ui.SpeechContract
@@ -41,7 +40,7 @@ class GeneratorPresenter constructor(
     private val speechUI: SpeechContract.External = get()
 
 
-    private var bank: MovieBankPresenter? = null
+    private var bank: MovieBankContract.External? = null
 
     override val subtitleToDisplay: String
         get() = bank?.subtitleToDisplay ?: "-"
@@ -49,8 +48,8 @@ class GeneratorPresenter constructor(
         get() = speechUI.selectedFontColor
     override val selectedFont: Font?
         get() = speechUI.selectedFont
-    override val playEventLatency: Float?
-        get() = speechUI.playEventLatency
+//    override val playEventLatency: Float?
+//        get() = speechUI.playEventLatency
 
     init {
         log.tag(this)
@@ -63,7 +62,7 @@ class GeneratorPresenter constructor(
 
     private fun makeBank() {
         view.bankView = MovieBankView().also { view ->
-            bank = MovieBankPresenter(MovieBankState(), view, 10).also { bank ->
+            bank = MovieBankPresenter(MovieBankContract.State(), view, 10).also { bank ->
                 bank.listener = object : MovieBankContract.Listener {
                     override fun onPlayFinished() {
                         speechUI.playing = false
@@ -84,7 +83,8 @@ class GeneratorPresenter constructor(
 
     // region SpeechContract.Listener
     override fun sentenceChanged(sentence: Sentence) {
-        bank?.words = sentence
+        state.words = sentence
+        bank?.apply { config = config.copy(words = sentence) }
     }
 
     override fun play() {
@@ -103,10 +103,6 @@ class GeneratorPresenter constructor(
         speechUI.playing = false
     }
 
-    override fun loop(l: Boolean) {
-        bank?.looping = l
-    }
-
     override fun updateFontColor() {
         view.updateFontColor()
     }
@@ -115,8 +111,15 @@ class GeneratorPresenter constructor(
         updateViewFont()
     }
 
-    override fun updateVolume() {
-        bank?.volume = speechUI.volume
+    override fun updateBank() {
+        bank?.apply {
+            config = config.copy(
+                volume = speechUI.volume,
+                looping = speechUI.looping,
+                playEventLatency = speechUI.playEventLatency ?: 0.05f,
+                words = state.words
+            )
+        }
     }
 
     override fun loadMovieFile(movie: File) {

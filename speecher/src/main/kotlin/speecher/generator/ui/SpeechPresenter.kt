@@ -92,7 +92,7 @@ class SpeechPresenter constructor(
         get() = state.volume
         set(value) {
             state.volume = value
-            listener.updateVolume()
+            listener.updateBank()
         }
 
     override var playEventLatency: Float?
@@ -325,7 +325,8 @@ class SpeechPresenter constructor(
     }
 
     override fun loop(selected: Boolean) {
-        listener.loop(selected)
+        looping = selected
+        listener.updateBank()
     }
 
     override fun initialise() {
@@ -501,7 +502,7 @@ class SpeechPresenter constructor(
                         listener.apply {
                             updateFont()
                             updateFontColor()
-                            updateVolume()
+                            updateBank()
                         }
                         updateWordList()
                         buildSentenceWithCursor()

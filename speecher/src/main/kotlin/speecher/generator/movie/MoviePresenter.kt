@@ -25,6 +25,8 @@ class MoviePresenter(
     private val processingScheduler: Scheduler = scope.get(named(SchedulerModule.PROCESSING))
     private val playerScheduler: Scheduler = scope.get(named(SchedulerModule.PLAYER))
 
+    override var config: MovieContract.Config = MovieContract.Config()
+
     override var listener: MovieContract.Listener? = null
     override var parent: MovieContract.Parent? = null
     override val position: Float
@@ -66,7 +68,7 @@ class MoviePresenter(
             }
 
         state.subtitle?.let {
-            if (it.fromSec + (parent?.playEventLatency ?: 0f) <= state.position ?: 0f && !state.onPlayEventCalled) {
+            if (it.fromSec + (config.playEventLatency ?: 0f) <= state.position ?: 0f && !state.onPlayEventCalled) {
                 listener?.onPlaying()
                 state.onPlayEventCalled = true
             }

@@ -1,9 +1,10 @@
 package speecher.generator
 
 import io.reactivex.disposables.CompositeDisposable
+import speecher.domain.Sentence
 
 data class GeneratorState constructor(
-//    var words: Sentence? = null,
+    var words: Sentence? = null,
 //    var loadingWord: Int = -1, // currently loading word
 //    var activeIndex: Int = -1,// currently playing player
 //    var playingWord: Int = -1,// currently playing word

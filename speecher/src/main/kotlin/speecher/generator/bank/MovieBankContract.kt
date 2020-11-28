@@ -7,17 +7,25 @@ import java.io.File
 
 interface MovieBankContract {
 
+    data class Config constructor(
+        val words: Sentence? = null,
+        val looping: Boolean = false,
+        val volume: Float = 1f,
+        val playEventLatency: Float = 0.05f
+    )
+
     interface Presenter {
         var listener: Listener?
-        var words: Sentence?
-        var looping: Boolean
-        var volume: Float
         val subtitleToDisplay: String
+        fun loadMovieFile(movie: File)
     }
 
     interface External {
+        val subtitleToDisplay: String
+        var config: Config
         fun pause()
         fun loadMovieFile(movie: File)
+        fun startPlaying()
     }
 
     interface Listener {
@@ -29,4 +37,12 @@ interface MovieBankContract {
         fun render()
         fun movieEvent(m: Movie)
     }
+
+    data class State constructor(
+        var words: Sentence? = null,
+        var loadingWord: Int = -1, // currently loading word
+        var activeIndex: Int = -1,// currently playing player
+        var playingWord: Int = -1,// currently playing word
+        var movieToWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf()
+    )
 }

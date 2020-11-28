@@ -81,10 +81,9 @@ interface SpeechContract {
         fun sentenceChanged(sentence: Sentence)
         fun play()
         fun pause()
-        fun loop(l: Boolean)
         fun updateFontColor()
         fun updateFont()
-        fun updateVolume()
+        fun updateBank()
         fun loadMovieFile(movie: File)
     }
 

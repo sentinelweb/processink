@@ -15,7 +15,7 @@ import java.io.File
 
 
 class MovieBankPresenter(
-    private val state: MovieBankState,
+    private val state: MovieBankContract.State,
     private val view: MovieBankContract.View,
     private val bankSize: Int
 ) : MovieBankContract.Presenter, MovieBankContract.External, MovieContract.Parent {
@@ -25,26 +25,35 @@ class MovieBankPresenter(
     private val swingScheduler: Scheduler = koin.get(named(SchedulerModule.SWING))
     private val log: LogWrapper = koin.get()
 
-    override val playEventLatency: Float? = 0.05f // todo link to
+    //override val playEventLatency: Float? = 0.05f // todo link to
 
     private val movies = mutableListOf<MovieContract.External>()
 
     override var listener: MovieBankContract.Listener? = null
-    override var words: Sentence?
-        get() = state.words
+
+    //    override var words: Sentence?
+//        get() = state.words
+//        set(value) {
+//            state.words = value
+//        }
+//    override var looping: Boolean
+//        get() = state.looping
+//        set(value) {
+//            state.looping = value
+//        }
+//    override var volume: Float
+//        get() = state.volume
+//        set(value) {
+//            state.volume = value
+//        }
+    override var config: MovieBankContract.Config = MovieBankContract.Config()
+        get() = field
         set(value) {
-            state.words = value
+            field = value
+            state.words = config.words
+            movies.forEach { it.config = it.config.copy(playEventLatency = value.playEventLatency) }
         }
-    override var looping: Boolean
-        get() = state.looping
-        set(value) {
-            state.looping = value
-        }
-    override var volume: Float
-        get() = state.volume
-        set(value) {
-            state.volume = value
-        }
+
     override val subtitleToDisplay: String
         get() = state.movieToWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
 
@@ -75,10 +84,10 @@ class MovieBankPresenter(
     }
 
     // region playback
-    fun startPlaying() {
+    override fun startPlaying() {
         log.startTime()
         movies.forEach {
-            it.volume(state.volume)
+            it.volume(config.volume)
         }
         state.loadingWord = 0
         state.activeIndex = 0
@@ -108,7 +117,7 @@ class MovieBankPresenter(
 
         state.movieToWordMap[state.activeIndex]?.let {
             //view.active = state.activeIndex
-            movies[state.activeIndex].volume(state.volume)
+            movies[state.activeIndex].volume(config.volume)
             movies[state.activeIndex].play()
             log.d("playing(${state.activeIndex}) - ${it.sub.text}")
         } ?: run {
@@ -134,7 +143,7 @@ class MovieBankPresenter(
 
     private fun incrementWordIndex() {
         state.loadingWord++
-        if (state.looping) {
+        if (config.looping) {
             state.loadingWord = state.loadingWord % (state.words?.words?.size ?: 0)
         }
     }
