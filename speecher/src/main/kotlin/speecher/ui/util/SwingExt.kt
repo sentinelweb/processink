@@ -114,3 +114,8 @@ inline fun <reified T : JTextComponent> T.style(size: Int = defaultTextSize, bol
 
 fun defaultFont(size: Int = defaultTextSize, bold: Boolean = false) =
     Font("Arial", if (bold) Font.BOLD else Font.PLAIN, size)
+
+inline fun <reified T : AbstractButton> T.icon(name: String): T {
+    apply { icon = ImageIcon(this::class.java.getResource("/images/$name")) }
+    return this
+}

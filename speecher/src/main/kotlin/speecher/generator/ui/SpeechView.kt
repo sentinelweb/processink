@@ -130,14 +130,26 @@ class SpeechView constructor(
                         //preferredSize = Dimension(1024, 40)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                         background = bgColor
-                        add(JButton("|<").style().setup { presenter.moveCursor(START) })
-                        add(JButton("<<").style().setup { presenter.moveCursor(LAST) })
-                        add(JButton(">>").style().setup { presenter.moveCursor(NEXT) })
-                        add(JButton(">|").style().setup { presenter.moveCursor(END) })
-                        add(JButton("<-").style().setup { presenter.backSpace() })
-                        add(JButton("DEL").style().setup { presenter.deleteWord() })
-                        add(JButton("New").style().setup { presenter.newSentence() })
-                        add(JButton("Commit").style().setup { presenter.commitSentence() })
+                        add(
+                            JButton().icon("baseline_first_page_black_18.png").style()
+                                .setup { presenter.moveCursor(START) })
+                        add(
+                            JButton().icon("baseline_arrow_back_black_18.png").style()
+                                .setup { presenter.moveCursor(LAST) })
+                        add(
+                            JButton().icon("baseline_arrow_forward_black_18.png").style()
+                                .setup { presenter.moveCursor(NEXT) })
+                        add(
+                            JButton().icon("baseline_last_page_black_18.png").style()
+                                .setup { presenter.moveCursor(END) })
+                        add(JButton().icon("baseline_sort_black_18.png").style().setup { presenter.backSpace() })
+                        add(
+                            JButton().icon("baseline_cancel_presentation_black_18.png").style()
+                                .setup { presenter.deleteWord() })
+                        add(JButton().icon("baseline_fiber_new_black_18.png").style().setup { presenter.newSentence() })
+                        add(
+                            JButton().icon("baseline_save_alt_black_18.png").style()
+                                .setup { presenter.commitSentence() })
                         sentenceIdText = JTextField("")
                             .style()
                             .apply {
@@ -176,23 +188,27 @@ class SpeechView constructor(
                             playCtnr = JPanel().apply {
                                 layout = CardLayout()
                                 background = bgColor
-                                playButton = JButton(">")
+                                playButton = JButton()
+                                    .icon("baseline_play_arrow_black_18.png")
                                     .style()
                                     .setup { presenter.play() }
                                     .also { add(it, PLAY_BUT) }
 
-                                pauseButton = JButton("||")
+                                pauseButton = JButton()
+                                    .icon("baseline_pause_black_18.png")
                                     .style()
                                     .setup { presenter.pause() }
                                     .also { add(it, PAUSE_BUT) }
 
                             }.also { add(it) }
-                            loopButton = JToggleButton("<->")
+                            loopButton = JToggleButton()
+                                .icon("baseline_loop_black_18.png")
                                 .style()
                                 .setup { ae -> presenter.loop(isSelected(ae)) }
                                 .also { add(it) }
 
-                            fontButton = JButton("Font")
+                            fontButton = JButton()
+                                .icon("baseline_font_download_black_18.png")
                                 .style()
                                 .apply { preferredSize = Dimension(40, 40) }.setup { ae ->
                                     val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
@@ -206,7 +222,8 @@ class SpeechView constructor(
                                 }
                                 .also { add(it) }
 
-                            fontColorButton = JButton("FC")
+                            fontColorButton = JButton()
+                                .icon("baseline_format_color_fill_black_18.png")
                                 .style()
                                 .apply { preferredSize = Dimension(40, 40) }
                                 .setup { ae ->
@@ -274,14 +291,14 @@ class SpeechView constructor(
                 titledBorder("SUBTITLES")
 
                 JPanel().apply {
-                    preferredSize = Dimension(1024, 30)
+                    preferredSize = Dimension(1024, 36)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                     background = bgColor
                     searchText = JTextField("")
                         .style()
                         .apply {
                             toolTipText = "search"
-                            preferredSize = Dimension(80, 30)
+                            preferredSize = Dimension(80, 24)
                             background = bgColor
                             document.addDocumentListener(TextAreaListener {
                                 presenter.searchText(it)
@@ -290,16 +307,25 @@ class SpeechView constructor(
                         .also { add(it) }
                     JPanel().apply {
                         background = bgColor
-                        sortNatural = JToggleButton("Natural")
+                        sortNatural = JToggleButton()
+                            .icon("baseline_sort_black_18.png")
                             .setup { deselectOthersAction(it);presenter.sortOrder(NATURAL) }
                             .style()
                             .also { add(it) }
-                        sortAZ = JToggleButton("A-Z")
+                        sortAZ = JToggleButton()
+                            .icon("baseline_sort_by_alpha_black_18.png")
                             .setup { deselectOthersAction(it);presenter.sortOrder(A_Z) }
                             .style()
                             .also { add(it) }
-                        sortZA = JToggleButton("Z-A")
+                        sortZA = JToggleButton()
+                            .icon("baseline_sort_by_alpha_rev_black_18.png")
                             .setup { deselectOthersAction(it);presenter.sortOrder(Z_A) }
+                            .style()
+                            .also { add(it) }
+
+                        JButton()
+                            .icon("baseline_refresh_black_18.png")
+                            .setup { presenter.reloadWords() }
                             .style()
                             .also { add(it) }
                     }

@@ -131,6 +131,14 @@ class SpeechPresenter constructor(
         }
     }
 
+    override fun reloadWords() {
+        state.srtWordFile?.apply { setWordsFile(this) }
+            ?: run {
+                setStatus("No srt loaded ... choose one?")
+                openWords()
+            }
+    }
+
     override fun deleteWord() {
         if (state.cursorPos < state.wordSentence.size) {
             state.wordSentence = state.wordSentence.toMutableList().apply { removeAt(state.cursorPos) }

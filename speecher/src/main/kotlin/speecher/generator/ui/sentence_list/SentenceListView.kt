@@ -4,6 +4,7 @@ import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.ui.image.Image
 import speecher.ui.util.backgroundColor
 import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
@@ -198,7 +199,14 @@ class SentenceListView(
     }
 
     override fun showDeleteConfirm(msg: String, confirm: () -> Unit) {
-        val res = JOptionPane.showConfirmDialog(null, msg, "Confirm delete ...", JOptionPane.YES_NO_OPTION)
+        val res = JOptionPane.showConfirmDialog(
+            null,
+            msg,
+            "Confirm delete ...",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            Image("baseline_delete_black_18.png")
+        )
         if (res == JOptionPane.OK_OPTION) {
             confirm()
         }

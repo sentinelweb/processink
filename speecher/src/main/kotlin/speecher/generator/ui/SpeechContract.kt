@@ -58,6 +58,7 @@ interface SpeechContract {
         fun commitSentence()
         fun backSpace()
         fun sentenceId(text: String)
+        fun reloadWords()
     }
 
     interface External {
