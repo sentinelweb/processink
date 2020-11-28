@@ -20,12 +20,30 @@ class SubListPresenter : SubListContract.Presenter, SubListContract.External {
             listener.onItemSelected(sub, index)
         }
     }
+
+    override fun searchText(text: String) {
+        state.searchText = text
+        buildList()
+    }
     // endregion
 
     // region SubListContract.External
     override fun setList(subs: Subtitles) {
         state.subtitles = subs
-        view.buildList(subs)
+        buildList()
+    }
+
+    private fun buildList() {
+        state.subtitlesDisplay = state.subtitles?.timedTexts
+            ?.mapIndexed { i, sub -> i to sub }
+            ?.filter { (_, v) ->
+                state.searchText
+                    ?.let { st -> v.text.any { it.contains(st) } }
+                    ?: true
+            }
+            ?.toMap()
+            ?: mapOf()
+        state.subtitlesDisplay.let { view.buildList(it) }
     }
 
     override fun showWindow(x: Int, y: Int) {

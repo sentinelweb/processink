@@ -2,10 +2,10 @@ package speecher.generator.ui
 
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
-import speecher.editor.util.backgroundColor
-import speecher.editor.util.setup
-import speecher.editor.util.style
 import speecher.generator.ui.SpeechContract.WordParamType.*
+import speecher.ui.util.backgroundColor
+import speecher.ui.util.setup
+import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.*
 import java.awt.event.ActionEvent

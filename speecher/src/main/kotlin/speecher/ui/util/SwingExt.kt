@@ -1,4 +1,4 @@
-package speecher.editor.util
+package speecher.ui.util
 
 import java.awt.Color
 import java.awt.Dimension

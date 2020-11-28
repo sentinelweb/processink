@@ -5,9 +5,9 @@ import speecher.di.Modules
 import speecher.domain.Subtitles
 import speecher.editor.subedit.word_timeline.WordTimelineContract
 import speecher.editor.subedit.word_timeline.WordTimelineView
-import speecher.editor.util.*
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.ui.multithumbslider.MultiThumbSlider
+import speecher.ui.util.*
 import java.awt.*
 import javax.swing.*
 import javax.swing.BoxLayout.PAGE_AXIS

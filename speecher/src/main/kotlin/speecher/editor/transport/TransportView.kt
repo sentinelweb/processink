@@ -8,7 +8,7 @@ import speecher.di.Modules
 import speecher.editor.transport.TransportContract.*
 import speecher.editor.transport.TransportContract.UiDataType.*
 import speecher.editor.transport.TransportContract.UiEventType.*
-import speecher.editor.util.*
+import speecher.ui.util.*
 import java.awt.*
 import java.awt.event.*
 import javax.swing.*

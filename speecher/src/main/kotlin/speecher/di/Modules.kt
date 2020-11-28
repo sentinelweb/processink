@@ -33,6 +33,7 @@ object Modules {
     private val scopedModules = listOf(
         EditorView.viewModule,
         SentenceListPresenter.scope,
+        SubListPresenter.scope,
         TransportPresenter.scope,
         SubEditPresenter.scope,
         WordTimelineView.scope

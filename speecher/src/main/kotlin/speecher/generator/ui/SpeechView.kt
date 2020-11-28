@@ -3,10 +3,11 @@ package speecher.generator.ui
 import org.drjekyll.fontchooser.FontDialog
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
-import speecher.editor.util.*
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
 import speecher.ui.layout.wrap.WrapLayout
+import speecher.ui.listener.TextAreaListener
+import speecher.ui.util.*
 import speecher.util.format.TimeFormatter
 import java.awt.*
 import java.awt.event.KeyEvent
@@ -282,19 +283,8 @@ class SpeechView constructor(
                             toolTipText = "search"
                             preferredSize = Dimension(80, 30)
                             background = bgColor
-                            document.addDocumentListener(object : DocumentListener {
-                                override fun insertUpdate(e: DocumentEvent) {
-                                    presenter.searchText(e.document.getText(0, e.document.length))
-                                }
-
-                                override fun removeUpdate(e: DocumentEvent) {
-                                    presenter.searchText(e.document.getText(0, e.document.length))
-                                }
-
-                                override fun changedUpdate(e: DocumentEvent) {
-                                    presenter.searchText(e.document.getText(0, e.document.length))
-                                }
-
+                            document.addDocumentListener(TextAreaListener {
+                                presenter.searchText(it)
                             })
                         }
                         .also { add(it) }

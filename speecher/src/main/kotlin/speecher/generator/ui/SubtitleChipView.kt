@@ -1,9 +1,9 @@
 package speecher.generator.ui
 
 import speecher.domain.Subtitles
-import speecher.editor.util.backgroundColor
-import speecher.editor.util.style
 import speecher.generator.ui.SpeechContract.MetaKey.*
+import speecher.ui.util.backgroundColor
+import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.Color
 import java.awt.GridLayout

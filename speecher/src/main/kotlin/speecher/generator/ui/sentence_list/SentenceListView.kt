@@ -4,8 +4,8 @@ import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
-import speecher.editor.util.backgroundColor
-import speecher.editor.util.style
+import speecher.ui.util.backgroundColor
+import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
 import java.awt.Color
 import java.awt.Dimension

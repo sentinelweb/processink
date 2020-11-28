@@ -6,6 +6,7 @@ interface SubListContract {
 
     interface Presenter {
         fun onItemClicked(index: Int)
+        fun searchText(text: String)
     }
 
     interface External {
@@ -22,9 +23,11 @@ interface SubListContract {
 
     interface View {
         fun setTitle(title: String)
-        fun buildList(subs: Subtitles) // should be a model
+
+        //fun buildList(subs: Subtitles) // should be a model
         fun showWindow(x: Int, y: Int)
         fun setSelected(index: Int)
         fun clearSelected(index: Int)
+        fun buildList(subs: Map<Int, Subtitles.Subtitle>)
     }
 }

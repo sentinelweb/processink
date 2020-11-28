@@ -3,9 +3,11 @@ package speecher.editor.sublist
 import org.koin.core.context.startKoin
 import speecher.di.Modules
 import speecher.domain.Subtitles
-import speecher.editor.util.backgroundColor
-import speecher.editor.util.style
+import speecher.ui.listener.TextAreaListener
+import speecher.ui.util.backgroundColor
+import speecher.ui.util.style
 import speecher.util.format.TimeFormatter
+import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -81,39 +83,47 @@ class SubListView(
         }
     }
 
+    override fun buildList(subs: Map<Int, Subtitles.Subtitle>) {
+        SwingUtilities.invokeLater {
+            listPanel.removeAll()
+            subs.keys.forEach { key ->
+                subs[key]?.let { listPanel.add(SubListItem(key, it)) }
+            }
+            if (subs.size < 5) {
+                (subs.size..5).forEach { listPanel.add(JPanel()) }
+            }
+            frame.rootPane.updateUI()
+        }
+    }
+
     override fun setTitle(title: String) {
         SwingUtilities.invokeLater {
             frame.title = title
         }
     }
 
-    // todo a model should be passed here
-    override fun buildList(subs: Subtitles) {
-        SwingUtilities.invokeLater {
-            listPanel.removeAll()
-            subs.timedTexts.forEachIndexed { index, item ->
-                listPanel.add(SubListItem(index, item))
-            }
-            frame.rootPane.updateUI()
-        }
-    }
 
     inner class SubListPanel : JPanel() {
         init {
             preferredSize = Dimension(300, 650)
-            layout = GridLayout(1, 1)
+            layout = BorderLayout()
             listPanel = JPanel().apply {
                 layout = GridLayout(-1, 1)
                 background = bgColor
-                //add(JLabel("init"))
             }
-            add(
-                JScrollPane(listPanel).apply {
-                    layout = ScrollPaneLayout()
-                    verticalScrollBar.unitIncrement = 32
-                    background = bgColor
-                }
-            )
+            JScrollPane(listPanel).apply {
+                layout = ScrollPaneLayout()
+                verticalScrollBar.unitIncrement = 32
+                background = bgColor
+            }.also { add(it, BorderLayout.CENTER) }
+            JTextField().style().apply {
+                toolTipText = "search"
+                preferredSize = Dimension(80, 30)
+                background = bgColor
+                document.addDocumentListener(TextAreaListener {
+                    presenter.searchText(it)
+                })
+            }.also { add(it, BorderLayout.NORTH) }
         }
     }
 

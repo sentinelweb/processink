@@ -3,8 +3,8 @@ package speecher.editor.subedit.word_timeline
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.ext.getOrCreateScope
-import speecher.editor.util.backgroundColor
-import speecher.editor.util.defaultFont
+import speecher.ui.util.backgroundColor
+import speecher.ui.util.defaultFont
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Rectangle
