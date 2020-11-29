@@ -51,7 +51,7 @@ dependencies {
     // higher jna versions have abstract Structure.getFieldOrder which gstreamer doesn't implement
     implementation "net.java.dev.jna:jna:$jna_version"
 
-    implementation "com.illposed.osc:javaosc:$ver_osc"
+    implementation "com.illposed.osc:javaosc-core:$ver_osc"
 
     // https://gitlab.com/dheid/fontchooser
     implementation "org.drjekyll:fontchooser:$ver_fontchooser"

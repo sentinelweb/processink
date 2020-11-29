@@ -98,6 +98,10 @@ class SpeechView constructor(
         speechPanel.previewButton.isSelected = value
     }
 
+    override fun setOscReceiving(value: Boolean) {
+        speechPanel.oscReceiveButton.isSelected = value
+    }
+
     inner class SpeechPanel : JPanel() {
 
         val sentencePanel: JPanel
@@ -112,6 +116,7 @@ class SpeechView constructor(
         val sentenceIdText: JTextField
         val statusBar: JLabel
         val previewButton: JToggleButton
+        val oscReceiveButton: JToggleButton
 
         private val playButton: JButton
         private val pauseButton: JButton
@@ -186,6 +191,12 @@ class SpeechView constructor(
                             .icon("baseline_preview_black_18.png")
                             .style()
                             .setup { presenter.stopPreview() }
+                            .also { add(it) }
+
+                        oscReceiveButton = JToggleButton()
+                            .icon("baseline_settings_ethernet_black_18.png")
+                            .style()
+                            .setup { presenter.toggleOscReceive() }
                             .also { add(it) }
 
                         sentenceIdText = JTextField("")

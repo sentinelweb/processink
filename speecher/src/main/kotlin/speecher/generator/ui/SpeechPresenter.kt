@@ -95,7 +95,6 @@ class SpeechPresenter constructor(
             listener.updateBank()
         }
     override var previewing: Boolean = false
-        get() = field
         set(value) {
             field = value
             view.showPreviewing(value)
@@ -106,6 +105,13 @@ class SpeechPresenter constructor(
         set(value) {
             state.playEventLatency = value
             log.d(" = $value s")
+        }
+
+    override var oscReceiver: Boolean = false
+        set(value) {
+            field = value
+            view.setOscReceiving(value)
+            log.d("OscReceiving = $value s")
         }
 
     override fun moveCursor(op: SpeechContract.CursorPosition) {
@@ -354,11 +360,21 @@ class SpeechPresenter constructor(
             .doOnSuccess {
                 it.writeText(speechStateMapper.serializeSpeechState(state))
             }
+            .subscribeOn(Schedulers.io())
+            .doOnSuccess {
+                listener.onShutdown()
+            }
+            .subscribeOn(Schedulers.computation())
+            .observeOn(swingScheduler)
             .subscribe({
                 log.d("saved state")
                 System.exit(0)
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
+    }
+
+    override fun toggleOscReceive() {
+        listener.onOscReceiveToggled()
     }
 
     override fun setStatus(status: String) {

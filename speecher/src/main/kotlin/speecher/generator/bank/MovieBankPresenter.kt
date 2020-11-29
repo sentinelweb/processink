@@ -26,6 +26,9 @@ class MovieBankPresenter(
     private val log: LogWrapper = koin.get()
     private val movieCreator: MovieCreator = koin.get()
 
+    init {
+        log.tag(this)
+    }
     //override val playEventLatency: Float? = 0.05f // todo link to
 
     private val movies = mutableListOf<MovieContract.External>()

@@ -59,7 +59,7 @@ class GeneratorView constructor(
     }
 
     override fun cleanup() {
-        TODO("Not yet implemented")
+
     }
 
     override fun setPreview(view: MovieContract.View) {

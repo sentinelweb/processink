@@ -30,7 +30,7 @@ class MoviePresenterTest : KoinComponent {
     fun setUp() {
         startKoin {
             modules(
-                MoviePresenter.scopeModule,
+                MovieCreator.scopeModule,
                 SchedulerModule.module,
                 TestPApplet.appletModule
             )

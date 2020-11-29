@@ -30,6 +30,7 @@ interface SpeechContract {
         fun setSentenceId(currentSentenceId: String?)
         fun clearFocus()
         fun showPreviewing(value: Boolean)
+        fun setOscReceiving(value: Boolean)
     }
 
     interface Presenter {
@@ -61,6 +62,7 @@ interface SpeechContract {
         fun sentenceId(text: String)
         fun reloadWords()
         fun stopPreview()
+        fun toggleOscReceive()
     }
 
     interface External {
@@ -68,10 +70,11 @@ interface SpeechContract {
         var playing: Boolean
         var looping: Boolean
         var listener: Listener
-        var selectedFontColor: Color?
-        var selectedFont: Font?
-        var volume: Float
-        var previewing: Boolean
+        val selectedFontColor: Color?
+        val selectedFont: Font?
+        val volume: Float
+        val previewing: Boolean
+        var oscReceiver: Boolean
 
         fun setWordsFile(file: File)
         fun showWindow()
@@ -89,6 +92,8 @@ interface SpeechContract {
         fun updateBank()
         fun loadMovieFile(movie: File)
         fun preview(word: Sentence.Word?)
+        fun onOscReceiveToggled()
+        fun onShutdown()
     }
 
     interface WordListener {

@@ -2,7 +2,6 @@ package speecher.generator
 
 import io.reactivex.Scheduler
 import org.koin.core.KoinComponent
-import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.context.startKoin
 import org.koin.core.get
 import org.koin.core.qualifier.named
@@ -15,6 +14,7 @@ import speecher.generator.bank.MovieBankContract
 import speecher.generator.bank.MovieBankCreator
 import speecher.generator.movie.MovieContract
 import speecher.generator.movie.MovieCreator
+import speecher.generator.osc.OscContract
 import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
@@ -28,12 +28,10 @@ fun main() {
     startKoin {
         modules(Modules.allModules)
     }
-    GeneratorPresenter(get().get())
+    GeneratorPresenter()
 }
 
-class GeneratorPresenter constructor(
-    private val log: LogWrapper
-) : GeneratorContract.Presenter,
+class GeneratorPresenter : GeneratorContract.Presenter,
     SpeechContract.Listener,
     KoinComponent,
     MovieBankContract.Listener {
@@ -43,8 +41,10 @@ class GeneratorPresenter constructor(
     private val pScheduler: Scheduler = get(named(PROCESSING))
     private val swingScheduler: Scheduler = get(named(SWING))
     private val speechUI: SpeechContract.External = get()
-    private val bankCreator: MovieBankCreator = MovieBankCreator()// todo inject
+    private val bankCreator: MovieBankCreator = get()
     private val movieCreator: MovieCreator = get()
+    private val log: LogWrapper = get()
+    private val oscController: OscContract.Controler = get()
 
     private var bank: MovieBankContract.External? = null
     private var preview: MovieContract.External? = null
@@ -164,6 +164,17 @@ class GeneratorPresenter constructor(
         }
     }
 
+    override fun onOscReceiveToggled() {
+        if (speechUI.oscReceiver) {
+            oscController.shutdown()
+            speechUI.oscReceiver = false
+        } else {
+            oscController.initialise()
+            speechUI.oscReceiver = true
+
+        }
+    }
+
     override fun updateFontColor() {
         view.updateFontColor()
     }
@@ -174,6 +185,17 @@ class GeneratorPresenter constructor(
 
     private fun updateViewFont() {
         view.setFont(selectedFont?.fontName ?: "Thonburi", selectedFont?.size?.toFloat() ?: 24f)
+    }
+
+    override fun onShutdown() {
+        try {
+            bank?.cleanup()
+            preview?.cleanup()
+            oscController.shutdown()
+            view.cleanup()
+        } catch (t: Throwable) {
+            log.e("onShutdown", t)
+        }
     }
 
     // endregion

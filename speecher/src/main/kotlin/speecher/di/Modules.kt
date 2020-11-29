@@ -12,6 +12,7 @@ import speecher.editor.transport.TransportPresenter
 import speecher.generator.GeneratorPresenter
 import speecher.generator.bank.MovieBankCreator
 import speecher.generator.movie.MovieCreator
+import speecher.generator.osc.OscContract
 import speecher.generator.ui.SpeechContract
 import speecher.generator.ui.SpeechPresenter
 import speecher.generator.ui.sentence_list.SentenceListContract
@@ -52,11 +53,10 @@ object Modules {
         GeneratorPresenter.module,
         SpeechPresenter.scope,
         SentenceListPresenter.scope,
+        OscContract.scopeModule,
         module {
-            factory {
-                MovieBankCreator()
-                MovieCreator()
-            }
+            factory { MovieBankCreator() }
+            factory { MovieCreator() }
         }
     )
 

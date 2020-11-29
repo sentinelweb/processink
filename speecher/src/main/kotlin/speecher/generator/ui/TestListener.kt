@@ -44,4 +44,13 @@ class TestListener constructor(private val p: SpeechPresenter) : SpeechContract.
     override fun preview(word: Sentence.Word?) {
         log.d("preview = $word")
     }
+
+    override fun onOscReceiveToggled() {
+        p.oscReceiver = !p.oscReceiver
+        log.d("oscreceive = ${p.oscReceiver}")
+    }
+
+    override fun onShutdown() {
+        log.d("onShutdown()")
+    }
 }
