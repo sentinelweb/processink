@@ -1,5 +1,6 @@
 package speecher.ui.util
 
+import speecher.ui.image.Image
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
@@ -56,7 +57,7 @@ fun JPanel.titledBorder(title: String, padding: Int = 10): JPanel {
     return this
 }
 
-fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
+fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80, iconName: String? = null): JPanel =
     JPanel().apply {
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         background = backgroundColor
@@ -64,6 +65,7 @@ fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80): JPanel =
             preferredSize = Dimension(labelWidth, 20)
             border = EmptyBorder(0, 0, 0, 10)
             background = backgroundColor
+            iconName?.let { icon = Image(it) }
         })
         add(this@wrapWithLabel)
         return this
@@ -116,6 +118,11 @@ fun defaultFont(size: Int = defaultTextSize, bold: Boolean = false) =
     Font("Arial", if (bold) Font.BOLD else Font.PLAIN, size)
 
 inline fun <reified T : AbstractButton> T.icon(name: String): T {
+    apply { icon = ImageIcon(this::class.java.getResource("/images/$name")) }
+    return this
+}
+
+fun JLabel.icon(name: String): JLabel {
     apply { icon = ImageIcon(this::class.java.getResource("/images/$name")) }
     return this
 }

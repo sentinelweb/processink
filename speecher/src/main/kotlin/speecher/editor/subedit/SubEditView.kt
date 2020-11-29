@@ -110,9 +110,19 @@ class SubEditView constructor(
                 JPanel().apply {
                     layout = FlowLayout(FlowLayout.RIGHT)
                     background = bgColor
-                    JButton("Write").style().setup { presenter.onWrite() }.let { add(it); it }
-                    saveButton = JButton("Save").style().setup { presenter.onSave(false) }.let { add(it); it }
-                    saveNextButton = JButton("Save/Next").style().setup { presenter.onSave(true) }.let { add(it); it }
+                    JButton("Write")
+                        .icon("baseline_save_black_18.png").style()
+                        .setup { presenter.onWrite() }.let { add(it); it }
+                    saveButton = JButton("Save")
+                        .icon("baseline_save_alt_black_18.png")
+                        .style()
+                        .setup { presenter.onSave(false) }
+                        .also { add(it) }
+                    saveNextButton = JButton("Save/Next >>")
+                        .icon("baseline_save_alt_black_18.png")
+                        .style()
+                        .setup { presenter.onSave(true) }
+                        .also { add(it) }
                 }.also { add(it) }
             })
         }

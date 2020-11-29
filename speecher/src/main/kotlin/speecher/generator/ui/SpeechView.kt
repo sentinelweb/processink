@@ -135,46 +135,55 @@ class SpeechView constructor(
                         //preferredSize = Dimension(1024, 40)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                         background = bgColor
-                        JButton().icon("baseline_first_page_black_18.png")
+                        JButton()
+                            .icon("baseline_first_page_black_18.png")
                             .style()
                             .setup { presenter.moveCursor(START) }
                             .also { add(it) }
 
-                        JButton().icon("baseline_arrow_back_black_18.png")
+                        JButton()
+                            .icon("baseline_arrow_back_black_18.png")
                             .style()
                             .setup { presenter.moveCursor(LAST) }
                             .also { add(it) }
 
-                        JButton().icon("baseline_arrow_forward_black_18.png")
+                        JButton()
+                            .icon("baseline_arrow_forward_black_18.png")
                             .style()
                             .setup { presenter.moveCursor(NEXT) }
                             .also { add(it) }
 
-                        JButton().icon("baseline_last_page_black_18.png")
+                        JButton()
+                            .icon("baseline_last_page_black_18.png")
                             .style()
                             .setup { presenter.moveCursor(END) }
                             .also { add(it) }
 
-                        JButton().icon("baseline_sort_black_18.png")
+                        JButton()
+                            .icon("baseline_sort_black_18.png")
                             .style()
                             .setup { presenter.backSpace() }
                             .also { add(it) }
 
-                        JButton().icon("baseline_cancel_presentation_black_18.png")
+                        JButton()
+                            .icon("baseline_cancel_presentation_black_18.png")
                             .style()
                             .setup { presenter.deleteWord() }.also { add(it) }
 
-                        JButton().icon("baseline_fiber_new_black_18.png")
+                        JButton()
+                            .icon("baseline_fiber_new_black_18.png")
                             .style()
                             .setup { presenter.newSentence() }
                             .also { add(it) }
 
-                        JButton().icon("baseline_save_alt_black_18.png")
+                        JButton()
+                            .icon("baseline_save_alt_black_18.png")
                             .style()
                             .setup { presenter.commitSentence() }
                             .also { add(it) }
 
-                        previewButton = JToggleButton("X").icon("baseline_preview_black_18.png")
+                        previewButton = JToggleButton("X")
+                            .icon("baseline_preview_black_18.png")
                             .style()
                             .setup { presenter.stopPreview() }
                             .also { add(it) }

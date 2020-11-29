@@ -151,24 +151,40 @@ class TransportView(
                     preferredSize = Dimension(900, 80)
                     layout = BoxLayout(this, BoxLayout.LINE_AXIS)
                     background = bgColor
+                    JButton()
+                        .style()
+                        .icon("baseline_fast_rewind_black_18.png")
+                        .setup { events.onNext(UiEvent(REW)) }
+                        .also { add(it) }
                     //add(JButton("|<").setup { events.onNext(UiEvent(LAST)) })
-                    add(JButton("<<").setup { events.onNext(UiEvent(REW)) })
-                    playButton = JButton(">").style()
+                    playButton = JButton()
+                        .style()
+                        .icon("baseline_play_arrow_black_18.png")
                         .setup { events.onNext(UiEvent(PLAY)) }
-                        .let { add(it); it }
-                    pauseButton = JButton("||").style()
+                        .also { add(it) }
+                    pauseButton = JButton()
+                        .style()
+                        .icon("baseline_pause_black_18.png")
                         .setup { events.onNext(UiEvent(PAUSE)) }
-                        .let { add(it); it }
-                        .let { it.isVisible = false; it }
-                    add(JButton(">>").style().setup { events.onNext(UiEvent(FWD)) })
+                        .also { add(it) }
+                        .also { it.isVisible = false }
+                    JButton()
+                        .style()
+                        .icon("baseline_fast_forward_black_18.png")
+                        .setup { events.onNext(UiEvent(FWD)) }
+                        .also { add(it) }
                     //add(JButton(">|").setup { events.onNext(UiEvent(NEXT)) })
 
-                    loopButton = JToggleButton("loop").style()
+                    loopButton = JToggleButton("loop")
+                        .style()
+                        .icon("baseline_loop_black_18.png")
                         .setup { events.onNext(UiEvent(UiEventType.LOOP, isSelected(it))) }
-                        .let { add(it); it }
+                        .also { add(it) }
 
-                    speedLabel = JLabel("x 1").style()
-                        .let { add(it); it }
+                    speedLabel = JLabel("x 1")
+                        .style()
+                        .icon("baseline_speed_black_18.png")
+                        .also { add(it) }
                 })
 
                 positionSlider = JSlider(0, 1E6.toInt())
@@ -187,56 +203,75 @@ class TransportView(
                             positionSliderDragValue = null
                         }
                     }
-                    .let { add(it.wrapWithLabel("Position")); it }
+                    .also { add(it.wrapWithLabel("Position")) }
 
                 add(JPanel().apply {
                     preferredSize = Dimension(900, 80)
                     layout = BorderLayout()
                     background = bgColor
-                    positionLabel = JLabel("00:00:00.000").style()
-                        .let { add(it, BorderLayout.WEST); it }
-                    durationLabel = JLabel("00:00:00.000").style()
-                        .let { add(it, BorderLayout.EAST); it }
+                    positionLabel = JLabel("00:00:00.000")
+                        .style()
+                        .also { add(it, BorderLayout.WEST) }
+                    durationLabel = JLabel("00:00:00.000")
+                        .style()
+                        .also { add(it, BorderLayout.EAST) }
                 })
-                titleMovieLabel = JLabel("Title").style()
-                    .let { add(it.wrapWithLabel("Movie")); it }
+                titleMovieLabel = JLabel("Title")
+                    .style()
+                    .also { add(it.wrapWithLabel("Movie", iconName = "baseline_movie_black_18.png")) }
 
-                titleSrtReadLabel = JLabel("Read SRT").style()
-                    .let { add(it.wrapWithLabel("Read SRT")); it }
+                titleSrtReadLabel = JLabel("Read SRT")
+                    .style()
+                    .also { add(it.wrapWithLabel("Read SRT", iconName = "baseline_subtitles_black_18.png")) }
 
-                titleSrtWriteLabel = JLabel("Write SRT").style()
-                    .let { add(it.wrapWithLabel("Write SRT")); it }
+                titleSrtWriteLabel = JLabel("Write SRT")
+                    .style()
+                    .also { add(it.wrapWithLabel("Write SRT", iconName = "baseline_subtitles_black_18.png")) }
 
             }, BorderLayout.CENTER)
 
-            add(JPanel().apply {
+            JPanel().apply {
                 layout = BorderLayout()
                 titledBorder("VOLUME")
-
-                volumeSlider = JSlider(JSlider.VERTICAL, 0, 100, 100)
-                    .setup(null, -1, -1, false) {
-                        val source = it.source as JSlider
-                        source.orientation = JSlider.VERTICAL
-                        source.preferredSize = Dimension(20, 200)
-                        events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
-                    }.let { add(it, BorderLayout.CENTER); it }
-
-                muteButton = JToggleButton("Mute").style()
-                    .setup { events.onNext(UiEvent(MUTE, isSelected(it))) }
-                    .let { add(it, BorderLayout.SOUTH); it }
-
-            }, BorderLayout.EAST)
-
-            statusBar = JLabel().style().let {
-                it.preferredSize = Dimension(1024, 30)
                 background = bgColor
-                it.border = CompoundBorder(
-                    BevelBorder(BevelBorder.RAISED, Color.decode("#cccccc"), Color.decode("#888888")),
-                    EmptyBorder(5, 5, 5, 5)
-                )
-                it.foreground = Color.RED
-                add(it, BorderLayout.SOUTH); it
-            }
+                JPanel().apply {
+                    layout = GridLayout(1, -1)
+                    background = bgColor
+                    volumeSlider = JSlider(JSlider.VERTICAL, 0, 100, 100)
+                        .setup(null, -1, -1, false) {
+                            val source = it.source as JSlider
+                            source.preferredSize = Dimension(20, 200)
+                            events.onNext(UiEvent(VOLUME_CHANGED, source.value.toFloat() / source.maximum))
+                        }.also { add(it);it.orientation = JSlider.VERTICAL }
+                    JPanel().apply {
+                        layout = BorderLayout()
+                        background = bgColor
+
+                        JLabel().icon("baseline_volume_up_black_18.png").also { add(it, BorderLayout.NORTH) }
+                        JLabel().icon("baseline_volume_down_black_18.png").also { add(it, BorderLayout.SOUTH) }
+                    }.also { add(it) }
+                }.also { add(it, BorderLayout.CENTER); }
+
+                muteButton = JToggleButton("Mute")
+                    .style()
+                    .icon("baseline_volume_off_black_18.png")
+                    .setup { events.onNext(UiEvent(MUTE, isSelected(it))) }
+                    .also { add(it, BorderLayout.SOUTH) }
+
+            }.also { add(it, BorderLayout.EAST) }
+
+            statusBar = JLabel()
+                .style()
+                .also {
+                    it.preferredSize = Dimension(1024, 30)
+                    background = bgColor
+                    it.border = CompoundBorder(
+                        BevelBorder(BevelBorder.RAISED, Color.decode("#cccccc"), Color.decode("#888888")),
+                        EmptyBorder(5, 5, 5, 5)
+                    )
+                    it.foreground = Color.RED
+                    add(it, BorderLayout.SOUTH)
+                }
         }
 
     }
@@ -257,57 +292,70 @@ class TransportView(
         //create menu items
         val openMovieMenuItem = JMenuItem("Open Movie")
         openMovieMenuItem.mnemonic = KeyEvent.VK_M
+        openMovieMenuItem.icon("baseline_movie_black_18.png")
         openMovieMenuItem.actionCommand = "Open"
 
         val openReadSrtMenuItem = JMenuItem("Open SRT Read")
         openReadSrtMenuItem.mnemonic = KeyEvent.VK_O
+        openReadSrtMenuItem.icon("baseline_subtitles_black_18.png")
         openMovieMenuItem.actionCommand = "Open"
 
         val newSrtMenuItem = JMenuItem("New SRT Words")
         newSrtMenuItem.mnemonic = KeyEvent.VK_N
+        newSrtMenuItem.icon("baseline_fiber_new_black_18.png")
         newSrtMenuItem.actionCommand = "New"
 
         val openWriteSrtMenuItem = JMenuItem("Open SRT Words")
         openWriteSrtMenuItem.mnemonic = KeyEvent.VK_W
-        openMovieMenuItem.actionCommand = "Open"
+        openWriteSrtMenuItem.icon("baseline_subtitles_black_18.png")
+        openWriteSrtMenuItem.actionCommand = "Open"
 
         val saveSrtMenuItem = JMenuItem("Save SRT Words")
         saveSrtMenuItem.mnemonic = KeyEvent.VK_S
+        saveSrtMenuItem.icon("baseline_save_black_18.png")
         saveSrtMenuItem.actionCommand = "Save"
 
         val saveAsSrtMenuItem = JMenuItem("Save SRT Words As ...")
         saveAsSrtMenuItem.mnemonic = KeyEvent.VK_A
+        saveAsSrtMenuItem.icon("content-save-as_black_18.png")
         saveAsSrtMenuItem.actionCommand = "Save As ..."
 
         val exitMenuItem = JMenuItem("Exit")
         exitMenuItem.mnemonic = KeyEvent.VK_X
+        exitMenuItem.icon("baseline_exit_to_app_black_18.png")
         exitMenuItem.actionCommand = "Exit"
 
         val cutMenuItem = JMenuItem("Cut")
         cutMenuItem.mnemonic = KeyEvent.VK_X
         cutMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK)
+        cutMenuItem.icon("baseline_content_cut_black_18.png")
         cutMenuItem.actionCommand = "Cut"
 
         val copyMenuItem = JMenuItem("Copy")
         copyMenuItem.mnemonic = KeyEvent.VK_C
         copyMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK)
+        copyMenuItem.icon("baseline_content_copy_black_18.png")
         copyMenuItem.actionCommand = "Copy"
 
         val pasteMenuItem = JMenuItem("Paste")
         pasteMenuItem.mnemonic = KeyEvent.VK_V
         pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK)
+        pasteMenuItem.icon("baseline_content_paste_black_18.png")
         pasteMenuItem.actionCommand = "Paste"
 
         val showReadSrtMenuItem = JMenuItem("Read Subtitles")
-        pasteMenuItem.mnemonic = KeyEvent.VK_R
-        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_DOWN_MASK)
+        showReadSrtMenuItem.mnemonic = KeyEvent.VK_R
+        showReadSrtMenuItem.icon("baseline_list_black_18.png")
+        showReadSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_DOWN_MASK)
 
         val showWriteSrtMenuItem = JMenuItem("Write Subtitles")
-        pasteMenuItem.mnemonic = KeyEvent.VK_W
-        pasteMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_DOWN_MASK)
+        showWriteSrtMenuItem.mnemonic = KeyEvent.VK_W
+        showWriteSrtMenuItem.icon("baseline_list_black_18.png")
+        showWriteSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_DOWN_MASK)
 
         val editSrtMenuItem = JMenuItem("Edit Subtitles")
         editSrtMenuItem.mnemonic = KeyEvent.VK_E
+        editSrtMenuItem.icon("baseline_edit_black_18.png")
         editSrtMenuItem.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.META_DOWN_MASK)
 
         // val sysMenuItemListener = SysOutMenuItemListener()
