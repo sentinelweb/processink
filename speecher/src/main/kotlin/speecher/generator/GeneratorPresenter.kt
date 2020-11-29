@@ -34,7 +34,8 @@ fun main() {
 class GeneratorPresenter : GeneratorContract.Presenter,
     SpeechContract.Listener,
     KoinComponent,
-    MovieBankContract.Listener {
+    MovieBankContract.Listener,
+    OscContract.Listener {
 
     private val view: GeneratorContract.View = get()
     private val state: GeneratorState = get()
@@ -44,7 +45,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     private val bankCreator: MovieBankCreator = get()
     private val movieCreator: MovieCreator = get()
     private val log: LogWrapper = get()
-    private val oscController: OscContract.Controler = get()
+    private val oscController: OscContract.Controller = get()
 
     private var bank: MovieBankContract.External? = null
     private var preview: MovieContract.External? = null
@@ -144,7 +145,6 @@ class GeneratorPresenter : GeneratorContract.Presenter,
         override fun onPlaying() {
             preview?.volume(0.2f)
         }
-
     }
 
     override fun preview(word: Sentence.Word?) {
@@ -169,9 +169,9 @@ class GeneratorPresenter : GeneratorContract.Presenter,
             oscController.shutdown()
             speechUI.oscReceiver = false
         } else {
+            oscController.listener = this
             oscController.initialise()
             speechUI.oscReceiver = true
-
         }
     }
 
@@ -185,6 +185,58 @@ class GeneratorPresenter : GeneratorContract.Presenter,
 
     private fun updateViewFont() {
         view.setFont(selectedFont?.fontName ?: "Thonburi", selectedFont?.size?.toFloat() ?: 24f)
+    }
+
+    override fun onPlaySentence() {
+        log.d("osc.onPlaySentence")
+        speechUI.playing = true
+        bank?.startPlaying()
+    }
+
+    override fun onPlayNextWord() {
+        log.d("osc.onPlayNextWord")
+        bank?.apply {
+            if (config.playOneWordAtATime) continuePlaying()
+            else log.d("Need ot set /playOneWord = 1")
+        }
+    }
+
+    override fun onRewindSentence() {
+        log.d("osc.onRewindSentence")
+        // todo implement
+    }
+
+    override fun onLooping(loop: Boolean) {
+        log.d("osc.onLooping = $loop")
+        bank?.apply {
+            config = config.copy(looping = loop)
+        }
+        speechUI.looping = loop
+    }
+
+    override fun onVolume(vol: Float) {
+        log.d("osc.onVolume = $vol")
+        bank?.apply {
+            config = config.copy(volume = vol)
+        }
+    }
+
+    override fun onLoadSentence(index: Int) {
+        log.d("osc.onLoadSentence = $index")
+        // todo implement
+    }
+
+    override fun onPlayOneWord(playOneWord: Boolean) {
+        log.d("osc.onPlayOneWord = $playOneWord")
+        bank?.apply {
+            config = config.copy(playOneWordAtATime = playOneWord)
+        }
+    }
+
+    override fun onPause() {
+        log.d("osc.onPause")
+        bank?.pause()
+        speechUI.playing = false
     }
 
     override fun onShutdown() {
@@ -220,6 +272,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
         }
 
     }
+
 
 }
 

@@ -31,6 +31,7 @@ interface SpeechContract {
         fun clearFocus()
         fun showPreviewing(value: Boolean)
         fun setOscReceiving(value: Boolean)
+        fun setLooping(value: Boolean)
     }
 
     interface Presenter {

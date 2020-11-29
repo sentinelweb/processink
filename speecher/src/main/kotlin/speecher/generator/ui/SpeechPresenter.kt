@@ -92,6 +92,7 @@ class SpeechPresenter constructor(
         get() = state.volume
         set(value) {
             state.volume = value
+            // todo update ui
             listener.updateBank()
         }
     override var previewing: Boolean = false
@@ -317,6 +318,7 @@ class SpeechPresenter constructor(
         get() = field
         set(value) {
             field = value
+            view.setLooping(value)
         }
 
     override fun showWindow() {

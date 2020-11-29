@@ -72,6 +72,65 @@ class SpeechView constructor(
             .show(speechPanel.playCtnr, if (!isPlaying) PLAY_BUT else PAUSE_BUT)
     }
 
+    override fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir?.let { currentDirectory = it }
+            val result = showOpenDialog(frame)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                chosen(selectedFile)
+            }
+        }
+    }
+
+    override fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir?.let { if (it.isDirectory) currentDirectory = it else selectedFile = it }
+            val result = showSaveDialog(frame)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                chosen(selectedFile)
+            }
+        }
+    }
+
+    override fun clearFocus() {
+        speechPanel.sentenceIdText.requestFocusInWindow()
+        speechPanel.searchText.requestFocusInWindow()
+    }
+
+    override fun updateMultiSelection(keys: MutableSet<Int>) {
+        speechPanel.sentencePanel.components.forEachIndexed { i, wv ->
+            (wv as WordChipView).selected = keys.contains(i)
+        }
+    }
+
+    override fun selectWord(index: Int, selected: Boolean) {
+        speechPanel.sentencePanel.components[index].let {
+            (it as WordChipView).interfaceVisible = selected
+        }
+    }
+
+    override fun restoreState(
+        vol: Float,
+        playEventLatency: Float?,
+        searchText: String?,
+        sortOrder: SpeechContract.SortOrder,
+        currentSentenceId: String?
+    ) {
+        speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
+        playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
+        speechPanel.searchText.text = searchText
+        when (sortOrder) {
+            NATURAL -> speechPanel.sortNatural.isSelected = true
+            A_Z -> speechPanel.sortAZ.isSelected = true
+            Z_A -> speechPanel.sortZA.isSelected = true
+        }
+        speechPanel.sentenceIdText.text = currentSentenceId
+    }
+
     override fun updateSubList(subs: List<Subtitles.Subtitle>) {
         speechPanel.subsPanel.removeAll()
         subs.forEachIndexed { i, sub ->
@@ -102,6 +161,10 @@ class SpeechView constructor(
         speechPanel.oscReceiveButton.isSelected = value
     }
 
+    override fun setLooping(value: Boolean) {
+        speechPanel.loopButton.isSelected = value
+    }
+
     inner class SpeechPanel : JPanel() {
 
         val sentencePanel: JPanel
@@ -116,11 +179,11 @@ class SpeechView constructor(
         val sentenceIdText: JTextField
         val statusBar: JLabel
         val previewButton: JToggleButton
-        val oscReceiveButton: JToggleButton
+        val loopButton: JToggleButton
 
+        val oscReceiveButton: JToggleButton
         private val playButton: JButton
         private val pauseButton: JButton
-        private val loopButton: JToggleButton
         private val fontButton: JButton
         private val fontColorButton: JButton
 
@@ -510,64 +573,7 @@ class SpeechView constructor(
         mainFrame.setJMenuBar(menuBar)
     }
 
-    override fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit) {
-        JFileChooser().apply {
-            isMultiSelectionEnabled = false
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            currentDir?.let { currentDirectory = it }
-            val result = showOpenDialog(frame)
-            if (result == JFileChooser.APPROVE_OPTION) {
-                chosen(selectedFile)
-            }
-        }
-    }
 
-    override fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
-        JFileChooser().apply {
-            isMultiSelectionEnabled = false
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            currentDir?.let { if (it.isDirectory) currentDirectory = it else selectedFile = it }
-            val result = showSaveDialog(frame)
-            if (result == JFileChooser.APPROVE_OPTION) {
-                chosen(selectedFile)
-            }
-        }
-    }
-
-    override fun clearFocus() {
-        speechPanel.sentenceIdText.requestFocusInWindow()
-        speechPanel.searchText.requestFocusInWindow()
-    }
-
-    override fun updateMultiSelection(keys: MutableSet<Int>) {
-        speechPanel.sentencePanel.components.forEachIndexed { i, wv ->
-            (wv as WordChipView).selected = keys.contains(i)
-        }
-    }
-
-    override fun selectWord(index: Int, selected: Boolean) {
-        speechPanel.sentencePanel.components[index].let {
-            (it as WordChipView).interfaceVisible = selected
-        }
-    }
-
-    override fun restoreState(
-        vol: Float,
-        playEventLatency: Float?,
-        searchText: String?,
-        sortOrder: SpeechContract.SortOrder,
-        currentSentenceId: String?
-    ) {
-        speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
-        playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
-        speechPanel.searchText.text = searchText
-        when (sortOrder) {
-            NATURAL -> speechPanel.sortNatural.isSelected = true
-            A_Z -> speechPanel.sortAZ.isSelected = true
-            Z_A -> speechPanel.sortZA.isSelected = true
-        }
-        speechPanel.sentenceIdText.text = currentSentenceId
-    }
 
     companion object {
         private const val PLAY_BUT = "playBut"

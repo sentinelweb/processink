@@ -10,6 +10,7 @@ class OscReceiver constructor(
     private val log: LogWrapper
 ) : OscContract.Receiver {
     private var portIn: OSCPortIn? = null
+    private lateinit var controller: OscContract.Controller
 
     init {
         log.tag(this)
@@ -48,7 +49,18 @@ class OscReceiver constructor(
         portIn = null
     }
 
+    override fun setController(c: OscContract.Controller) {
+        controller = c
+    }
+
     private fun processEvent(e: OSCMessageEvent) {
         e.apply { log.d("osc event : ${message.address} -> ${message.arguments} info.typetags = [${message.info.argumentTypeTags.map { it }}]") }
+        controller.processEvent(
+            OscContract.Event(
+                e.message.address,
+                e.message.arguments,
+                e.message.info.argumentTypeTags
+            )
+        )
     }
 }

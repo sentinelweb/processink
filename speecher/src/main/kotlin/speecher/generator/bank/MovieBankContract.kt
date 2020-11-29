@@ -11,7 +11,8 @@ interface MovieBankContract {
         val words: Sentence? = null,
         val looping: Boolean = false,
         val volume: Float = 1f,
-        val playEventLatency: Float = 0.05f
+        val playEventLatency: Float = 0.05f,
+        val playOneWordAtATime: Boolean = false
     )
 
     interface Presenter {
@@ -23,9 +24,11 @@ interface MovieBankContract {
     interface External {
         val subtitleToDisplay: String
         var config: Config
+        val playState: PlayState
         fun pause()
         fun loadMovieFile(movie: File)
         fun startPlaying()
+        fun continuePlaying()
         fun cleanup()
     }
 
@@ -44,8 +47,10 @@ interface MovieBankContract {
     data class State constructor(
         var words: Sentence? = null,
         var loadingWord: Int = -1, // currently loading word
-        var activeIndex: Int = -1,// currently playing player
-        var playingWord: Int = -1,// currently playing word
+        var activeIndex: Int = -1, // currently playing player
+        var playingWord: Int = -1, // currently playing word
         var movieToWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf()
     )
+
+    enum class PlayState { NOT_INIT, INIT, LOADING, LOADED, PLAYING, PAUSED, COMPLETE }
 }

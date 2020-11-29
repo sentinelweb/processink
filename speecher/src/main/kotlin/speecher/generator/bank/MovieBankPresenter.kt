@@ -42,6 +42,7 @@ class MovieBankPresenter(
             state.words = config.words
             movies.forEach { it.config = it.config.copy(playEventLatency = value.playEventLatency) }
         }
+    override var playState: MovieBankContract.PlayState = MovieBankContract.PlayState.NOT_INIT
 
     override val subtitleToDisplay: String
         get() = state.movieToWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
@@ -59,6 +60,7 @@ class MovieBankPresenter(
     }
 
     override fun loadMovieFile(movie: File) {
+        playState = MovieBankContract.PlayState.LOADING
         openMovieSingle(movie)
             .doOnSuccess {
                 state.loadingWord = -1
@@ -68,12 +70,14 @@ class MovieBankPresenter(
             }
             .subscribe({
                 println("Opened movie file : $it")
+                playState = MovieBankContract.PlayState.LOADED
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
     }
 
     // region playback
     override fun startPlaying() {
+        playState = MovieBankContract.PlayState.PLAYING
         log.startTime()
         movies.forEach {
             it.volume(config.volume)
@@ -96,7 +100,7 @@ class MovieBankPresenter(
         }
     }
 
-    private fun playNext() {
+    private fun subtitleFinished() {
         //view.active = -1
         log.d("finished(${state.activeIndex})")
         movies[state.activeIndex].volume(0f)
@@ -106,15 +110,26 @@ class MovieBankPresenter(
 
         state.movieToWordMap[state.activeIndex]?.let {
             //view.active = state.activeIndex
-            movies[state.activeIndex].volume(config.volume)
-            movies[state.activeIndex].play()
-            log.d("playing(${state.activeIndex}) - ${it.sub.text}")
+            if (!config.playOneWordAtATime) {
+                continuePlaying()
+            } else {
+                playState = MovieBankContract.PlayState.PAUSED
+            }
         } ?: run {
             log.d("Nothing to play")
             listener?.onPlayFinished()
             view.active = -1
+            playState = MovieBankContract.PlayState.COMPLETE
         }
         loadNextWord(lastIndex)
+    }
+
+    override fun continuePlaying() {
+        state.movieToWordMap[state.activeIndex]?.let {
+            movies[state.activeIndex].volume(config.volume)
+            movies[state.activeIndex].play()
+            log.d("playing(${state.activeIndex}) - ${it.sub.text}")
+        }
     }
 
     private fun loadNextWord(playerIndex: Int) {
@@ -165,6 +180,7 @@ class MovieBankPresenter(
     override fun cleanup() {
         movies.forEach { it.cleanup() }
         view.cleanup()
+        playState = MovieBankContract.PlayState.INIT
     }
 
     inner class MvListener(private val index: Int) : MovieContract.Listener {
@@ -179,7 +195,7 @@ class MovieBankPresenter(
 
         override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
             log.d("onSubtitleFinished ${state.activeIndex}")
-            playNext()
+            subtitleFinished()
         }
 
         override fun onPlaying() {
