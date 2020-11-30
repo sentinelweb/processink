@@ -13,7 +13,6 @@ import org.drjekyll.fontchooser.FontDialog
 import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
-import kotlin.math.ln
 
 fun main() {
     Controls()
@@ -471,32 +470,5 @@ class Controls {
             return selected
         }
 
-    }
-
-    // todo use this to map slider to log values
-    fun logslider(position: Int): Double {
-        val (minp, minv, scale) = setupLog()
-
-        return Math.exp(minv + scale * (position - minp))
-    }
-
-    // todo use this to map log values to slider
-    fun logposition(value: Double): Double {
-        val (minp, minv, scale) = setupLog()
-        return (ln(value) - minv) / scale + minp
-    }
-
-    private fun setupLog(): Triple<Int, Double, Double> {
-        // position will be between 0 and 100
-        val minp = 0
-        val maxp = 100
-
-        // The result should be between 100 an 10000000
-        val minv = ln(100.0)
-        val maxv = ln(10000000.0)
-
-        // calculate adjustment factor
-        val scale = (maxv - minv) / (maxp - minp)
-        return Triple(minp, minv, scale)
     }
 }

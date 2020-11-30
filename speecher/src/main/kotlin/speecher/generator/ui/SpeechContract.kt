@@ -42,6 +42,9 @@ interface SpeechContract {
         var volume: Float
         var previewVolume: Float
         var playEventLatency: Float?
+        var playSpeed: Float
+        var wordSpaceTime: Int
+
         fun moveCursor(pos: CursorPosition)
         fun sortOrder(order: SortOrder)
         fun play()
@@ -70,17 +73,20 @@ interface SpeechContract {
     }
 
     interface External {
-        var loading: Boolean
         val playEventLatency: Float?
-        var playing: Boolean
-        var looping: Boolean
-        var listener: Listener
+        val playSpeed: Float
         val selectedFontColor: Color?
         val selectedFont: Font?
         val volume: Float
         val previewVolume: Float
         val previewing: Boolean
+        val wordSpaceTime: Int
+
         var oscReceiverRunning: Boolean
+        var playing: Boolean
+        var loading: Boolean
+        var looping: Boolean
+        var listener: Listener
 
         fun setWordsFile(file: File)
         fun showWindow()

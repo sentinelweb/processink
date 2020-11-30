@@ -91,10 +91,11 @@ class MovieBankPresenter(
             state.playAfterLoaded = true
             return
         }
-        playState = MovieBankContract.PlayState.PLAYING
+        playState = PLAYING
         log.startTime()
         movies.forEach {
             it.volume(config.volume)
+            it.setMovieSpeed(config.playSpeed)
         }
         state.loadingWord = 0
         state.activeIndex = 0
@@ -141,6 +142,7 @@ class MovieBankPresenter(
     override fun continuePlaying() {
         movies[state.activeIndex].let {
             it.volume(config.volume)
+            it.setMovieSpeed(config.playSpeed)
             it.play()
             log.d("playing(${state.activeIndex}) - ${it.getText()}")
         }
@@ -176,7 +178,6 @@ class MovieBankPresenter(
                     movie.cleanup()
                 }
                 movies.clear()
-
             }
             .doOnSuccess {
                 (0..bankSize - 1).forEach {
@@ -194,7 +195,7 @@ class MovieBankPresenter(
     override fun cleanup() {
         movies.forEach { it.cleanup() }
         view.cleanup()
-        playState = MovieBankContract.PlayState.INIT
+        playState = INIT
     }
 
     inner class MvListener(private val index: Int) : MovieContract.Listener {

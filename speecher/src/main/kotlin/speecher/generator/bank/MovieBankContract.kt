@@ -12,7 +12,9 @@ interface MovieBankContract {
         val looping: Boolean = false,
         val volume: Float = 1f,
         val playEventLatency: Float = 0.05f,
-        val playOneWordAtATime: Boolean = false
+        val playOneWordAtATime: Boolean = false,
+        val wordSpaceTime: Int = 0,
+        var playSpeed: Float = 1f
     )
 
     interface Presenter {

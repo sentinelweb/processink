@@ -127,7 +127,9 @@ class GeneratorPresenter : GeneratorContract.Presenter,
                 volume = speechUI.volume,
                 looping = speechUI.looping,
                 playEventLatency = speechUI.playEventLatency ?: 0.05f,
-                words = state.words
+                words = state.words,
+                wordSpaceTime = speechUI.wordSpaceTime,
+                playSpeed = speechUI.playSpeed
             )
         }
     }

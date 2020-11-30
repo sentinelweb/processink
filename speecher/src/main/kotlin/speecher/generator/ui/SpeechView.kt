@@ -1,5 +1,6 @@
 package speecher.generator.ui
 
+import net.robmunro.util.LogSlider
 import org.drjekyll.fontchooser.FontDialog
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
@@ -203,6 +204,9 @@ class SpeechView constructor(
         val fontButton: JButton
         val fontColorButton: JButton
         val fontColorIndicator: JPanel
+        val speedSlider: JSlider
+        val speedSliderLog: LogSlider
+        val wordSpaceSlider: JSlider
 
         init {
             preferredSize = Dimension(1500, 768)
@@ -215,7 +219,7 @@ class SpeechView constructor(
                 JPanel().apply {
                     layout = BorderLayout()
                     background = bgColor
-                    // north panel - play control
+                    // north panel - tools
                     JPanel().apply {
                         //preferredSize = Dimension(1024, 40)
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
@@ -272,21 +276,6 @@ class SpeechView constructor(
 
                         JLabel(" | ").style().also { add(it) }
 
-                        previewButton = JToggleButton("X") // stop preview
-                            .icon("baseline_preview_black_18.png")
-                            .style()
-                            .setup { presenter.stopPreview() }
-                            .also { add(it) }
-
-                        JLabel(" | ").style().also { add(it) }
-
-                        oscReceiveButton = JToggleButton() // receive OSC
-                            .icon("baseline_settings_ethernet_black_18.png")
-                            .style()
-                            .setup { presenter.toggleOscReceive() }
-                            .also { add(it) }
-
-                        JLabel(" | ").style().also { add(it) }
                         sentenceIdText = JTextField("")
                             .style()
                             .apply {
@@ -309,6 +298,18 @@ class SpeechView constructor(
                                 })
                             }
                             .also { add(it.wrapWithLabel("ID", 50, "outline_label_black_18.png")) }
+
+                        JLabel(" | ").style().also { add(it) }
+                        wordSpaceSlider = JSlider(0, WORD_SCALE.toInt(), presenter.wordSpaceTime)
+                            .apply {
+                                background = bgColor
+                            }
+                            .setup(null, -1, -1, false) {
+                                val source = it.source as JSlider
+                                presenter.wordSpaceTime = source.value
+                            }.also {
+                                add(it.wrapWithLabel("Word Space", 80))
+                            }
                     }.also { add(it, BorderLayout.NORTH) }
 
                     // east panel - play control
@@ -376,13 +377,31 @@ class SpeechView constructor(
                                 .also { add(it) }
                             fontColorIndicator.also { add(it) }
 
+                            previewButton = JToggleButton("X") // stop preview
+                                .icon("baseline_preview_black_18.png")
+                                .style()
+                                .setup { presenter.stopPreview() }
+                                .also { add(it) }
+
+                            oscReceiveButton = JToggleButton() // receive OSC
+                                .icon("baseline_settings_ethernet_black_18.png")
+                                .style()
+                                .setup { presenter.toggleOscReceive() }
+                                .also { add(it) }
+
                         }.also { add(it, BorderLayout.WEST) }
                         // sliders
                         JPanel().apply {
-                            preferredSize = Dimension(120, 80)
+                            preferredSize = Dimension(150, 80)
                             layout = GridLayout(1, -1)
                             background = bgColor
 
+                            JPanel().apply {
+                                layout = BorderLayout()
+                                background = bgColor
+                                JLabel().icon("baseline_volume_up_black_18.png").also { add(it, BorderLayout.NORTH) }
+                                JLabel().icon("baseline_volume_down_black_18.png").also { add(it, BorderLayout.SOUTH) }
+                            }.also { add(it) }
 
                             volumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
                                 .apply {
@@ -392,15 +411,10 @@ class SpeechView constructor(
                                 .setup(null, -1, -1, false) {
                                     val source = it.source as JSlider
                                     presenter.volume = source.value / VOL_SCALE
-
-                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
-                            JPanel().apply {
-                                layout = BorderLayout()
-                                background = bgColor
-
-                                JLabel().icon("baseline_volume_up_black_18.png").also { add(it, BorderLayout.NORTH) }
-                                JLabel().icon("baseline_volume_down_black_18.png").also { add(it, BorderLayout.SOUTH) }
-                            }.also { add(it) }
+                                }.also {
+                                    add(it.wrapWithLabel("V", 30, horizontal = false));
+                                    it.orientation = JSlider.VERTICAL
+                                }
 
                             previewVolumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
                                 .apply {
@@ -410,8 +424,10 @@ class SpeechView constructor(
                                 .setup(null, -1, -1, false) {
                                     val source = it.source as JSlider
                                     presenter.previewVolume = source.value / VOL_SCALE
-
-                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+                                }.also {
+                                    add(it.wrapWithLabel("PV", 30, horizontal = false))
+                                    it.orientation = JSlider.VERTICAL
+                                }
 
                             latencySlider = JSlider(0, 100, 100)
                                 .apply {
@@ -426,8 +442,28 @@ class SpeechView constructor(
                                     if (source.getValueIsAdjusting()) {
                                         presenter.playEventLatency = source.value / PLAT_SCALE
                                     }
+                                }.also {
+                                    add(it.wrapWithLabel(null, 20, "clock-start-18.png", false));
+                                    it.orientation = JSlider.VERTICAL
+                                }
 
-                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+                            speedSlider = JSlider(0, 100, 50)
+                                .apply {
+                                    preferredSize = Dimension(20, 200)
+                                    background = bgColor
+                                    majorTickSpacing = 10
+                                    paintTicks = true
+                                    value = presenter.playEventLatency?.let { (it * PLAT_SCALE).toInt() } ?: 0
+                                    speedSliderLog = LogSlider(this, 0.75f, 1.5f)
+                                }
+                                .setup(null, -1, -1, false) {
+                                    val source = it.source as JSlider
+                                    presenter.playSpeed = speedSliderLog.toValueFromSlider(source.value)
+                                }.also {
+                                    add(it.wrapWithLabel(null, 20, "baseline_speed_black_18.png", false));
+                                    it.orientation = JSlider.VERTICAL;
+                                }
+
                         }.also { add(it, BorderLayout.CENTER) }
                     }.also { add(it, BorderLayout.EAST) }
 
@@ -628,6 +664,7 @@ class SpeechView constructor(
         private const val PLAY_BUT = "playBut"
         private const val PAUSE_BUT = "pauseBut"
         private const val VOL_SCALE = 100f
+        private const val WORD_SCALE = 100f
         private const val PLAT_SCALE = 1000f
     }
 }

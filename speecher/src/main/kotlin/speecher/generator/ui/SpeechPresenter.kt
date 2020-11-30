@@ -100,6 +100,19 @@ class SpeechPresenter constructor(
             state.previewVolume = value
             listener.updatePreview()
         }
+    override var playSpeed: Float
+        get() = state.playSpeed
+        set(value) {
+            state.playSpeed = value
+            listener.updateBank()
+        }
+
+    override var wordSpaceTime: Int
+        get() = state.wordSpaceTime
+        set(value) {
+            state.wordSpaceTime = value
+            listener.updateBank()
+        }
     override var previewing: Boolean = false
         set(value) {
             field = value

@@ -34,7 +34,14 @@ class TestListener constructor(private val p: SpeechPresenter) : SpeechContract.
     }
 
     override fun updateBank() {
-        log.d("volume = ${p.volume}, looping = ${p.looping}, playEventLatency = ${p.playEventLatency}")
+        log.d(
+            "volume = ${p.volume}, " +
+                    "previewVolume = ${p.previewVolume}, " +
+                    "looping = ${p.looping}, " +
+                    "playEventLatency = ${p.playEventLatency}, " +
+                    "playSpeed = ${p.playSpeed} " +
+                    "wordSpaceTime = ${p.wordSpaceTime}"
+        )
     }
 
     override fun loadMovieFile(movie: File) {

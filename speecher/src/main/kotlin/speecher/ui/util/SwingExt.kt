@@ -57,14 +57,21 @@ fun JPanel.titledBorder(title: String, padding: Int = 10): JPanel {
     return this
 }
 
-fun JComponent.wrapWithLabel(label: String, labelWidth: Int = 80, iconName: String? = null): JPanel =
+fun JComponent.wrapWithLabel(
+    label: String?,
+    labelWidth: Int = 80,
+    iconName: String? = null,
+    horizontal: Boolean = true
+): JPanel =
     JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+        layout = BoxLayout(this, if (horizontal) BoxLayout.LINE_AXIS else BoxLayout.PAGE_AXIS)
         background = backgroundColor
+
         add(JLabel(label).style(bold = true).apply {
             preferredSize = Dimension(labelWidth, 20)
-            border = EmptyBorder(0, 0, 0, 10)
+            border = EmptyBorder(0, 0, 0, if (horizontal) 10 else 0)
             background = backgroundColor
+
             iconName?.let { icon = Image(it) }
         })
         add(this@wrapWithLabel)

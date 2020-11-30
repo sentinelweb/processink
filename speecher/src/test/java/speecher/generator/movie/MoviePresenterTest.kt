@@ -39,6 +39,8 @@ class MoviePresenterTest : KoinComponent {
         sut = MoviePresenter(0, LogWrapper(TimeFormatter(), "test"))
         testApplet.run()
 
+        // fixme set movie view in applet after refactor
+
     }
 
     @After

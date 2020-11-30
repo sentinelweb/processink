@@ -8,7 +8,7 @@ import processing.video.Movie
 import speecher.scheduler.ProcessingExecutor
 import org.koin.core.get as koinGet
 
-class TestPApplet : PApplet(), MovieContract.Sketch, KoinComponent {
+class TestPApplet : PApplet(), KoinComponent {
 
     private val pExecutor: ProcessingExecutor = koinGet()
 
@@ -47,14 +47,6 @@ class TestPApplet : PApplet(), MovieContract.Sketch, KoinComponent {
         movieViews.find { it.hasMovie(m) }?.movieEvent(m)
     }
 
-    override fun addView(v: MovieContract.View) {
-        movieViews.add(v)
-    }
-
-    override fun cleanup() {
-        movieViews.forEach { it.cleanup() }
-    }
-
     companion object {
         val LIB_PATH = "${System.getProperty("user.home")}/Documents/Processing/libraries/video/library/macosx64"
 
@@ -62,7 +54,6 @@ class TestPApplet : PApplet(), MovieContract.Sketch, KoinComponent {
         val appletModule = module {
             single { TestPApplet() }
             single<PApplet> { get<TestPApplet>() }
-            single<MovieContract.Sketch> { get<TestPApplet>() }
         }
     }
 
