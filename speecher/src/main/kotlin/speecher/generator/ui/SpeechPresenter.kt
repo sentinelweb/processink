@@ -123,7 +123,7 @@ class SpeechPresenter constructor(
         get() = state.playEventLatency
         set(value) {
             state.playEventLatency = value
-            log.d(" = $value s")
+            log.d(" = $value")
         }
 
     override var oscReceiverRunning: Boolean = false
@@ -479,12 +479,13 @@ class SpeechPresenter constructor(
             val word = state.wordSentenceWithCursor[index]
             if (word != CURSOR) {
                 val modWord = when (type) {
-                    BEFORE -> word.copy(spaceBefore = value)
+                    //BEFORE -> word.copy(spaceBefore = value)
                     AFTER -> word.copy(spaceAfter = value)
                     FROM -> word.copy(sub = word.sub.copy(fromSec = value))
                     TO -> word.copy(sub = word.sub.copy(toSec = value))
                     SPEED -> word.copy(speed = value)
                     VOL -> word.copy(vol = value)
+                    else -> word
                 }
                 state.wordSentenceWithCursor.apply {
                     set(index, modWord)

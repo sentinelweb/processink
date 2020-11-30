@@ -126,6 +126,7 @@ class SpeechView constructor(
     ) {
         speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
         speechPanel.previewVolumeSlider.value = (pvol * VOL_SCALE).toInt()
+        speechPanel.speedSlider.value = speechPanel.speedSliderLog.toSliderFromValue(presenter.playSpeed)
         playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
         speechPanel.searchText.text = searchText
         when (sortOrder) {
@@ -204,8 +205,8 @@ class SpeechView constructor(
         val fontButton: JButton
         val fontColorButton: JButton
         val fontColorIndicator: JPanel
-        val speedSlider: JSlider
-        val speedSliderLog: LogSlider
+        lateinit var speedSlider: JSlider
+        lateinit var speedSliderLog: LogSlider
         val wordSpaceSlider: JSlider
 
         init {
@@ -299,14 +300,15 @@ class SpeechView constructor(
                             }
                             .also { add(it.wrapWithLabel("ID", 50, "outline_label_black_18.png")) }
 
-                        JLabel(" | ").style().also { add(it) }
                         wordSpaceSlider = JSlider(0, WORD_SCALE.toInt(), presenter.wordSpaceTime)
                             .apply {
                                 background = bgColor
                             }
                             .setup(null, -1, -1, false) {
                                 val source = it.source as JSlider
-                                presenter.wordSpaceTime = source.value
+                                if (!source.valueIsAdjusting) {
+                                    presenter.wordSpaceTime = source.value
+                                }
                             }.also {
                                 add(it.wrapWithLabel("Word Space", 80))
                             }
@@ -389,6 +391,15 @@ class SpeechView constructor(
                                 .setup { presenter.toggleOscReceive() }
                                 .also { add(it) }
 
+                            JButton() // receive OSC
+                                .icon("baseline_speed_black_18.png")
+                                .style()
+                                .setup {
+                                    presenter.playSpeed = 1f
+                                    speedSlider.value = speedSliderLog.toSliderFromValue(1f)
+                                }
+                                .also { add(it) }
+
                         }.also { add(it, BorderLayout.WEST) }
                         // sliders
                         JPanel().apply {
@@ -399,8 +410,12 @@ class SpeechView constructor(
                             JPanel().apply {
                                 layout = BorderLayout()
                                 background = bgColor
-                                JLabel().icon("baseline_volume_up_black_18.png").also { add(it, BorderLayout.NORTH) }
-                                JLabel().icon("baseline_volume_down_black_18.png").also { add(it, BorderLayout.SOUTH) }
+                                JLabel()
+                                    .icon("baseline_volume_up_black_18.png")
+                                    .also { add(it, BorderLayout.NORTH) }
+                                JLabel()
+                                    .icon("baseline_volume_down_black_18.png")
+                                    .also { add(it, BorderLayout.SOUTH) }
                             }.also { add(it) }
 
                             volumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
@@ -458,7 +473,9 @@ class SpeechView constructor(
                                 }
                                 .setup(null, -1, -1, false) {
                                     val source = it.source as JSlider
-                                    presenter.playSpeed = speedSliderLog.toValueFromSlider(source.value)
+                                    if (!source.valueIsAdjusting) {
+                                        presenter.playSpeed = speedSliderLog.toValueFromSlider(source.value)
+                                    }
                                 }.also {
                                     add(it.wrapWithLabel(null, 20, "baseline_speed_black_18.png", false));
                                     it.orientation = JSlider.VERTICAL;
@@ -664,7 +681,7 @@ class SpeechView constructor(
         private const val PLAY_BUT = "playBut"
         private const val PAUSE_BUT = "pauseBut"
         private const val VOL_SCALE = 100f
-        private const val WORD_SCALE = 100f
+        private const val WORD_SCALE = 300f
         private const val PLAT_SCALE = 1000f
     }
 }

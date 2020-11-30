@@ -28,4 +28,6 @@ data class MovieState(
     fun isMovieInitialised() = this::movie.isInitialized
 
     fun isInitialised() = isMovieInitialised() && screenRect != null
+
+    var startTime: Long = 0
 }

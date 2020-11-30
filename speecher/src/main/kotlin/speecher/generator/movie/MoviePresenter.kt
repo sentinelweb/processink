@@ -62,7 +62,11 @@ class MoviePresenter(
     // region Presenter
     override fun onMovieEvent() {
         state.position = state.movie.time()
-        state.apply { log.d("state: $index $playState -> $position - ${state.subtitle?.toSec}") }
+        val timeSinceStart = System.currentTimeMillis() - state.startTime
+        val posSinceStart = state.subtitle?.let { state.movie.time() - it.fromSec } ?: -1f
+        val toSec = state.subtitle?.toSec
+        val fromSec = state.subtitle?.fromSec
+        state.apply { log.d("state: $index $playState -> $position - $fromSec -> $toSec time:pos = $posSinceStart ms = $timeSinceStart") }
         state.subtitle
             ?.takeIf { it.fromSec <= state.position ?: 0f && !state.onSubStartCalled }
             ?.let {
@@ -96,8 +100,12 @@ class MoviePresenter(
         view.createMovie(file)
     }
 
-    override fun setMovieSpeed(speed: Float) {
-        state.movie.speed(speed)
+    override fun setMovieSpeed(speed: Float, changeNow: Boolean) {
+        if (changeNow) {
+            state.movie.speed(speed) // causes a stop and start of the movie
+        } else {
+            state.movie.rate(speed)
+        }
     }
 
     override fun play() {
@@ -106,7 +114,10 @@ class MoviePresenter(
             state.movie.volume(state.volume)
         }
             .subscribeOn(playerScheduler)
-            .subscribe({ log.d("Playing ($index)") }, { it.printStackTrace() })
+            .subscribe({
+                log.d("Playing ($index)")
+                state.startTime = System.currentTimeMillis()
+            }, { it.printStackTrace() })
             .also { state.disposables.add(it) }
     }
 
@@ -114,13 +125,15 @@ class MoviePresenter(
     // todo try out coroutines for these
     override fun pause() {
         if (!state.seeking) {
+            val stime = System.currentTimeMillis()
             Completable.fromCallable {
                 state.movie.pause()
             }
                 .subscribeOn(playerScheduler)
                 .subscribe({
                     state.pauseAfterSeekComplete = false
-                    log.d("Paused ($index)")
+                    val time = System.currentTimeMillis() - stime
+                    log.d("Paused ($index) time = $time")
                 }, { it.printStackTrace() })
                 .also { state.disposables.add(it) }
         } else {

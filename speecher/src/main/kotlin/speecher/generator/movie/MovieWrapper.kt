@@ -9,4 +9,7 @@ class MovieWrapper(val p: PApplet, fileName: String) : Movie(p, fileName) {
 
     fun playerState() = playbin.state
 
+    fun rate(rate: Float) {
+        super.rate = rate
+    }
 }

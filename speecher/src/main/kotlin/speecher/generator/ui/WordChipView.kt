@@ -29,7 +29,7 @@ class WordChipView constructor(
     private val bgColor: Color = backgroundColor
     private val subChip: SubtitleChipView
 
-    private val beforeToggle: ToggleButtons
+    //private val beforeToggle: ToggleButtons
     private val afterToggle: ToggleButtons
     private val speedToggle: ToggleButtons
     private val volToggle: ToggleButtons
@@ -73,8 +73,8 @@ class WordChipView constructor(
                 JPanel().apply {
                     background = bgColor
                     layout = GridLayout(1, -1)
-                    beforeToggle = ToggleButtons(value = word.spaceBefore, type = BEFORE, tooltip = "Before")
-                        .also { add(it) }
+//                    beforeToggle = ToggleButtons(value = word.spaceBefore, type = BEFORE, tooltip = "Before")
+//                        .also { add(it) }
                     volToggle = ToggleButtons(value = word.vol, type = VOL, tooltip = "Vol")
                         .also { add(it) }
 

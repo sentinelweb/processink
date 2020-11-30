@@ -35,7 +35,7 @@ class MovieContract {
 
         //val parent: Parent?
         fun openMovie(file: File)
-        fun setMovieSpeed(speed: Float)
+        fun setMovieSpeed(speed: Float, changeNow: Boolean)
         fun play()
         fun pause()
         fun volume(vol: Float)

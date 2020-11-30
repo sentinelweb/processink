@@ -51,7 +51,7 @@ interface MovieBankContract {
         var words: Sentence? = null,
         var loadingWord: Int = -1, // currently loading word
         var activeIndex: Int = -1, // currently playing player
-        var playingWord: Int = -1, // currently playing word
+        //var playingWord: Int = -1, // currently playing word
         var movieToWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf(),
         var playAfterLoaded: Boolean = false
     )

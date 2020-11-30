@@ -1,8 +1,10 @@
 package speecher.generator.bank
 
+import io.reactivex.Completable
 import io.reactivex.Scheduler
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.qualifier.named
 import speecher.domain.Sentence
@@ -13,6 +15,7 @@ import speecher.generator.movie.MovieCreator
 import speecher.scheduler.SchedulerModule
 import speecher.util.wrapper.LogWrapper
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 
 class MovieBankPresenter(
@@ -30,7 +33,6 @@ class MovieBankPresenter(
     init {
         log.tag(this)
     }
-    //override val playEventLatency: Float? = 0.05f // todo link to
 
     private val movies = mutableListOf<MovieContract.External>()
 
@@ -41,7 +43,10 @@ class MovieBankPresenter(
         set(value) {
             field = value
             state.words = config.words
-            movies.forEach { it.config = it.config.copy(playEventLatency = value.playEventLatency) }
+            movies.forEach {
+                it.config = it.config.copy(playEventLatency = value.playEventLatency)
+
+            }
         }
 
     override var playState: MovieBankContract.PlayState = NOT_INIT
@@ -95,12 +100,13 @@ class MovieBankPresenter(
         log.startTime()
         movies.forEach {
             it.volume(config.volume)
-            it.setMovieSpeed(config.playSpeed)
+            it.setMovieSpeed(config.playSpeed, false)
         }
         state.loadingWord = 0
         state.activeIndex = 0
         wordAtIndex(state.loadingWord)?.let {
             state.movieToWordMap[state.activeIndex] = it
+            movies[state.activeIndex].setMovieSpeed(config.playSpeed, false)
             movies[state.activeIndex].setSubtitle(it.sub)
         }
 
@@ -122,7 +128,6 @@ class MovieBankPresenter(
         movies[state.activeIndex].pause()
         val lastIndex = state.activeIndex
         state.activeIndex = state.activeIndex.wrapInc()
-
         state.movieToWordMap[state.activeIndex]?.let {
             //view.active = state.activeIndex
             if (!config.playOneWordAtATime) {
@@ -141,8 +146,7 @@ class MovieBankPresenter(
 
     override fun continuePlaying() {
         movies[state.activeIndex].let {
-            it.volume(config.volume)
-            it.setMovieSpeed(config.playSpeed)
+            it.volume(config.volume * (state.movieToWordMap[state.activeIndex]?.vol ?: 1f))
             it.play()
             log.d("playing(${state.activeIndex}) - ${it.getText()}")
         }
@@ -152,6 +156,7 @@ class MovieBankPresenter(
         incrementWordIndex()
         wordAtIndex(state.loadingWord)?.let {
             log.d("next for $playerIndex ${it.sub}")
+            movies[playerIndex].setMovieSpeed(config.playSpeed * it.speed, false)
             movies[playerIndex].setSubtitle(it.sub)
             state.movieToWordMap[playerIndex] = it
             log.d(it.sub.text[0])
@@ -210,7 +215,21 @@ class MovieBankPresenter(
 
         override fun onSubtitleFinished(sub: Subtitles.Subtitle) {
             log.d("onSubtitleFinished ${state.activeIndex}")
-            subtitleFinished()
+            val wordSpacing = config.wordSpaceTime.toLong() +
+                    (state.movieToWordMap[state.activeIndex]?.let { (it.spaceAfter * 1000f).toLong() } ?: 0L)
+            if (wordSpacing > 0) {
+                movies[state.activeIndex].volume(0f)
+                movies[state.activeIndex].pause()
+                Completable
+                    .timer(wordSpacing, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.computation())
+                    .subscribe(
+                        { subtitleFinished() },
+                        { log.e("error wordspacing", it) }
+                    )
+            } else {
+                subtitleFinished()
+            }
         }
 
         override fun onPlaying() {

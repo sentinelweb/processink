@@ -9,7 +9,7 @@ class MovieBankView : MovieBankContract.View {
     private val movieViews: MutableList<MovieContract.View> = mutableListOf()
 
     override fun render() {
-        if (active > -1) movieViews[active].render()
+        if (active > -1 && active < movieViews.size) movieViews[active].render()
     }
 
     // region movie
