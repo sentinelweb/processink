@@ -117,12 +117,14 @@ class SpeechView constructor(
 
     override fun restoreState(
         vol: Float,
+        pvol: Float,
         playEventLatency: Float?,
         searchText: String?,
         sortOrder: SpeechContract.SortOrder,
         currentSentenceId: String?
     ) {
         speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
+        speechPanel.previewVolumeSlider.value = (pvol * VOL_SCALE).toInt()
         playEventLatency?.apply { speechPanel.latencySlider.value = (this * PLAT_SCALE).toInt() }
         speechPanel.searchText.text = searchText
         when (sortOrder) {
@@ -186,6 +188,7 @@ class SpeechView constructor(
         val playCtnr: JPanel
         val searchText: JTextField
         val volumeSlider: JSlider
+        val previewVolumeSlider: JSlider
         val latencySlider: JSlider
         val sortNatural: JToggleButton
         val sortAZ: JToggleButton
@@ -311,9 +314,9 @@ class SpeechView constructor(
                     // east panel - play control
                     JPanel().apply {
                         titledBorder("Control")
-                        preferredSize = Dimension(180, 80)
-                        layout = GridLayout(1, -1)
+                        layout = BorderLayout()
                         background = bgColor
+                        // play control
                         JPanel().apply {
                             layout = GridLayout(-1, 1)
                             preferredSize = Dimension(50, 100)
@@ -373,35 +376,59 @@ class SpeechView constructor(
                                 .also { add(it) }
                             fontColorIndicator.also { add(it) }
 
-                        }.also { add(it) }
+                        }.also { add(it, BorderLayout.WEST) }
+                        // sliders
+                        JPanel().apply {
+                            preferredSize = Dimension(120, 80)
+                            layout = GridLayout(1, -1)
+                            background = bgColor
 
-                        volumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
-                            .apply {
-                                preferredSize = Dimension(20, 200)
-                                background = bgColor
-                            }
-                            .setup(null, -1, -1, false) {
-                                val source = it.source as JSlider
-//                                if (source.getValueIsAdjusting()) {
-                                presenter.volume = source.value / VOL_SCALE
 
-                            }.let { add(it); it.orientation = JSlider.VERTICAL; it }
-
-                        latencySlider = JSlider(0, 100, 100)
-                            .apply {
-                                preferredSize = Dimension(20, 200)
-                                background = bgColor
-                                majorTickSpacing = 10
-                                paintTicks = true
-                                value = presenter.playEventLatency?.let { (it * PLAT_SCALE).toInt() } ?: 0
-                            }
-                            .setup(null, -1, -1, false) {
-                                val source = it.source as JSlider
-                                if (source.getValueIsAdjusting()) {
-                                    presenter.playEventLatency = source.value / PLAT_SCALE
+                            volumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
+                                .apply {
+                                    preferredSize = Dimension(20, 200)
+                                    background = bgColor
                                 }
+                                .setup(null, -1, -1, false) {
+                                    val source = it.source as JSlider
+                                    presenter.volume = source.value / VOL_SCALE
 
-                            }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+                            JPanel().apply {
+                                layout = BorderLayout()
+                                background = bgColor
+
+                                JLabel().icon("baseline_volume_up_black_18.png").also { add(it, BorderLayout.NORTH) }
+                                JLabel().icon("baseline_volume_down_black_18.png").also { add(it, BorderLayout.SOUTH) }
+                            }.also { add(it) }
+
+                            previewVolumeSlider = JSlider(0, VOL_SCALE.toInt(), 100)
+                                .apply {
+                                    preferredSize = Dimension(20, 200)
+                                    background = bgColor
+                                }
+                                .setup(null, -1, -1, false) {
+                                    val source = it.source as JSlider
+                                    presenter.previewVolume = source.value / VOL_SCALE
+
+                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+
+                            latencySlider = JSlider(0, 100, 100)
+                                .apply {
+                                    preferredSize = Dimension(20, 200)
+                                    background = bgColor
+                                    majorTickSpacing = 10
+                                    paintTicks = true
+                                    value = presenter.playEventLatency?.let { (it * PLAT_SCALE).toInt() } ?: 0
+                                }
+                                .setup(null, -1, -1, false) {
+                                    val source = it.source as JSlider
+                                    if (source.getValueIsAdjusting()) {
+                                        presenter.playEventLatency = source.value / PLAT_SCALE
+                                    }
+
+                                }.let { add(it); it.orientation = JSlider.VERTICAL; it }
+                        }.also { add(it, BorderLayout.CENTER) }
                     }.also { add(it, BorderLayout.EAST) }
 
                     // center panel - sentence

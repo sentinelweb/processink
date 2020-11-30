@@ -21,7 +21,7 @@ data class SpeechState(
     /*@ContextualSerialization*/ var selectedFontColor: Color? = null,
     /*@ContextualSerialization*/ var selectedFont: Font? = null,
     var volume: Float = 0f,
-    // var speakString: String? = "This is the year in which we mourn the passing of thought humanity dissenters and media to the applause of crowds",
+    var previewVolume: Float = 1.0f,
     var playEventLatency: Float? = 0.05f,
     var editingWord: Int? = null,
     var wordSentenceWithCursor: MutableList<Sentence.Word> = mutableListOf(),
@@ -29,4 +29,6 @@ data class SpeechState(
     var clipboard: List<Sentence.Word>? = null,
     var currentSentenceId: String? = null,
     var previewingWord: Int? = null
+// var speakString: String? = "This is the year in which we mourn the passing of thought humanity dissenters and media to the applause of crowds",
+
 )

@@ -92,8 +92,13 @@ class SpeechPresenter constructor(
         get() = state.volume
         set(value) {
             state.volume = value
-            // todo update ui
             listener.updateBank()
+        }
+    override var previewVolume: Float
+        get() = state.previewVolume
+        set(value) {
+            state.previewVolume = value
+            listener.updatePreview()
         }
     override var previewing: Boolean = false
         set(value) {
@@ -536,6 +541,7 @@ class SpeechPresenter constructor(
                         state = it
                         view.restoreState(
                             state.volume,
+                            state.previewVolume,
                             state.playEventLatency,
                             state.searchText,
                             state.sortOrder,

@@ -53,4 +53,8 @@ class TestListener constructor(private val p: SpeechPresenter) : SpeechContract.
     override fun onShutdown() {
         log.d("onShutdown()")
     }
+
+    override fun updatePreview() {
+        log.d("updatePreview()")
+    }
 }

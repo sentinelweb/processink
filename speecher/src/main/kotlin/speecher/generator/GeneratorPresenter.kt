@@ -132,6 +132,10 @@ class GeneratorPresenter : GeneratorContract.Presenter,
         }
     }
 
+    override fun updatePreview() {
+        preview?.apply { volume(speechUI.previewVolume) }
+    }
+
     override fun loadMovieFile(movie: File) {
         Completable.fromCallable {
             bank?.cleanup()
@@ -166,7 +170,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
         }
 
         override fun onPlaying() {
-            preview?.volume(0.2f)
+            preview?.volume(speechUI.previewVolume)
         }
     }
 
@@ -177,7 +181,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
                 if (playState != MovieContract.State.PLAYING) {
                     setSubtitle(word.sub)
                     play()
-                    volume(0.2f)
+                    volume(speechUI.previewVolume)
                 }
                 this@GeneratorPresenter.view.showPrewiew = true
             }

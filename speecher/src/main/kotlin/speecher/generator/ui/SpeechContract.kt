@@ -16,6 +16,7 @@ interface SpeechContract {
         fun selectWord(index: Int, selected: Boolean)
         fun restoreState(
             vol: Float,
+            pvol: Float,
             playEventLatency: Float?,
             searchText: String?,
             sortOrder: SortOrder,
@@ -39,6 +40,7 @@ interface SpeechContract {
         var selectedFontColor: Color?
         var selectedFont: Font?
         var volume: Float
+        var previewVolume: Float
         var playEventLatency: Float?
         fun moveCursor(pos: CursorPosition)
         fun sortOrder(order: SortOrder)
@@ -76,6 +78,7 @@ interface SpeechContract {
         val selectedFontColor: Color?
         val selectedFont: Font?
         val volume: Float
+        val previewVolume: Float
         val previewing: Boolean
         var oscReceiverRunning: Boolean
 
@@ -97,6 +100,7 @@ interface SpeechContract {
         fun preview(word: Sentence.Word?)
         fun onOscReceiveToggled()
         fun onShutdown()
+        fun updatePreview()
     }
 
     interface WordListener {
