@@ -32,6 +32,7 @@ interface SpeechContract {
         fun showPreviewing(value: Boolean)
         fun setOscReceiving(value: Boolean)
         fun setLooping(value: Boolean)
+        fun showLoading(value: Boolean)
     }
 
     interface Presenter {
@@ -67,6 +68,7 @@ interface SpeechContract {
     }
 
     interface External {
+        var loading: Boolean
         val playEventLatency: Float?
         var playing: Boolean
         var looping: Boolean
@@ -75,7 +77,7 @@ interface SpeechContract {
         val selectedFont: Font?
         val volume: Float
         val previewing: Boolean
-        var oscReceiver: Boolean
+        var oscReceiverRunning: Boolean
 
         fun setWordsFile(file: File)
         fun showWindow()

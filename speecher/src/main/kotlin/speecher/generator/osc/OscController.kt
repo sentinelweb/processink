@@ -8,7 +8,7 @@ import speecher.util.wrapper.LogWrapper
 import java.lang.Float.max
 import java.lang.Float.min
 
-class OscController : OscContract.Controller {
+class OscController : OscContract.Controller, OscContract.External {
     private val scope = this.getOrCreateScope()
     private val receiver: OscContract.Receiver = scope.get()
     private val log: LogWrapper = scope.get()
@@ -27,6 +27,7 @@ class OscController : OscContract.Controller {
         }.subscribeOn(Schedulers.io())
             //.subscribeOn(Schedulers.io())
             .subscribe({
+                listener.onReceiverStarted()
                 //log.d("Osc receiver started ..")
             }, { t -> log.e("OSC receiver start exception", t) })
             .also { disposables.add(it) }
@@ -55,7 +56,12 @@ class OscController : OscContract.Controller {
     override fun shutdown() {
         receiver.shutdown()
         disposables.clear()
+        if (this::listener.isInitialized) {
+            listener.onReceiverStopped()
+        }
     }
+
+    override fun isRunning(): Boolean = receiver.isRunning()
 
     companion object {
         private const val port = 1239

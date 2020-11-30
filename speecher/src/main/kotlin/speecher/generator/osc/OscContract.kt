@@ -9,16 +9,23 @@ interface OscContract {
         fun start(port: Int)
         fun shutdown()
         fun setController(c: Controller)
+        fun isRunning(): Boolean
     }
 
     interface Controller {
+        fun processEvent(e: Event)
+    }
+
+    interface External {
         var listener: Listener
         fun initialise()
-        fun processEvent(e: Event)
         fun shutdown()
+        fun isRunning(): Boolean
     }
 
     interface Listener {
+        fun onReceiverStarted()
+        fun onReceiverStopped()
         fun onPlaySentence()
         fun onPlayNextWord()
         fun onRewindSentence()
@@ -38,7 +45,7 @@ interface OscContract {
     companion object {
         @JvmStatic
         val scopeModule = module {
-            single<Controller> { OscController() }
+            single<External> { OscController() }
             scope(named<OscController>()) {
                 scoped<Receiver> { OscReceiver(get()) }
             }

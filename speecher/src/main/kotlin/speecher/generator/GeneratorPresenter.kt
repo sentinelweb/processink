@@ -1,6 +1,8 @@
 package speecher.generator
 
+import io.reactivex.Completable
 import io.reactivex.Scheduler
+import io.reactivex.schedulers.Schedulers
 import org.koin.core.KoinComponent
 import org.koin.core.context.startKoin
 import org.koin.core.get
@@ -45,7 +47,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     private val bankCreator: MovieBankCreator = get()
     private val movieCreator: MovieCreator = get()
     private val log: LogWrapper = get()
-    private val oscController: OscContract.Controller = get()
+    private val oscController: OscContract.External = get()
 
     private var bank: MovieBankContract.External? = null
     private var preview: MovieContract.External? = null
@@ -76,7 +78,25 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     // endregion
 
     override fun onPlayFinished() {
-        speechUI.playing = false
+        //speechUI.playing = false
+    }
+
+    override fun onStateChanged() {
+        bank?.apply {
+            Completable.fromCallable {
+                when (playState) {
+                    MovieBankContract.PlayState.LOADING -> speechUI.loading = true
+                    MovieBankContract.PlayState.LOADED -> speechUI.loading = false
+                    MovieBankContract.PlayState.PLAYING -> speechUI.playing = true
+                    MovieBankContract.PlayState.PAUSED -> speechUI.playing = false
+                    MovieBankContract.PlayState.COMPLETE -> speechUI.playing = false
+                }
+            }.subscribeOn(swingScheduler)
+                .subscribe({
+
+                }, { log.e("Error updating play state", it) })
+                .also { state.disposables.add(it) }
+        }
     }
 
     // region SpeechContract.Listener
@@ -86,7 +106,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     }
 
     override fun play() {
-        speechUI.playing = true
+
         // startRecording()
         bank?.startPlaying()
     }
@@ -98,7 +118,7 @@ class GeneratorPresenter : GeneratorContract.Presenter,
 
     override fun pause() {
         bank?.pause()
-        speechUI.playing = false
+        //speechUI.playing = false
     }
 
     override fun updateBank() {
@@ -113,18 +133,21 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     }
 
     override fun loadMovieFile(movie: File) {
-        bank?.cleanup()
-        bank?.loadMovieFile(movie)
-        preview?.cleanup()
-        log.d("preview creating")
-        preview = movieCreator.create(0, log, previewListener).also {
-            log.d("preview created")
-            it.config = it.config.copy(bounds = Rectangle2D.Float(0f, 0f, 320f, 240f))
-            it.openMovie(movie)
-            it.volume(0f)
-            it.pause()
-            view.setPreview(it.view)
-        }
+        Completable.fromCallable {
+            bank?.cleanup()
+            bank?.loadMovieFile(movie)
+            preview?.cleanup()
+            preview = movieCreator.create(0, log, previewListener).also {
+                it.config = it.config.copy(bounds = Rectangle2D.Float(0f, 0f, 320f, 240f))
+                it.openMovie(movie)
+                it.volume(0f)
+                it.pause()
+                view.setPreview(it.view)
+            }
+            null
+        }.subscribeOn(Schedulers.computation())
+            .subscribe({}, { log.e("Error loading movie $movie", it) })
+            .also { state.disposables.add(it) }
     }
 
     private val previewListener = object : MovieContract.Listener {
@@ -165,13 +188,12 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     }
 
     override fun onOscReceiveToggled() {
-        if (speechUI.oscReceiver) {
+        if (oscController.isRunning()) {
             oscController.shutdown()
-            speechUI.oscReceiver = false
         } else {
             oscController.listener = this
             oscController.initialise()
-            speechUI.oscReceiver = true
+
         }
     }
 
@@ -187,9 +209,16 @@ class GeneratorPresenter : GeneratorContract.Presenter,
         view.setFont(selectedFont?.fontName ?: "Thonburi", selectedFont?.size?.toFloat() ?: 24f)
     }
 
+    override fun onReceiverStarted() {
+        speechUI.oscReceiverRunning = true
+    }
+
+    override fun onReceiverStopped() {
+        speechUI.oscReceiverRunning = false
+    }
+
     override fun onPlaySentence() {
         log.d("osc.onPlaySentence")
-        speechUI.playing = true
         bank?.startPlaying()
     }
 
@@ -236,7 +265,6 @@ class GeneratorPresenter : GeneratorContract.Presenter,
     override fun onPause() {
         log.d("osc.onPause")
         bank?.pause()
-        speechUI.playing = false
     }
 
     override fun onShutdown() {

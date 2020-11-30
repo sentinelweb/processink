@@ -46,8 +46,8 @@ class TestListener constructor(private val p: SpeechPresenter) : SpeechContract.
     }
 
     override fun onOscReceiveToggled() {
-        p.oscReceiver = !p.oscReceiver
-        log.d("oscreceive = ${p.oscReceiver}")
+        p.oscReceiverRunning = !p.oscReceiverRunning
+        log.d("oscreceive = ${p.oscReceiverRunning}")
     }
 
     override fun onShutdown() {

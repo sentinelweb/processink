@@ -97,7 +97,7 @@ class SentenceListView(
                 listPanel.add(SentenceItem(k, sentences[k]!!))
             }
             if (sentences.size < 5) {
-                (sentences.size..5).forEach { listPanel.add(JPanel()) }
+                (sentences.size..5).forEach { listPanel.add(JPanel().apply { background = bgColor }) }
             }
             frame.rootPane.updateUI()
         }

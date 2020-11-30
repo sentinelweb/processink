@@ -7,6 +7,7 @@ import org.koin.core.context.KoinContextHandler.get
 import org.koin.core.qualifier.named
 import speecher.domain.Sentence
 import speecher.domain.Subtitles
+import speecher.generator.bank.MovieBankContract.PlayState.*
 import speecher.generator.movie.MovieContract
 import speecher.generator.movie.MovieCreator
 import speecher.scheduler.SchedulerModule
@@ -42,7 +43,12 @@ class MovieBankPresenter(
             state.words = config.words
             movies.forEach { it.config = it.config.copy(playEventLatency = value.playEventLatency) }
         }
-    override var playState: MovieBankContract.PlayState = MovieBankContract.PlayState.NOT_INIT
+
+    override var playState: MovieBankContract.PlayState = NOT_INIT
+        set(v) {
+            field = v
+            listener?.onStateChanged()
+        }
 
     override val subtitleToDisplay: String
         get() = state.movieToWordMap[state.activeIndex]?.sub?.text?.get(0) ?: "-"
@@ -57,10 +63,11 @@ class MovieBankPresenter(
 
     override fun pause() {
         movies.forEach { it.pause() }
+        playState = PAUSED
     }
 
     override fun loadMovieFile(movie: File) {
-        playState = MovieBankContract.PlayState.LOADING
+        playState = LOADING
         openMovieSingle(movie)
             .doOnSuccess {
                 state.loadingWord = -1
@@ -70,13 +77,20 @@ class MovieBankPresenter(
             }
             .subscribe({
                 println("Opened movie file : $it")
-                playState = MovieBankContract.PlayState.LOADED
+                playState = LOADED
+                if (state.playAfterLoaded) {
+                    startPlaying()
+                }
             }, { it.printStackTrace() })
             .also { disposables.add(it) }
     }
 
     // region playback
     override fun startPlaying() {
+        if (playState == LOADING) {
+            state.playAfterLoaded = true
+            return
+        }
         playState = MovieBankContract.PlayState.PLAYING
         log.startTime()
         movies.forEach {
@@ -113,22 +127,22 @@ class MovieBankPresenter(
             if (!config.playOneWordAtATime) {
                 continuePlaying()
             } else {
-                playState = MovieBankContract.PlayState.PAUSED
+                playState = PAUSED
             }
         } ?: run {
             log.d("Nothing to play")
             listener?.onPlayFinished()
             view.active = -1
-            playState = MovieBankContract.PlayState.COMPLETE
+            playState = COMPLETE
         }
         loadNextWord(lastIndex)
     }
 
     override fun continuePlaying() {
-        state.movieToWordMap[state.activeIndex]?.let {
-            movies[state.activeIndex].volume(config.volume)
-            movies[state.activeIndex].play()
-            log.d("playing(${state.activeIndex}) - ${it.sub.text}")
+        movies[state.activeIndex].let {
+            it.volume(config.volume)
+            it.play()
+            log.d("playing(${state.activeIndex}) - ${it.getText()}")
         }
     }
 

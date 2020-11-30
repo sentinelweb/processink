@@ -42,6 +42,7 @@ class MovieContract {
         fun seekTo(positionSec: Float)
         fun setSubtitle(sub: Subtitles.Subtitle)
         fun cleanup()
+        fun getText(): String?
     }
 
 

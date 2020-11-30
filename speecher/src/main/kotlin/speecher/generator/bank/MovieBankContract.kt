@@ -34,6 +34,7 @@ interface MovieBankContract {
 
     interface Listener {
         fun onPlayFinished()
+        fun onStateChanged()
     }
 
     interface View {
@@ -44,12 +45,13 @@ interface MovieBankContract {
         fun cleanup()
     }
 
-    data class State constructor(
+    data class State(
         var words: Sentence? = null,
         var loadingWord: Int = -1, // currently loading word
         var activeIndex: Int = -1, // currently playing player
         var playingWord: Int = -1, // currently playing word
-        var movieToWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf()
+        var movieToWordMap: MutableMap<Int, Sentence.Word?> = mutableMapOf(),
+        var playAfterLoaded: Boolean = false
     )
 
     enum class PlayState { NOT_INIT, INIT, LOADING, LOADED, PLAYING, PAUSED, COMPLETE }

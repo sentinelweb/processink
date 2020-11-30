@@ -108,7 +108,7 @@ class SpeechPresenter constructor(
             log.d(" = $value s")
         }
 
-    override var oscReceiver: Boolean = false
+    override var oscReceiverRunning: Boolean = false
         set(value) {
             field = value
             view.setOscReceiving(value)
@@ -319,6 +319,12 @@ class SpeechPresenter constructor(
         set(value) {
             field = value
             view.setLooping(value)
+        }
+
+    override var loading: Boolean = false
+        set(value) {
+            field = value
+            view.showLoading(value)
         }
 
     override fun showWindow() {
@@ -596,11 +602,13 @@ class SpeechPresenter constructor(
                         presenter = get(),
                         timeFormatter = get(),
                         subChipListener = get(named(CHIP_SUB)),
-                        wordChipListener = get(named(CHIP_WORD))
+                        wordChipListener = get(named(CHIP_WORD)),
+                        loadingDialog = get()
                     )
                 }
                 scoped { SpeechStateMapper(get()) }
                 scoped { SpeechState() }
+                scoped { LoadingDialog() }
             }
         }
     }

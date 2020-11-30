@@ -63,4 +63,6 @@ class OscReceiver constructor(
             )
         )
     }
+
+    override fun isRunning(): Boolean = portIn?.isListening ?: false
 }

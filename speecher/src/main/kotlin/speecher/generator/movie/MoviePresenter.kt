@@ -159,6 +159,9 @@ class MoviePresenter(
         seekTo(sub.fromSec)
     }
 
+    override fun getText(): String? = state.subtitle?.text?.get(0)
+
+
     override fun cleanup() {
         state.disposables.dispose() // todo cleanup when idle - accumulates subs
         view.cleanup()

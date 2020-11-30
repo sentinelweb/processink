@@ -25,7 +25,9 @@ class SpeechView constructor(
     private val presenter: SpeechContract.Presenter,
     private val timeFormatter: TimeFormatter,
     private val subChipListener: SpeechContract.SubListener,
-    private val wordChipListener: SpeechContract.WordListener
+    private val wordChipListener: SpeechContract.WordListener,
+    private val loadingDialog: LoadingDialog
+
 ) : SpeechContract.View {
 
     private lateinit var frame: JFrame
@@ -129,6 +131,8 @@ class SpeechView constructor(
             Z_A -> speechPanel.sortZA.isSelected = true
         }
         speechPanel.sentenceIdText.text = currentSentenceId
+        speechPanel.fontColorIndicator.background = presenter.selectedFontColor
+        speechPanel.fontButton.font = presenter.selectedFont
     }
 
     override fun updateSubList(subs: List<Subtitles.Subtitle>) {
@@ -165,8 +169,18 @@ class SpeechView constructor(
         speechPanel.loopButton.isSelected = value
     }
 
-    inner class SpeechPanel : JPanel() {
+    override fun showLoading(value: Boolean) {
+        if (value) {
+            loadingDialog.showLoadingDialog(frame)
+        } else {
+            loadingDialog.hide()
+        }
+        // deosnt enable :(
+//        speechPanel.playButton.isEnabled = !value
+//        speechPanel.pauseButton.isEnabled = !value
+    }
 
+    inner class SpeechPanel : JPanel() {
         val sentencePanel: JPanel
         val subsPanel: JPanel
         val playCtnr: JPanel
@@ -180,12 +194,12 @@ class SpeechView constructor(
         val statusBar: JLabel
         val previewButton: JToggleButton
         val loopButton: JToggleButton
-
         val oscReceiveButton: JToggleButton
-        private val playButton: JButton
-        private val pauseButton: JButton
-        private val fontButton: JButton
-        private val fontColorButton: JButton
+        val playButton: JButton
+        val pauseButton: JButton
+        val fontButton: JButton
+        val fontColorButton: JButton
+        val fontColorIndicator: JPanel
 
         init {
             preferredSize = Dimension(1500, 768)
@@ -227,41 +241,49 @@ class SpeechView constructor(
                             .setup { presenter.moveCursor(END) }
                             .also { add(it) }
 
-                        JButton()
-                            .icon("baseline_sort_black_18.png")
+                        JButton() // backspace
+                            .icon("baseline_backspace_black_18.png")
                             .style()
                             .setup { presenter.backSpace() }
                             .also { add(it) }
 
-                        JButton()
+                        JButton() // delete
                             .icon("baseline_cancel_presentation_black_18.png")
                             .style()
-                            .setup { presenter.deleteWord() }.also { add(it) }
+                            .setup { presenter.deleteWord() }
+                            .also { add(it) }
 
-                        JButton()
+                        JLabel(" | ").style().also { add(it) }
+
+                        JButton() // new
                             .icon("baseline_fiber_new_black_18.png")
                             .style()
                             .setup { presenter.newSentence() }
                             .also { add(it) }
 
-                        JButton()
+                        JButton() // commit
                             .icon("baseline_save_alt_black_18.png")
                             .style()
                             .setup { presenter.commitSentence() }
                             .also { add(it) }
 
-                        previewButton = JToggleButton("X")
+                        JLabel(" | ").style().also { add(it) }
+
+                        previewButton = JToggleButton("X") // stop preview
                             .icon("baseline_preview_black_18.png")
                             .style()
                             .setup { presenter.stopPreview() }
                             .also { add(it) }
 
-                        oscReceiveButton = JToggleButton()
+                        JLabel(" | ").style().also { add(it) }
+
+                        oscReceiveButton = JToggleButton() // receive OSC
                             .icon("baseline_settings_ethernet_black_18.png")
                             .style()
                             .setup { presenter.toggleOscReceive() }
                             .also { add(it) }
 
+                        JLabel(" | ").style().also { add(it) }
                         sentenceIdText = JTextField("")
                             .style()
                             .apply {
@@ -283,9 +305,8 @@ class SpeechView constructor(
 
                                 })
                             }
-                            .also { add(it) }
-                    }.wrapWithLabel("Cursor")
-                        .also { add(it, BorderLayout.NORTH) }
+                            .also { add(it.wrapWithLabel("ID", 50, "outline_label_black_18.png")) }
+                    }.also { add(it, BorderLayout.NORTH) }
 
                     // east panel - play control
                     JPanel().apply {
@@ -319,8 +340,8 @@ class SpeechView constructor(
                                 .setup { ae -> presenter.loop(isSelected(ae)) }
                                 .also { add(it) }
 
-                            fontButton = JButton()
-                                .icon("baseline_font_download_black_18.png")
+                            fontButton = JButton("A")
+                                //.icon("baseline_font_download_black_18.png")
                                 .style()
                                 .apply { preferredSize = Dimension(40, 40) }.setup { ae ->
                                     val dialog = FontDialog(null as Frame?, "Font Dialog Example", true)
@@ -328,26 +349,29 @@ class SpeechView constructor(
                                     dialog.defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
                                     dialog.isVisible = true
                                     if (!dialog.isCancelSelected) {
-                                        System.out.printf("Selected font is: %s%n", dialog.selectedFont)
+                                        (ae.source as JButton).font = dialog.selectedFont
                                         presenter.selectedFont = dialog.selectedFont
                                     }
                                 }
                                 .also { add(it) }
-
+                            fontColorIndicator = JPanel()
                             fontColorButton = JButton()
                                 .icon("baseline_format_color_fill_black_18.png")
                                 .style()
-                                .apply { preferredSize = Dimension(40, 40) }
+                                .apply {
+                                    preferredSize = Dimension(40, 40)
+                                }
                                 .setup { ae ->
                                     val color =
                                         JColorChooser.showDialog(this, "Font Color", presenter.selectedFontColor)
                                     color?.let {
                                         @Suppress("LABEL_NAME_CLASH")
-                                        this@apply.background = it
+                                        fontColorIndicator.background = it
                                         presenter.selectedFontColor = it
                                     }
                                 }
                                 .also { add(it) }
+                            fontColorIndicator.also { add(it) }
 
                         }.also { add(it) }
 
@@ -572,8 +596,6 @@ class SpeechView constructor(
         //add menubar to the frame
         mainFrame.setJMenuBar(menuBar)
     }
-
-
 
     companion object {
         private const val PLAY_BUT = "playBut"
