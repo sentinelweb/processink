@@ -1,0 +1,200 @@
+{
+  "wordSentence": [
+    {
+      "sub": {
+        "fromSec": 153.287,
+        "toSec": 153.374,
+        "text": [
+          "I"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 125.383,
+        "toSec": 125.492004,
+        "text": [
+          "don\u0027t"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 47.63,
+        "toSec": 47.928,
+        "text": [
+          "give"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 78.478,
+        "toSec": 78.55801,
+        "text": [
+          "a"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 1163.435,
+        "toSec": 1163.961,
+        "text": [
+          "ding-dong"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 22.016,
+        "toSec": 22.364,
+        "text": [
+          "about"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 24.487,
+        "toSec": 24.7,
+        "text": [
+          "people"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 134.544,
+        "toSec": 134.953,
+        "text": [
+          "who"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 167.48,
+        "toSec": 167.61,
+        "text": [
+          "are"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 128.763,
+        "toSec": 128.934,
+        "text": [
+          "not"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 5.712,
+        "toSec": 5.944,
+        "text": [
+          "very"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 30.097,
+        "toSec": 30.311,
+        "text": [
+          "well"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 112.053,
+        "toSec": 112.350006,
+        "text": [
+          "Tweedy"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 6.456,
+        "toSec": 6.51,
+        "text": [
+          "and"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 70.428,
+        "toSec": 70.639,
+        "text": [
+          "Tory"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    }
+  ],
+  "movieFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0.mp4",
+  "srtWordFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0.words.srt",
+  "sentencesFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Boris Johnson - 3rd Margaret Thatcher Lecture (FULL)-Dzlgrnr1ZB0.sentence.json",
+  "cursorPos": 15,
+  "searchText": "",
+  "sortOrder": "NATURAL",
+  "selectedFontColor": "-13312",
+  "selectedFont": "Savoye LET:0:36",
+  "volume": 1.0,
+  "previewVolume": 1.0,
+  "playEventLatency": 0.056,
+  "playSpeed": 0.9965143,
+  "wordSentenceWithCursor": [],
+  "wordSelection": {},
+  "currentSentenceId": "idont",
+  "wordSpaceTime": 37
+}

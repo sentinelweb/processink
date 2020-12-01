@@ -38,7 +38,7 @@ class GeneratorView constructor(
 
     // region Processing
     override fun settings() {
-        size(1024, 768, PConstants.P2D)
+        size(1280, 720, PConstants.P2D)
     }
 
     override fun setup() {

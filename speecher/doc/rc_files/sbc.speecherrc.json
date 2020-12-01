@@ -1,0 +1,223 @@
+{
+  "wordSentence": [
+    {
+      "sub": {
+        "fromSec": 38.335,
+        "toSec": 39.198997,
+        "text": [
+          "I"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 39.822998,
+        "toSec": 40.085,
+        "text": [
+          "am"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 39.239,
+        "toSec": 39.718998,
+        "text": [
+          "certainly"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 33.402,
+        "toSec": 33.995,
+        "text": [
+          "thinking"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 32.154,
+        "toSec": 32.365,
+        "text": [
+          "that"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 32.365,
+        "toSec": 32.552,
+        "text": [
+          "some"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 32.552,
+        "toSec": 32.721,
+        "text": [
+          "of"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 63.71,
+        "toSec": 63.782997,
+        "text": [
+          "my"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 15.0130005,
+        "toSec": 15.414,
+        "text": [
+          "work"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 60.334,
+        "toSec": 60.494,
+        "text": [
+          "is"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 23.157,
+        "toSec": 23.578,
+        "text": [
+          "referring"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 19.114,
+        "toSec": 19.249,
+        "text": [
+          "to"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 43.231,
+        "toSec": 43.742,
+        "text": [
+          "decades"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 42.461,
+        "toSec": 42.599,
+        "text": [
+          "of"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 50.617,
+        "toSec": 50.937,
+        "text": [
+          "popular"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 43.927,
+        "toSec": 44.466,
+        "text": [
+          "character"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    },
+    {
+      "sub": {
+        "fromSec": 20.415,
+        "toSec": 21.145,
+        "text": [
+          "racism"
+        ]
+      },
+      "spaceAfter": 0.0,
+      "speed": 1.0,
+      "vol": 1.0
+    }
+  ],
+  "movieFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM.mp4",
+  "srtWordFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM.words.srt",
+  "sentencesFile": "/Users/robmunro/repos/personal/processink/speecher/ytcaptiondl/Never Is Now 2019 _ ADL International Leadership Award Presented to Sacha Baron Cohen-ymaWq5yZIYM.sentence.json",
+  "cursorPos": 17,
+  "sortOrder": "NATURAL",
+  "selectedFontColor": "-13312",
+  "selectedFont": "Savoye LET:0:36",
+  "volume": 0.15,
+  "previewVolume": 1.0,
+  "playEventLatency": 0.056,
+  "playSpeed": 0.9965143,
+  "wordSentenceWithCursor": [],
+  "wordSelection": {},
+  "currentSentenceId": "first",
+  "wordSpaceTime": 0
+}
