@@ -1,6 +1,6 @@
 # Speech synthesis using swing and [processing](https://processing.org/) Video
 
-This is a pretty basic seet of tools for Speech synthesis from video.
+This is a pretty basic set of tools for Speech synthesis from video and SRT files.
 
 There are 2 tools:
 
