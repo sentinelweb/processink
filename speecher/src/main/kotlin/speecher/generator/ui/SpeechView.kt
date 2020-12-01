@@ -6,10 +6,13 @@ import speecher.domain.Sentence
 import speecher.domain.Subtitles
 import speecher.generator.ui.SpeechContract.CursorPosition.*
 import speecher.generator.ui.SpeechContract.SortOrder.*
+import speecher.scheduler.checkSwingThread
+import speecher.scheduler.currentThreadInfo
 import speecher.ui.layout.wrap.WrapLayout
 import speecher.ui.listener.TextAreaListener
 import speecher.ui.util.*
 import speecher.util.format.TimeFormatter
+import speecher.util.wrapper.LogWrapper
 import java.awt.*
 import java.awt.event.KeyEvent
 import java.awt.event.WindowAdapter
@@ -27,9 +30,13 @@ class SpeechView constructor(
     private val timeFormatter: TimeFormatter,
     private val subChipListener: SpeechContract.SubListener,
     private val wordChipListener: SpeechContract.WordListener,
-    private val loadingDialog: LoadingDialog
-
+    private val loadingDialog: LoadingDialog,
+    private val log: LogWrapper
 ) : SpeechContract.View {
+
+    init {
+        log.tag(this)
+    }
 
     private lateinit var frame: JFrame
     lateinit var speechPanel: SpeechPanel
@@ -37,6 +44,7 @@ class SpeechView constructor(
 
     override fun showWindow() {
         SwingUtilities.invokeLater {
+            log.d(currentThreadInfo())
             if (!this::frame.isInitialized) {
                 frame = JFrame("Speech editor")
                 frame.defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
@@ -57,6 +65,7 @@ class SpeechView constructor(
     }
 
     override fun updateSentence(sentence: List<Sentence.Word>) {
+        checkSwingThread()
         speechPanel.sentencePanel.removeAll()
         sentence.forEachIndexed { i, word ->
             WordChipView(timeFormatter, word, i, wordChipListener).also {
@@ -71,11 +80,13 @@ class SpeechView constructor(
     }
 
     override fun setPlaying(isPlaying: Boolean) {
+        checkSwingThread()
         (speechPanel.playCtnr.layout as CardLayout)
             .show(speechPanel.playCtnr, if (!isPlaying) PLAY_BUT else PAUSE_BUT)
     }
 
     override fun showOpenDialog(title: String, currentDir: File?, chosen: (f: File) -> Unit) {
+        checkSwingThread()
         JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.FILES_ONLY
@@ -88,6 +99,7 @@ class SpeechView constructor(
     }
 
     override fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
+        checkSwingThread()
         JFileChooser().apply {
             isMultiSelectionEnabled = false
             fileSelectionMode = JFileChooser.FILES_ONLY
@@ -100,17 +112,20 @@ class SpeechView constructor(
     }
 
     override fun clearFocus() {
+        checkSwingThread()
         speechPanel.sentenceIdText.requestFocusInWindow()
         speechPanel.searchText.requestFocusInWindow()
     }
 
     override fun updateMultiSelection(keys: MutableSet<Int>) {
+        checkSwingThread()
         speechPanel.sentencePanel.components.forEachIndexed { i, wv ->
             (wv as WordChipView).selected = keys.contains(i)
         }
     }
 
     override fun selectWord(index: Int, selected: Boolean) {
+        checkSwingThread()
         speechPanel.sentencePanel.components[index].let {
             (it as WordChipView).interfaceVisible = selected
         }
@@ -124,6 +139,7 @@ class SpeechView constructor(
         sortOrder: SpeechContract.SortOrder,
         currentSentenceId: String?
     ) {
+        checkSwingThread()
         speechPanel.volumeSlider.value = (vol * VOL_SCALE).toInt()
         speechPanel.previewVolumeSlider.value = (pvol * VOL_SCALE).toInt()
         speechPanel.speedSlider.value = speechPanel.speedSliderLog.toSliderFromValue(presenter.playSpeed)
@@ -140,6 +156,7 @@ class SpeechView constructor(
     }
 
     override fun updateSubList(subs: List<Subtitles.Subtitle>) {
+        checkSwingThread()
         speechPanel.subsPanel.removeAll()
         subs.forEachIndexed { i, sub ->
             SubtitleChipView(timeFormatter, sub, subChipListener).also {
@@ -150,30 +167,37 @@ class SpeechView constructor(
     }
 
     override fun setSentenceId(currentSentenceId: String?) {
+        checkSwingThread()
         speechPanel.sentenceIdText.text = currentSentenceId
     }
 
     override fun setStatus(status: String) {
+        checkSwingThread()
         speechPanel.statusBar.text = status
     }
 
     override fun clearStatus() {
+        checkSwingThread()
         speechPanel.statusBar.text = ""
     }
 
     override fun showPreviewing(value: Boolean) {
+        checkSwingThread()
         speechPanel.previewButton.isSelected = value
     }
 
     override fun setOscReceiving(value: Boolean) {
+        checkSwingThread()
         speechPanel.oscReceiveButton.isSelected = value
     }
 
     override fun setLooping(value: Boolean) {
+        checkSwingThread()
         speechPanel.loopButton.isSelected = value
     }
 
     override fun showLoading(value: Boolean) {
+        checkSwingThread()
         if (value) {
             loadingDialog.showLoadingDialog(frame)
         } else {

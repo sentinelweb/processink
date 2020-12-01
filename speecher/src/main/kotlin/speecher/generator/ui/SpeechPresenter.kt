@@ -117,6 +117,7 @@ class SpeechPresenter constructor(
         set(value) {
             field = value
             view.showPreviewing(value)
+            //swingScheduler.scheduleDirect { view.showPreviewing(value) }
         }
 
     override var playEventLatency: Float?
@@ -530,9 +531,12 @@ class SpeechPresenter constructor(
             .subscribeOn(Schedulers.io())
             .doOnSuccess {
                 state.words = it
-                updateWordList()
                 //state.speakString?.let { buildWordList(it) }
                 state.srtWordFile = file
+            }
+            .observeOn(swingScheduler)
+            .doOnSuccess {
+                updateWordList()
             }
 
     private fun sentencesOpenSingle(file: File) =
@@ -551,6 +555,7 @@ class SpeechPresenter constructor(
                 Single.fromCallable {
                     speechStateMapper.deserializeSpeechState(it.readText())
                 }.subscribeOn(Schedulers.io())
+                    .observeOn(swingScheduler)
                     .doOnSuccess {
                         state = it
                         view.restoreState(
@@ -569,8 +574,7 @@ class SpeechPresenter constructor(
                         updateWordList()
                         buildSentenceWithCursor()
                         view.updateMultiSelection(state.wordSelection.keys)
-
-                    }.subscribeOn(swingScheduler)
+                    }
                     .flatMap { speechState ->
                         state.sentencesFile
                             ?.takeIf { it.exists() }
@@ -623,7 +627,8 @@ class SpeechPresenter constructor(
                         timeFormatter = get(),
                         subChipListener = get(named(CHIP_SUB)),
                         wordChipListener = get(named(CHIP_WORD)),
-                        loadingDialog = get()
+                        loadingDialog = get(),
+                        log = get()
                     )
                 }
                 scoped { SpeechStateMapper(get()) }

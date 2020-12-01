@@ -59,6 +59,7 @@ dependencies {
     // use coroutines
     implementation "io.reactivex.rxjava2:rxjava:$ver_rxjava"
     implementation "io.reactivex.rxjava2:rxkotlin:$ver_rxjava_kotlin"
+    implementation "com.github.akarnokd:rxjava2-swing:0.3.7"
     implementation "org.koin:koin-core:$ver_koin"
 
     runtime files("$processing_native_lib_path")

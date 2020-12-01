@@ -20,6 +20,7 @@ import speecher.generator.osc.OscContract
 import speecher.generator.ui.SpeechContract
 import speecher.scheduler.SchedulerModule.PROCESSING
 import speecher.scheduler.SchedulerModule.SWING
+import speecher.scheduler.setUncaughtExceptionHandler
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Font
@@ -27,6 +28,7 @@ import java.awt.geom.Rectangle2D
 import java.io.File
 
 fun main() {
+    setUncaughtExceptionHandler()
     startKoin {
         modules(Modules.allModules)
     }

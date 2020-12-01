@@ -28,12 +28,12 @@ class LogWrapper constructor(private val timeFormatter: TimeFormatter, var tag: 
     }
 
     private fun timeLogString() = when {
-        startTime != null -> startTime?.let { "[${timeFormatter.formatFrom(it)}]" }
-        time -> "[${timeFormatter.formatNow()}]"
+        startTime != null -> startTime?.let { "[${timeFormatter.formatFrom(it)}] " }
+        time -> "[${timeFormatter.formatNow()}] "
         else -> ""
     }
 
-    fun d(msg: String) = println("${timeLogString()} $tag: $msg")
+    fun d(msg: String) = println("${timeLogString()}$tag: $msg")
 
     fun e(msg: String) = System.err.println("$tag: $msg")
 
