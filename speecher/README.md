@@ -8,9 +8,9 @@ There are 2 tools:
 A tool that can be used to create SRT files of individual words in a video from the downloaded SRT files.
 
 ## Generator
-A tool that can be used to re-sequence the subtitles to from new speech.
+A tool that can be used to re-sequence the subtitles to form new speech.
 
-At the time of writing the Generator tool can hang a bit. :/ - it does work tho ...
+At the time of writing the Generator tool can hang a bit. :/ - it does work tho ... (woriking on it)
 
 ### Example 
 
