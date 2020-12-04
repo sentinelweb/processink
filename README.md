@@ -9,4 +9,4 @@ This is some tests patches using kotlin to make processing sketches (using Intel
 - [speecher](https://github.com/sentinelweb/processink/tree/master/speecher) - Speech synthesis from videos and SRT files
 
 # Conclusion
-My overall opinion is that kotlin is great for this sort of work - it very fluid and a. muchj better choice for Procesing than Java while still having full functionality of the processing libraries
+My overall opinion is that kotlin is great for this sort of work - it's very fluid, better APIs and a much better choice for Procesing sketches than Java while still having the full functionality of the processing libraries
