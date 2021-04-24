@@ -9,16 +9,25 @@ import cubes.objects.TextList
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
 import cubes.util.pushMatrix
+import cubes.util.wrapper.TimeFormatter
 import net.robmunro.processing.util.webc
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
+import speecher.generator.osc.OscController
+import speecher.generator.osc.OscReceiver
+import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 
 fun main() {
     val cubes = CubesProcessingView()
     val controls = Controls()
-    val presenter = CubesPresenter(controls, cubes)
+    val log = LogWrapper(TimeFormatter())
+    val receiver = OscReceiver(log)
+    val oscController = OscController(receiver, log)
+//    (OscController as OscContract.External).initialise()
+//    println("init OSC")
+    val presenter = CubesPresenter(controls, cubes, oscController)
     cubes.cubesPresenter = presenter
     cubes.run()
 }

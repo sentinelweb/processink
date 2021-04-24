@@ -8,6 +8,7 @@ ext {
     processing_native_lib_path = "$PROCESSING_LIB_PATH".toString()
     processing_version = "3.3.7"
     jna_version = "3.4.0"
+    ver_osc="0.7"
 }
 
 group 'net.robmunro.processing'
@@ -40,6 +41,8 @@ dependencies {
 
     // https://gitlab.com/dheid/fontchooser
     implementation 'org.drjekyll:fontchooser:2.4'
+
+    implementation "com.illposed.osc:javaosc-core:$ver_osc"
 
     // native lib path
     runtime files("$processing_native_lib_path")

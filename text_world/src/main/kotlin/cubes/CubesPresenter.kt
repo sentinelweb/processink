@@ -14,16 +14,22 @@ import cubes.objects.TextList.Ordering.*
 import io.reactivex.disposables.CompositeDisposable
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
+import speecher.generator.osc.OscContract
 import java.awt.Color
 import java.awt.Font
 
 class CubesPresenter constructor(
     private val controls: Controls,
     private val view: CubesContract.View,
+    private val oscController: OscContract.External,
     private val disposables: CompositeDisposable = CompositeDisposable()
 ) : CubesContract.Presenter {
 
     private lateinit var state: CubesState
+
+    init {
+        oscController.initialise()
+    }
 
     override fun setup() {
         disposables.add(
@@ -84,8 +90,7 @@ class CubesPresenter constructor(
                 it.printStackTrace()
             })
         )
-        controls
-            .showWindow()
+        controls.showWindow()
     }
 
     fun updateBeforeDraw() {

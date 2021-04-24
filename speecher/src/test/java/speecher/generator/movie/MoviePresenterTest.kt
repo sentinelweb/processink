@@ -209,7 +209,7 @@ class MoviePresenterTest : KoinComponent {
         sut.play()
         sut.volume(0.2f)
         waitFor { sut.playState == PLAYING }
-        sut.setMovieSpeed(2f)
+        sut.setMovieSpeed(2f, true)
 
         val start = System.currentTimeMillis()
 
