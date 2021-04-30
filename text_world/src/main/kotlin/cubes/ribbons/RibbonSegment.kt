@@ -7,7 +7,7 @@ import java.util.*
 /**
  * A bezier curve with a width
  */
-class RibbonCurve internal constructor(
+class RibbonSegment internal constructor(
     p: PApplet,
     var startPt: PVector,
     var endPt: PVector,
@@ -56,7 +56,7 @@ class RibbonCurve internal constructor(
     /**
      * Given a bezier curve defined by 3 points, an offset distance (k) and a time (t), returns a Point3D
      */
-    fun getOffsetPoint(t: Float, k: Float): PVector {
+    private fun getOffsetPoint(t: Float, k: Float): PVector {
         val p0 = startPt
         val p1 = controlPt
         val p2 = endPt
