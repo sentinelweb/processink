@@ -50,6 +50,8 @@ fun main() {
     private lateinit var yinyang: PShape
     private lateinit var lotus: PShape
 
+    private var lastBackgroundShaderType: CubesContract.BackgroundShaderType? = null
+
     //lateinit var cubesState: CubesState
 
     fun getInfo() = PAppletInfo(width, height)
@@ -118,30 +120,35 @@ fun main() {
     //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
-        val color = cubesPresenter.state.backgroundColor
-        background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
-        noStroke()
-        currentBackground?.setDefaultShaderParams()
-        currentBackground?.engage()
+        cubesPresenter.cstate?.apply {
+            val color = backgroundColor
+            background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
+            noStroke()
 
-        currentShader?.engage() ?: resetShader()
+            setBackgroundShaderType(background)
+            currentBackground?.setDefaultShaderParams()
+            currentBackground?.engage()
 
-        cubesPresenter.state.cubeList.draw()
-        resetShader() // doesn't work?
+            currentShader?.engage() ?: resetShader()
 
-        // ribbons.draw()
+            cubeList.draw()
 
-        cubesPresenter.state.textList.draw()
+            resetShader()
 
-        pushMatrix {
-            translate(width / 5f, height / 2f)
-            scale(3f)
-            draw(yinyang)
-        }
-        pushMatrix {
-            translate(width / 5f * 4, height / 2f)
-            scale(3f)
-            draw(lotus)
+            // ribbons.draw()
+
+            textList.draw()
+
+            pushMatrix {
+                translate(width / 5f, height / 2f)
+                scale(3f)
+                draw(yinyang)
+            }
+            pushMatrix {
+                translate(width / 5f * 4, height / 2f)
+                scale(3f)
+                draw(lotus)
+            }
         }
     }
 
@@ -151,7 +158,7 @@ fun main() {
             .let { shape(shape, -it / 2f, -size / 2f, it, size) }
     }
 
-    override fun setShaderType(type: ShaderType) {
+    fun setShaderType(type: ShaderType) {
         when (type) {
             ShaderType.NONE -> currentShader = null
             ShaderType.LINES -> currentShader = lineShader
@@ -159,7 +166,7 @@ fun main() {
         }
     }
 
-    override fun setShaderParam(type: ShaderType, param: String, value: Any) {
+    fun setShaderParam(type: ShaderType, param: String, value: Any) {
         when (type) {
             ShaderType.NONE -> {
             }
@@ -168,14 +175,17 @@ fun main() {
         }
     }
 
-    override fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
-        when (type) {
-            NONE -> currentBackground = null
-            NEBULA -> currentBackground = nebulaShader
-            COLDFLAME -> currentBackground = flameShader
-            REFRACTION_PATTERN -> currentBackground = refractShader
-            DEFORM -> currentBackground = deformShader
-            MONJORI -> currentBackground = monjoriShader
+    fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
+        if (cubesPresenter.cstate?.background != lastBackgroundShaderType) {
+            when (type) {
+                NONE -> currentBackground = null
+                NEBULA -> currentBackground = nebulaShader
+                COLDFLAME -> currentBackground = flameShader
+                REFRACTION_PATTERN -> currentBackground = refractShader
+                DEFORM -> currentBackground = deformShader
+                MONJORI -> currentBackground = monjoriShader
+            }
+            lastBackgroundShaderType = cubesPresenter.cstate?.background
         }
     }
 

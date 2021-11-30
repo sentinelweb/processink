@@ -1,8 +1,6 @@
 package cubes
 
 import cubes.CubesContract.BackgroundShaderType.*
-import cubes.CubesContract.ShaderType.LINES
-import cubes.CubesContract.ShaderType.NEON
 import cubes.gui.Controls
 import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
@@ -27,8 +25,12 @@ class CubesPresenter constructor(
     private val disposables: CompositeDisposable = CompositeDisposable()
 ) : CubesContract.Presenter {
 
-    lateinit var state: CubesState
-        private set;
+    val cstate: CubesState?
+        get() = if (this::state.isInitialized) {
+            state
+        } else null
+
+    private lateinit var state: CubesState
 
     init {
         oscController.initialise()
@@ -127,7 +129,6 @@ class CubesPresenter constructor(
         setCubeVelocity()
     }
 
-
     private fun motionSliderRotationOffset(offset: Float) {
         state.rotationOffset = offset / 10000f
         setCubeVelocity()
@@ -143,44 +144,50 @@ class CubesPresenter constructor(
     }
 
     private fun shaderButtonNone() {
-        view.setShaderType(CubesContract.ShaderType.NONE)
+        //view.setShaderType(CubesContract.ShaderType.NONE)
     }
 
     private fun shaderButtonLine() {
-        view.setShaderType(LINES)
+        //view.setShaderType(LINES)
     }
 
     private fun shaderButtonNeon() {
-        view.setShaderType(NEON)
+        //view.setShaderType(NEON)
     }
 
     private fun shaderButtonDeform() {
-        view.setBackgroundShaderType(DEFORM)
+        state.background = DEFORM
+        //view.setBackgroundShaderType(DEFORM)
     }
 
     private fun shaderButtonMonjori() {
-        view.setBackgroundShaderType(MONJORI)
+        state.background = MONJORI
+        //view.setBackgroundShaderType(MONJORI)
     }
 
     private fun shaderButtonBgNone(color: Color) {
+        state.background = NONE
         state.backgroundColor = color
-        view.setBackgroundShaderType(NONE)
+        //view.setBackgroundShaderType(NONE)
     }
 
     private fun shaderButtonNebula() {
-        view.setBackgroundShaderType(NEBULA)
+        state.background = NEBULA
+        //view.setBackgroundShaderType(NEBULA)
     }
 
     private fun shaderButtonColdFlame() {
-        view.setBackgroundShaderType(COLDFLAME)
+        state.background = COLDFLAME
+        //view.setBackgroundShaderType(COLDFLAME)
     }
 
     private fun shaderButtonRefraction() {
-        view.setBackgroundShaderType(REFRACTION_PATTERN)
+        state.background = REFRACTION_PATTERN
+        //view.setBackgroundShaderType(REFRACTION_PATTERN)
     }
 
     private fun strokeWeight(value: Float) {
-        view.setShaderParam(LINES, "weight", value)
+        //view.setShaderParam(LINES, "weight", value)
         state.cubeList.cubes.forEach { it.strokeWeight = value }
     }
 

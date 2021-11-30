@@ -13,9 +13,6 @@ interface CubesContract {
     }
 
     interface View {
-        fun setShaderType(type: ShaderType)
-        fun setShaderParam(type: ShaderType, param: String, value: Any)
-        fun setBackgroundShaderType(type: BackgroundShaderType)
         fun getApplet(): PApplet
     }
 
