@@ -2,13 +2,18 @@ package cubes.objects
 
 import cubes.motion.Motion
 import cubes.util.pushMatrix
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
 import java.awt.Font
 
-class TextList constructor(
-    private val p: PApplet
+@Serializable
+data class TextList constructor(
+    @Transient
+    override var p: PApplet? = null
 ) : Shape(p) {
 
     enum class Mode {
@@ -20,20 +25,40 @@ class TextList constructor(
     }
 
     val texts: MutableList<Text> = mutableListOf()
+
+    @Transient
     var motion: Motion<Text, Any>? = null
+
+    @Transient
     var endFunction: () -> Unit = {}
 
     var mode: Mode = Mode.SINGLE
     var ordering: Ordering = Ordering.INORDER
     var timeMs: Float = 2000f
 
-    private var f: PFont
+    @Transient
+    private var pFont: PFont? = null
+
+    @Contextual
+    private var javaFont: Font? = null
     private var currentIndex = 0
     private var endWasCalled: Boolean = false
     private var startTime: Long? = null
 
     init {
-        f = p.createFont("ArialMT", 40f)
+        javaFont = Font.getFont("ArialMT")
+        javaFont?.apply {
+            pFont = p?.createFont(javaFont?.fontName, 40f)
+        }
+    }
+
+    override fun setApplet(applet: PApplet) {
+        super.setApplet(applet)
+        p = applet
+        texts.forEach { it.setApplet(applet) }
+        javaFont?.apply {
+            pFont = p?.createFont(javaFont?.fontName, 40f)
+        }
     }
 
     fun updateState() {
@@ -55,11 +80,13 @@ class TextList constructor(
     fun currentText() = texts[currentIndex]
 
     private fun selectNextIndex() {
-        currentIndex = when (ordering) {
-            Ordering.INORDER -> ++currentIndex % texts.size
-            Ordering.REVERSE -> if (--currentIndex > -1) currentIndex else texts.size - 1
-            Ordering.RANDOM -> p.random(texts.size.toFloat()).toInt()
-            Ordering.NEAR_RANDOM -> (currentIndex + (p.random(5f) - 2f).toInt()) % texts.size
+        p?.apply {
+            currentIndex = when (ordering) {
+                Ordering.INORDER -> ++currentIndex % texts.size
+                Ordering.REVERSE -> if (--currentIndex > -1) currentIndex else texts.size - 1
+                Ordering.RANDOM -> random(texts.size.toFloat()).toInt()
+                Ordering.NEAR_RANDOM -> (currentIndex + (random(5f) - 2f).toInt()) % texts.size
+            }
         }
     }
 
@@ -73,11 +100,13 @@ class TextList constructor(
         if (visible) {
             setProps()
             updateState()
-            p.pushMatrix {
-                p.translate(p.width / 2f, p.height / 2f)
-                texts.forEachIndexed { i, text ->
-                    if (thisTextVisible(i)) {
-                        text.draw(p)
+            p?.apply {
+                pushMatrix {
+                    translate(width / 2f, height / 2f)
+                    texts.forEachIndexed { i, text ->
+                        if (thisTextVisible(i)) {
+                            text.draw()
+                        }
                     }
                 }
             }
@@ -85,14 +114,16 @@ class TextList constructor(
     }
 
     fun setProps() {
-        p.textFont(f)
-        p.textSize(60f)
-        p.textAlign(PConstants.CENTER, PConstants.CENTER)
+        p?.apply {
+            pFont?.apply { textFont(this) }
+            textSize(60f)
+            textAlign(PConstants.CENTER, PConstants.CENTER)
+        }
         //textMode(PConstants.SHAPE)
     }
 
     fun addText(s: String): TextList {
-        texts.add(Text(s))
+        texts.add(Text(p, s))
         return this
     }
 
@@ -111,38 +142,50 @@ class TextList constructor(
     }
 
     fun scatterText(low: Float, high: Float) {
-        texts.forEach {
-            it.position.set(
-                p.random(low, high),
-                p.random(low, high),
-                0f
-            )
+        p?.apply {
+            texts.forEach {
+                it.position.set(
+                    random(low, high),
+                    random(low, high),
+                    0f
+                )
+            }
         }
     }
 
     fun setFont(selectedFont: Font) {
-        f = p.createFont(selectedFont.fontName, selectedFont.size.toFloat())
+        javaFont = selectedFont
+        pFont = p?.createFont(selectedFont.fontName, selectedFont.size.toFloat())
     }
 
-    inner class Text constructor(
-        private val text: CharSequence
+    @Serializable
+    class Text constructor(
+        @Transient
+        override var p: PApplet? = null,
+        private val text: String
     ) : Shape(p) {
 
-        fun draw(p: PApplet) {
+        fun draw() {
             if (visible) {
-                p.pushMatrix {
-                    p.translate(position.x, position.y, position.z)
-                    p.pushMatrix {
-                        p.rotateX(angle.x)
-                        p.rotateY(angle.y)
-                        p.rotateZ(angle.z)
-                        updateColors()
-                        p.scale(scale.x, scale.y, scale.z)
-                        //p.text("${texts.indexOf(this)}. $text", 0f, 0f, 0f)
-                        p.text("$text", 0f, 0f, 0f)
+                p?.apply {
+                    pushMatrix {
+                        translate(position.x, position.y, position.z)
+                        pushMatrix {
+                            rotateX(angle.x)
+                            rotateY(angle.y)
+                            rotateZ(angle.z)
+                            updateColors()
+                            scale(scale.x, scale.y, scale.z)
+                            text(text, 0f, 0f, 0f)
+                        }
                     }
                 }
             }
+        }
+
+        override fun setApplet(applet: PApplet) {
+            super.setApplet(applet)
+            p = applet
         }
     }
 

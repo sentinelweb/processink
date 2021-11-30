@@ -1,37 +1,54 @@
 package cubes.objects
 
 import cubes.util.pushMatrix
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
 
-class Cube constructor(
-    private val p: PApplet,
+@Serializable
+data class Cube constructor(
+    @Transient
+    override var p: PApplet? = null,
     val width: Float,
-    height: Float = width,
-    depth: Float = width
+    val height: Float = width,
+    val depth: Float = width
 ) : Shape(p) {
-    private var cubeShape: PShape
+
+    @Transient
+    private var cubeShape: PShape? = null
 
     init {
-        // todo export to a factory?
-        cubeShape = p.createShape(PConstants.BOX, width, height, depth).apply {
-            this.disableStyle()
+        initialise()
+    }
+
+    fun initialise() {
+        cubeShape = p?.createShape(PConstants.BOX, width, height, depth).apply {
+            this?.disableStyle()
         }
     }
 
     fun draw() {
-        p.pushMatrix {
-            p.translate(position.x, position.y, position.z)
-            p.pushMatrix {
-                p.rotateX(angle.x)
-                p.rotateY(angle.y)
-                p.rotateZ(angle.z)
-                updateColors()
-                p.scale(scale.x, scale.y, scale.z)
-                p.shape(cubeShape)
+        p?.apply {
+            pushMatrix {
+                translate(position.x, position.y, position.z)
+                pushMatrix {
+                    rotateX(angle.x)
+                    rotateY(angle.y)
+                    rotateZ(angle.z)
+                    updateColors()
+                    scale(scale.x, scale.y, scale.z)
+                    shape(cubeShape)
+                }
             }
         }
+    }
+
+    override fun setApplet(applet: PApplet) {
+        super.setApplet(applet)
+        p = applet
+        initialise()
     }
 
 }

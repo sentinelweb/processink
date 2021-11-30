@@ -41,13 +41,16 @@ fun main() {
     private lateinit var monjoriShader: MonjoriShader
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
+
+    override fun getApplet(): PApplet = this
+
     //lateinit var terminator:Terminator
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
     private lateinit var yinyang: PShape
     private lateinit var lotus: PShape
 
-    lateinit var cubesState: CubesState
+    //lateinit var cubesState: CubesState
 
     fun getInfo() = PAppletInfo(width, height)
 
@@ -76,7 +79,7 @@ fun main() {
             .addText("Love without hope.")
             .apply { fillColor = Color.YELLOW; visible = false }
 
-        cubesState = CubesState(
+        val cubesState = CubesState(
             textList = textList,
             cubeList = CubeList(this, textList.texts.size, 50f, 400f).apply { visible = true },
             rotationSpeed = 0.001f,
@@ -115,7 +118,7 @@ fun main() {
     //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
-        val color = cubesState.backgroundColor
+        val color = cubesPresenter.state.backgroundColor
         background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
         noStroke()
         currentBackground?.setDefaultShaderParams()
@@ -123,17 +126,16 @@ fun main() {
 
         currentShader?.engage() ?: resetShader()
 
-        cubesState.cubeList.draw()
+        cubesPresenter.state.cubeList.draw()
         resetShader() // doesn't work?
 
-        //ribbons.draw()
+        // ribbons.draw()
 
-        cubesState.textList.draw()
+        cubesPresenter.state.textList.draw()
 
         pushMatrix {
             translate(width / 5f, height / 2f)
             scale(3f)
-
             draw(yinyang)
         }
         pushMatrix {

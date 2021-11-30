@@ -1,5 +1,7 @@
 package cubes
 
+import processing.core.PApplet
+
 interface CubesContract {
 
     enum class ShaderType {
@@ -14,6 +16,7 @@ interface CubesContract {
         fun setShaderType(type: ShaderType)
         fun setShaderParam(type: ShaderType, param: String, value: Any)
         fun setBackgroundShaderType(type: BackgroundShaderType)
+        fun getApplet(): PApplet
     }
 
     interface Presenter {

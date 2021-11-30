@@ -12,6 +12,9 @@ import io.reactivex.subjects.Subject
 import org.drjekyll.fontchooser.FontDialog
 import java.awt.*
 import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.KeyEvent
+import java.io.File
 import javax.swing.*
 
 fun main() {
@@ -28,6 +31,8 @@ class Controls {
     private val events: Subject<Event> = BehaviorSubject.create()
 
     fun events(): Observable<Event> = events
+
+    private var stateFile: File = File(System.getProperty("user.home"), "state.json")
 
     data class Event constructor(
         val uiObject: UiObject,
@@ -75,22 +80,89 @@ class Controls {
         TEXT_FILL_ALPHA,
         TEXT_COLOR_STROKE,
         TEXT_STROKE_WEIGHT,
-        TEXT_STROKE
+        TEXT_STROKE,
+        MENU_OPEN_STATE,
+        MENU_SAVE_STATE,
     }
 
     fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Controls")
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-
+            val menuBar = makeMenu()
             controlPanel = MyPanel()
             //controlPanel.setOpaque(true) //content panes must be opaque
 
             frame.add(controlPanel)
-
+            frame.setJMenuBar(menuBar)
             // Display the window.
             frame.pack()
             frame.isVisible = true
+        }
+    }
+
+    private fun makeMenu(): JMenuBar {
+        val menuBar = JMenuBar()
+
+        //create menus
+        val fileMenu = JMenu("File")
+        fileMenu.mnemonic = KeyEvent.VK_F
+        //create menu items
+        val openStateMenuItem = JMenuItem("Open State")
+        openStateMenuItem.mnemonic = KeyEvent.VK_O
+        //openStateMenuItem.icon("baseline_movie_black_18.png")
+        openStateMenuItem.actionCommand = "Open"
+        openStateMenuItem.addActionListener {
+            showOpenDialog("Open state", stateFile) {
+                stateFile = it
+                events.onNext(Event(MENU_OPEN_STATE, it))
+            }
+        }
+        fileMenu.add(openStateMenuItem)
+        val saveStateMenuItem = JMenuItem("Save State")
+        saveStateMenuItem.mnemonic = KeyEvent.VK_S
+        //saveStateMenuItem.icon("baseline_movie_black_18.png")
+        saveStateMenuItem.actionCommand = "Save"
+        saveStateMenuItem.addActionListener {
+            showSaveDialog("Save state", stateFile) {
+                stateFile = it
+                events.onNext(Event(MENU_SAVE_STATE, it))
+            }
+        }
+        fileMenu.add(saveStateMenuItem)
+        menuBar.add(fileMenu)
+        return menuBar
+    }
+
+    private fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir.let { currentDirectory = it }
+            val result = showOpenDialog(controlPanel)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                chosen(selectedFile)
+            }
+        }
+    }
+
+    private fun showSaveDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
+        JFileChooser().apply {
+            isMultiSelectionEnabled = false
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            currentDir.let { currentDirectory = it }
+            val result = showSaveDialog(controlPanel)
+            if (result == JFileChooser.APPROVE_OPTION) {
+                chosen(selectedFile)
+            }
+        }
+    }
+
+    inner class EventMenuItemListener constructor(
+        private val ev: UiObject
+    ) : ActionListener {
+        override fun actionPerformed(e: ActionEvent) {
+            events.onNext(Event(ev, null))
         }
     }
 

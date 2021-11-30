@@ -2,8 +2,11 @@ package cubes
 
 import cubes.objects.CubeList
 import cubes.objects.TextList
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.awt.Color
 
+@Serializable
 data class CubesState constructor(
     var textList: TextList,
     var cubeList: CubeList,
@@ -14,14 +17,18 @@ data class CubesState constructor(
     var cubeScale: Float,
     var cubeScaleDist: Float,
     var rotationOffset: Float,
+    @Contextual
     var fillEndColor: Color = Color.ORANGE,
+    @Contextual
     var fillColor: Color = Color.YELLOW,
     var fillAlpha: Float = 255f,
     var textTransition: TextTransition = TextTransition.FADE,
     var textOrder: TextList.Ordering = TextList.Ordering.INORDER,
+    @Contextual
     var backgroundColor: Color = Color.BLACK
 )
 
+@Serializable
 data class PAppletInfo(
     val width: Int,
     val height: Int

@@ -62,7 +62,7 @@ dependencies {
     implementation "com.github.akarnokd:rxjava2-swing:0.3.7"
     implementation "org.koin:koin-core:$ver_koin"
 
-    runtime files("$processing_native_lib_path")
+    runtimeClasspath files("$processing_native_lib_path")
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"

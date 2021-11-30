@@ -15,8 +15,10 @@ import io.reactivex.disposables.CompositeDisposable
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
 import speecher.generator.osc.OscContract
+import speecher.util.serialization.stateJsonSerializer
 import java.awt.Color
 import java.awt.Font
+import java.io.File
 
 class CubesPresenter constructor(
     private val controls: Controls,
@@ -25,7 +27,8 @@ class CubesPresenter constructor(
     private val disposables: CompositeDisposable = CompositeDisposable()
 ) : CubesContract.Presenter {
 
-    private lateinit var state: CubesState
+    lateinit var state: CubesState
+        private set;
 
     init {
         oscController.initialise()
@@ -83,6 +86,8 @@ class CubesPresenter constructor(
                     TEXT_COLOR_STROKE -> textStrokeColor(it.data as Color)
                     TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
                     TEXT_STROKE -> textStroke(it.data as Boolean)
+                    MENU_SAVE_STATE -> saveState(it.data as File)
+                    MENU_OPEN_STATE -> openState(it.data as File)
                     else -> println("Couldnt handle : ${it.uiObject} ")
                 }
             }, {
@@ -91,6 +96,23 @@ class CubesPresenter constructor(
             })
         )
         controls.showWindow()
+    }
+
+    private fun saveState(file: File) {
+        stateJsonSerializer
+            .encodeToString(CubesState.serializer(), state)
+            .apply { file.writeText(this) }
+    }
+
+    private fun openState(file: File) {
+        val json = file.readText()
+        setState(stateJsonSerializer
+            .decodeFromString(CubesState.serializer(), json)
+            .apply {
+                cubeList.apply { setApplet(view.getApplet()) }
+                textList.apply { setApplet(view.getApplet()) }
+            }
+        )
     }
 
     fun updateBeforeDraw() {
