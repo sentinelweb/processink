@@ -109,7 +109,10 @@ class CubesPresenter constructor(
         setState(stateJsonSerializer
             .decodeFromString(CubesState.serializer(), json)
             .apply {
-                cubeList.apply { setApplet(view.getApplet()) }
+                cubeList.apply {
+                    setApplet(view.getApplet())
+                    cubeListMotion = VelocityRotationMotion.make(state)
+                }
                 textList.apply { setApplet(view.getApplet()) }
             }
         )

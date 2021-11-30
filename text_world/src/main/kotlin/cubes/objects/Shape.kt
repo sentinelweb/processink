@@ -48,7 +48,7 @@ open class Shape constructor(
             }
 
             if (stroke) {
-                stroke(fillColor.toProcessing(this))
+                stroke(strokeColor.toProcessing(this))
                 if (strokeWeight > 0) {
                     strokeWeight(strokeWeight)
                 }
