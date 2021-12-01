@@ -3,6 +3,7 @@
  * License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
  * Contact: tdmaav@gmail.com
  */
+// copied from : https://www.shadertoy.com/view/Ms2SD1
 #ifdef GL_ES
 precision mediump float;
 #endif
@@ -27,10 +28,6 @@ const vec3 SEA_BASE = vec3(0.0, 0.09, 0.18);
 const vec3 SEA_WATER_COLOR = vec3(0.8, 0.9, 0.6)*0.6;
 #define SEA_TIME (1.0 + u_time * SEA_SPEED)
 const mat2 octave_m = mat2(1.6, 1.2, -1.2, 1.6);
-
-//void main(){
-//    mainImage(gl_FragColor, gl_FragCoord);
-//}
 
 // math
 mat3 fromEuler(vec3 ang) {
@@ -193,7 +190,6 @@ vec3 getPixel(in vec2 coord, float time) {
 }
 
 // main
-//void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 void main() {
     float time = u_time * 0.3 + u_mouse.x*0.01;
 

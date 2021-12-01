@@ -6,7 +6,6 @@ import cubes.objects.CubeList
 import cubes.objects.TextList
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
-import cubes.util.pushMatrix
 import cubes.util.wrapper.TimeFormatter
 import net.robmunro.processing.util.webc
 import processing.core.PApplet
@@ -52,6 +51,7 @@ fun main() {
     fun getInfo() = PAppletInfo(width, height)
 
     override fun settings() {
+//        size(320, 180, PConstants.P3D)
 //        size(640, 480, PConstants.P3D)
         size(1280, 720, PConstants.P3D)
 //        size(1920, 1080, PConstants.P3D)
@@ -117,18 +117,18 @@ fun main() {
             resetShader()
 
             // ribbons.draw()
-            pushMatrix {
-                translate(width / 5f, height / 2f)
-                scale(3f)
-                draw(yinyang)
-            }
-            pushMatrix {
-                translate(width / 5f * 4, height / 2f)
-                scale(3f)
-                draw(lotus)
-            }
-
-            textList.draw()
+//            pushMatrix {
+//                translate(width / 5f, height / 2f)
+//                scale(3f)
+//                draw(yinyang)
+//            }
+//            pushMatrix {
+//                translate(width / 5f * 4, height / 2f)
+//                scale(3f)
+//                draw(lotus)
+//            }
+//
+//            textList.draw()
         }
     }
 
