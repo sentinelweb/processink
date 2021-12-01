@@ -32,7 +32,13 @@ class Controls {
 
     fun events(): Observable<Event> = events
 
-    private var stateFile: File = File(System.getProperty("user.home"), "state.json")
+    // todo move to state
+    private var filesDir: File = File(System.getProperty("user.home"), "cubes")
+    private var stateDir: File = File(filesDir, "state")
+    private var textDir: File = File(filesDir, "text")
+
+    private var stateFile: File = File(stateDir, "state.json")
+    private var textFile: File = File(textDir, "text.txt")
 
     data class Event constructor(
         val uiObject: UiObject,
@@ -43,6 +49,7 @@ class Controls {
         SHADER_LINE_NONE, SHADER_LINE_LINE, SHADER_LINE_NEON,
         SHADER_BG_NEBULA, SHADER_BG_FLAME, SHADER_BG_REFRACT,
         SHADER_BG_NONE, SHADER_BG_DEFORM, SHADER_BG_MONJORI,
+        SHADER_BG_WATER,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SLIDER,
         CUBES_ROTATION_OFFEST_RESET,
@@ -83,6 +90,8 @@ class Controls {
         TEXT_STROKE,
         MENU_OPEN_STATE,
         MENU_SAVE_STATE,
+        MENU_OPEN_TEXT,
+        MENU_SAVE_TEXT,
     }
 
     fun showWindow() {
@@ -99,39 +108,6 @@ class Controls {
             frame.pack()
             frame.isVisible = true
         }
-    }
-
-    private fun makeMenu(): JMenuBar {
-        val menuBar = JMenuBar()
-
-        //create menus
-        val fileMenu = JMenu("File")
-        fileMenu.mnemonic = KeyEvent.VK_F
-        //create menu items
-        val openStateMenuItem = JMenuItem("Open State")
-        openStateMenuItem.mnemonic = KeyEvent.VK_O
-        //openStateMenuItem.icon("baseline_movie_black_18.png")
-        openStateMenuItem.actionCommand = "Open"
-        openStateMenuItem.addActionListener {
-            showOpenDialog("Open state", stateFile) {
-                stateFile = it
-                events.onNext(Event(MENU_OPEN_STATE, it))
-            }
-        }
-        fileMenu.add(openStateMenuItem)
-        val saveStateMenuItem = JMenuItem("Save State")
-        saveStateMenuItem.mnemonic = KeyEvent.VK_S
-        //saveStateMenuItem.icon("baseline_movie_black_18.png")
-        saveStateMenuItem.actionCommand = "Save"
-        saveStateMenuItem.addActionListener {
-            showSaveDialog("Save state", stateFile) {
-                stateFile = it
-                events.onNext(Event(MENU_SAVE_STATE, it))
-            }
-        }
-        fileMenu.add(saveStateMenuItem)
-        menuBar.add(fileMenu)
-        return menuBar
     }
 
     private fun showOpenDialog(title: String, currentDir: File?, chosen: (File) -> Unit) {
@@ -173,8 +149,24 @@ class Controls {
             //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
             //selectShaderCombo = JComboBox(jcomp7Items)
 
-            preferredSize = Dimension(800, 700)
+            preferredSize = Dimension(1100, 700)
             layout = BorderLayout()
+
+            // east panel - shader
+            add(JPanel().apply {
+                preferredSize = Dimension(200, 400)
+                layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
+                add(JPanel().apply {
+                    titledBorder("State")
+                    val stateList = stateDir.listFiles()?.toList() ?: listOf()
+                    add(JList<File>().setup(stateList) { events.onNext(Event(MENU_OPEN_STATE, it)) })
+                })
+                add(JPanel().apply {
+                    titledBorder("Text")
+                    val textList = textDir.listFiles()?.toList() ?: listOf()
+                    add(JList<File>().setup(textList) { events.onNext(Event(MENU_OPEN_TEXT, it)) })
+                })
+            }, BorderLayout.WEST)
 
             // east panel - shader
             add(JPanel().apply {
@@ -201,6 +193,7 @@ class Controls {
                 add(JButton("Refraction").setup { events.onNext(Event(SHADER_BG_REFRACT)) })
                 add(JButton("Deform").setup { events.onNext(Event(SHADER_BG_DEFORM)) })
                 add(JButton("Monjori").setup { events.onNext(Event(SHADER_BG_MONJORI)) })
+                add(JButton("Water").setup { events.onNext(Event(SHADER_BG_WATER)) })
             }, BorderLayout.EAST)
 
             // center panel - motion, text
@@ -542,5 +535,65 @@ class Controls {
             return selected
         }
 
+    }
+
+    private fun makeMenu(): JMenuBar {
+        val menuBar = JMenuBar()
+
+        //create menus
+        val stateMenu = JMenu("State")
+        stateMenu.mnemonic = KeyEvent.VK_F
+        //create menu items
+        val openStateMenuItem = JMenuItem("Open State")
+        openStateMenuItem.mnemonic = KeyEvent.VK_O
+        //openStateMenuItem.icon("baseline_movie_black_18.png")
+        openStateMenuItem.actionCommand = "Open"
+        openStateMenuItem.addActionListener {
+            showOpenDialog("Open state", stateFile) {
+                stateFile = it
+                events.onNext(Event(MENU_OPEN_STATE, it))
+            }
+        }
+        stateMenu.add(openStateMenuItem)
+        val saveStateMenuItem = JMenuItem("Save State")
+        saveStateMenuItem.mnemonic = KeyEvent.VK_S
+        //saveStateMenuItem.icon("baseline_movie_black_18.png")
+        saveStateMenuItem.actionCommand = "Save"
+        saveStateMenuItem.addActionListener {
+            showSaveDialog("Save state", stateFile) {
+                stateFile = it
+                events.onNext(Event(MENU_SAVE_STATE, it))
+            }
+        }
+        stateMenu.add(saveStateMenuItem)
+        menuBar.add(stateMenu)
+
+        val textMenu = JMenu("Text")
+        textMenu.mnemonic = KeyEvent.VK_F
+        //create menu items
+        val openTextMenuItem = JMenuItem("Open Text")
+        openTextMenuItem.mnemonic = KeyEvent.VK_O
+        //openTextMenuItem.icon("baseline_movie_black_18.png")
+        openTextMenuItem.actionCommand = "Open"
+        openTextMenuItem.addActionListener {
+            showOpenDialog("Open text", textDir) {
+                textFile = it
+                events.onNext(Event(MENU_OPEN_TEXT, it))
+            }
+        }
+        textMenu.add(openTextMenuItem)
+        val saveTextMenuItem = JMenuItem("Save Text")
+        saveTextMenuItem.mnemonic = KeyEvent.VK_S
+        //saveTextMenuItem.icon("baseline_movie_black_18.png")
+        saveTextMenuItem.actionCommand = "Save"
+        saveTextMenuItem.addActionListener {
+            showSaveDialog("Save text", textDir) {
+                textFile = it
+                events.onNext(Event(MENU_OPEN_TEXT, it))
+            }
+        }
+        textMenu.add(saveTextMenuItem)
+        menuBar.add(textMenu)
+        return menuBar
     }
 }

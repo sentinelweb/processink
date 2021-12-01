@@ -50,6 +50,7 @@ class CubesPresenter constructor(
                     SHADER_BG_REFRACT -> shaderButtonRefraction()
                     SHADER_BG_DEFORM -> shaderButtonDeform()
                     SHADER_BG_MONJORI -> shaderButtonMonjori()
+                    SHADER_BG_WATER -> shaderButtonWater()
                     MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
                     CUBES_ROTATION_SLIDER -> motionSliderRotationSpeed(it.data as Float)
                     CUBES_ROTATION_OFFEST_SLIDER -> motionSliderRotationOffset(it.data as Float)
@@ -90,6 +91,7 @@ class CubesPresenter constructor(
                     TEXT_STROKE -> textStroke(it.data as Boolean)
                     MENU_SAVE_STATE -> saveState(it.data as File)
                     MENU_OPEN_STATE -> openState(it.data as File)
+                    MENU_OPEN_TEXT -> openText(it.data as File)
                     else -> println("Couldnt handle : ${it.uiObject} ")
                 }
             }, {
@@ -118,6 +120,13 @@ class CubesPresenter constructor(
                 textList.apply { setApplet(view.getApplet()) }
             }
         )
+    }
+
+    private fun openText(file: File) {
+        val list = file.readLines()
+        state.textList = TextList(view.getApplet())
+            .apply { list.forEach { addText(it) } }
+            .apply { fillColor = Color.YELLOW; visible = true }
     }
 
     fun updateBeforeDraw() {
@@ -157,33 +166,31 @@ class CubesPresenter constructor(
 
     private fun shaderButtonDeform() {
         state.background = DEFORM
-        //view.setBackgroundShaderType(DEFORM)
     }
 
     private fun shaderButtonMonjori() {
         state.background = MONJORI
-        //view.setBackgroundShaderType(MONJORI)
+    }
+
+    private fun shaderButtonWater() {
+        state.background = WATER
     }
 
     private fun shaderButtonBgNone(color: Color) {
         state.background = NONE
         state.backgroundColor = color
-        //view.setBackgroundShaderType(NONE)
     }
 
     private fun shaderButtonNebula() {
         state.background = NEBULA
-        //view.setBackgroundShaderType(NEBULA)
     }
 
     private fun shaderButtonColdFlame() {
         state.background = COLDFLAME
-        //view.setBackgroundShaderType(COLDFLAME)
     }
 
     private fun shaderButtonRefraction() {
         state.background = REFRACTION_PATTERN
-        //view.setBackgroundShaderType(REFRACTION_PATTERN)
     }
 
     private fun strokeWeight(value: Float) {

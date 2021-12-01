@@ -1,8 +1,6 @@
 package cubes
 
 import cubes.CubesContract.BackgroundShaderType.*
-import cubes.CubesContract.ShaderType
-import cubes.CubesContract.ShaderType.NEON
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
@@ -25,8 +23,6 @@ fun main() {
     val log = LogWrapper(TimeFormatter())
     val receiver = OscReceiver(log)
     val oscController = OscController(receiver, log)
-//    (OscController as OscContract.External).initialise()
-//    println("init OSC")
     val presenter = CubesPresenter(controls, cubes, oscController)
     cubes.cubesPresenter = presenter
     cubes.run()
@@ -39,6 +35,7 @@ fun main() {
     private lateinit var refractShader: RefractionPatternShader
     private lateinit var deformShader: DeformShader
     private lateinit var monjoriShader: MonjoriShader
+    private lateinit var waterShader: WaterShader
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
 
@@ -52,38 +49,20 @@ fun main() {
 
     private var lastBackgroundShaderType: CubesContract.BackgroundShaderType? = null
 
-    //lateinit var cubesState: CubesState
-
     fun getInfo() = PAppletInfo(width, height)
 
     override fun settings() {
-        size(1920, 1080, PConstants.P3D)
+//        size(640, 480, PConstants.P3D)
+        size(1280, 720, PConstants.P3D)
+//        size(1920, 1080, PConstants.P3D)
     }
 
     override fun setup() {
         //terminator = Terminator(this)
-        val textList = TextList(this)
-            .addText("In every fact")
-            .addText("there is something")
-            .addText("that is true and false.")
-            .addText("Every fact is true and false")
-            .addText("at the same time.")
-            .addText("The truth is resonance.")
-            .addText("All truth has a context")
-            .addText("and that context is us.")
-            .addText("But this is at odds")
-            .addText("with the very definition of truth.")
-            .addText("That truth is universal.")
-            .addText("All truth is yours")
-            .addText("and yours alone")
-            .addText("and don't let anyone ")
-            .addText("tell you differently.")
-            .addText("Love without hope.")
-            .apply { fillColor = Color.YELLOW; visible = false }
-
         val cubesState = CubesState(
-            textList = textList,
-            cubeList = CubeList(this, textList.texts.size, 50f, 400f).apply { visible = true },
+            textList = TextList(this)
+                .apply { fillColor = Color.YELLOW; visible = false },
+            cubeList = CubeList(this, 16, 50f, 400f).apply { visible = true },
             rotationSpeed = 0.001f,
             animationTime = 2000f,
             info = getInfo(),
@@ -101,6 +80,7 @@ fun main() {
         refractShader = RefractionPatternShader(this)
         deformShader = DeformShader(this)
         monjoriShader = MonjoriShader(this)
+        waterShader = WaterShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
         ribbons = Ribbons(this)
@@ -120,6 +100,7 @@ fun main() {
     //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
+
         cubesPresenter.cstate?.apply {
             val color = backgroundColor
             background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
@@ -136,9 +117,6 @@ fun main() {
             resetShader()
 
             // ribbons.draw()
-
-            textList.draw()
-
             pushMatrix {
                 translate(width / 5f, height / 2f)
                 scale(3f)
@@ -149,6 +127,8 @@ fun main() {
                 scale(3f)
                 draw(lotus)
             }
+
+            textList.draw()
         }
     }
 
@@ -158,22 +138,22 @@ fun main() {
             .let { shape(shape, -it / 2f, -size / 2f, it, size) }
     }
 
-    fun setShaderType(type: ShaderType) {
-        when (type) {
-            ShaderType.NONE -> currentShader = null
-            ShaderType.LINES -> currentShader = lineShader
-            NEON -> currentShader = null // TODO glow shader
-        }
-    }
-
-    fun setShaderParam(type: ShaderType, param: String, value: Any) {
-        when (type) {
-            ShaderType.NONE -> {
-            }
-            ShaderType.LINES -> lineShader.set(param, value)
-            NEON -> flameShader.set(param, value)
-        }
-    }
+//    fun setShaderType(type: ShaderType) {
+//        when (type) {
+//            ShaderType.NONE -> currentShader = null
+//            ShaderType.LINES -> currentShader = lineShader
+//            NEON -> currentShader = null // TODO glow shader
+//        }
+//    }
+//
+//    fun setShaderParam(type: ShaderType, param: String, value: Any) {
+//        when (type) {
+//            ShaderType.NONE -> {
+//            }
+//            ShaderType.LINES -> lineShader.set(param, value)
+//            NEON -> flameShader.set(param, value)
+//        }
+//    }
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         if (cubesPresenter.cstate?.background != lastBackgroundShaderType) {
@@ -184,6 +164,7 @@ fun main() {
                 REFRACTION_PATTERN -> currentBackground = refractShader
                 DEFORM -> currentBackground = deformShader
                 MONJORI -> currentBackground = monjoriShader
+                WATER -> currentBackground = waterShader
             }
             lastBackgroundShaderType = cubesPresenter.cstate?.background
         }
@@ -197,26 +178,4 @@ fun main() {
         internal var BASE_RESOURCES = "${System.getProperty("user.dir")}/text_world/src/main/resources"
     }
 
-    /// experiments //////////////
-//    val textToCube = { i: Int, cube: Cube ->
-//        val angleWrap = cube.angle % 2 * Math.PI
-//        val threshold = 1
-//        if (angleWrap < threshold || angleWrap > 2 * Math.PI - threshold) {
-//            pushMatrix()
-//            rotateX(cube.angle)
-//            rotateY(cube.angle)
-//            textList.texts[i].draw(this)
-//            popMatrix()
-//        }
-//    }
-
-//    private fun alignTexts() {
-//        textList.apply { setProps() }
-//            .texts
-//            .zip(cubesList.cubes.toTypedArray())
-//            .forEach { (text, cube) ->
-//                val fl = cube.width / 2
-//                text.point.set(fl - textWidth(text.text.toString()) / 2, fl, fl)
-//            }
-//    }
 }

@@ -9,7 +9,7 @@ interface CubesContract {
     }
 
     enum class BackgroundShaderType {
-        NEBULA, COLDFLAME, REFRACTION_PATTERN, DEFORM, MONJORI, NONE
+        NEBULA, COLDFLAME, REFRACTION_PATTERN, DEFORM, MONJORI, WATER, NONE
     }
 
     interface View {
