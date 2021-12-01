@@ -31,6 +31,17 @@ fun JButton.setup(click: (ActionEvent) -> Unit): JButton {
     return this
 }
 
+fun <T : Any> JList<T>.setData(list: List<T>) {
+    model = DefaultListModel<T>().let { model ->
+        list.forEach {
+            when (it) {
+                is File -> model.addElement(it)
+            }
+        }
+        model
+    }
+}
+
 fun <T : Any> JList<T>.setup(list: List<T>, click: (T) -> Unit): JComponent {
     setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
     setSelectedIndex(0)

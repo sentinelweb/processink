@@ -3,9 +3,9 @@ package cubes.shaders
 import cubes.CubesProcessingView.Companion.BASE_RESOURCES
 import processing.core.PApplet
 
-class RefractionPatternShader constructor(
+class OneWarpShader constructor(
     p: PApplet
 ) : ShaderWrapper(
     p,
-    "$BASE_RESOURCES/cubes/st_refractionPatternFrag.glsl"
+    "$BASE_RESOURCES/cubes/st_onewarp.glsl"
 )

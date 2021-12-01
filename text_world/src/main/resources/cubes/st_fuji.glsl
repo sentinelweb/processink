@@ -5,6 +5,7 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
+uniform vec3 u_color;
 
 float sun(vec2 uv, float battery)
 {
@@ -94,7 +95,7 @@ void main()
             uv.y = 3.0 / (abs(uv.y + 0.2) + 0.05);
             uv.x *= uv.y * 1.0;
             float gridVal = grid(uv, battery);
-            col = mix(col, vec3(1.0, 0.5, 1.0), gridVal);
+            col = mix(col, u_color, gridVal);
         }
         else
         {
@@ -107,10 +108,10 @@ void main()
             // Sun
             sunUV += vec2(0.75, 0.2);
             //uv.y -= 1.1 - 0.51;
-            col = vec3(1.0, 0.2, 1.0);
+            col = u_color;
             float sunVal = sun(sunUV, battery);
 
-            col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2);
+            col = mix(col, u_color*0.8, sunUV.y * 2.0 + 0.2);
             col = mix(vec3(0.0, 0.0, 0.0), col, sunVal);
 
             // fuji
@@ -119,16 +120,16 @@ void main()
             float wave_width = smoothstep(0.0, 0.01, (waveVal));
 
             // fuji color
-            col = mix(col, mix(vec3(0.0, 0.0, 0.25), vec3(1.0, 0.0, 0.5), fujiD), step(fujiVal, 0.0));
+            col = mix(col, mix(u_color*0.25, u_color*0.5, fujiD), step(fujiVal, 0.0));
             // fuji top snow
-            col = mix(col, vec3(1.0, 0.5, 1.0), wave_width * step(fujiVal, 0.0));
+            col = mix(col, u_color, wave_width * step(fujiVal, 0.0));
             // fuji outline
-            col = mix(col, vec3(1.0, 0.5, 1.0), 1.0-smoothstep(0.0, 0.01, abs(fujiVal)));
+            col = mix(col, u_color, 1.0-smoothstep(0.0, 0.01, abs(fujiVal)));
             //col = mix( col, vec3(1.0, 1.0, 1.0), 1.0-smoothstep(0.03,0.04,abs(fujiVal)) );
             //col = vec3(1.0, 1.0, 1.0) *(1.0-smoothstep(0.03,0.04,abs(fujiVal)));
 
             // horizon color
-            col += mix(col, mix(vec3(1.0, 0.12, 0.8), vec3(0.0, 0.0, 0.2), clamp(uv.y * 3.5 + 3.0, 0.0, 1.0)), step(0.0, fujiVal));
+            col += mix(col, mix(u_color, vec3(0.0, 0.0, 0.2), clamp(uv.y * 3.5 + 3.0, 0.0, 1.0)), step(0.0, fujiVal));
 
             // cloud
             vec2 cloudUV = uv;

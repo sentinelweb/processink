@@ -104,6 +104,7 @@ class CubesPresenter constructor(
         stateJsonSerializer
             .encodeToString(CubesState.serializer(), state)
             .apply { file.writeText(this) }
+            .apply { controls.refreshFiles() }
     }
 
     private fun openState(file: File) {

@@ -40,6 +40,9 @@ fun main() {
     private lateinit var fractalPyramidShader: FractalPyramidShader
     private lateinit var octagramsShader: OctagramShader
     private lateinit var proteanCloudsShader: ProteanCloudsShader
+    private lateinit var eclipseShader: EclipseShader
+    private lateinit var onewarpShader: OneWarpShader
+//    private lateinit var cloudsShader: CloudsShader
 
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
@@ -58,8 +61,8 @@ fun main() {
 
     override fun settings() {
 //        size(320, 180, PConstants.P3D)
-        size(640, 360, PConstants.P3D)
-//        size(1280, 720, PConstants.P3D)
+//        size(640, 360, PConstants.P3D)
+        size(1280, 720, PConstants.P3D)
 //        size(1920, 1080, PConstants.P3D)
     }
 
@@ -92,6 +95,9 @@ fun main() {
         fractalPyramidShader = FractalPyramidShader(this)
         octagramsShader = OctagramShader(this)
         proteanCloudsShader = ProteanCloudsShader(this)
+        eclipseShader = EclipseShader(this)
+        onewarpShader = OneWarpShader(this)
+        //cloudsShader = CloudsShader(this)
 
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
@@ -114,11 +120,11 @@ fun main() {
         cubesPresenter.updateBeforeDraw()
 
         cubesPresenter.cstate?.apply {
-            val color = backgroundColor
-            background(color.red.toFloat(), color.green.toFloat(), color.blue.toFloat())
+            background(backgroundColor.red.toFloat(), backgroundColor.green.toFloat(), backgroundColor.blue.toFloat())
             noStroke()
 
             setBackgroundShaderType(background)
+            currentBackground?.color = backgroundColor
             currentBackground?.setDefaultShaderParams()
             currentBackground?.engage()
 
@@ -169,18 +175,22 @@ fun main() {
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         if (cubesPresenter.cstate?.background != lastBackgroundShaderType) {
-            when (type) {
-                NONE -> currentBackground = null
-                NEBULA -> currentBackground = nebulaShader
-                COLDFLAME -> currentBackground = flameShader
-                REFRACTION_PATTERN -> currentBackground = refractShader
-                DEFORM -> currentBackground = deformShader
-                MONJORI -> currentBackground = monjoriShader
-                WATER -> currentBackground = waterShader
-                FUJI -> currentBackground = fujiShader
-                FRACTAL_PYRAMID -> currentBackground = fractalPyramidShader
-                OCTAGRAMS -> currentBackground = octagramsShader
-                PROTEAN_COUDS -> currentBackground = proteanCloudsShader
+            currentBackground = when (type) {
+                NONE -> null
+                NEBULA -> nebulaShader
+                COLDFLAME -> flameShader
+                REFRACTION_PATTERN -> refractShader
+                DEFORM -> deformShader
+                MONJORI -> monjoriShader
+                WATER -> waterShader
+                FUJI -> fujiShader
+                FRACTAL_PYRAMID -> fractalPyramidShader
+                OCTAGRAMS -> octagramsShader
+                PROTEAN_COUDS -> proteanCloudsShader
+                ECLIPSE -> eclipseShader
+                ONEWARP -> onewarpShader
+                //CLOUDS -> cloudsShader
+                else -> null
             }
             lastBackgroundShaderType = cubesPresenter.cstate?.background
         }

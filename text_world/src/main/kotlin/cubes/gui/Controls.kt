@@ -13,7 +13,6 @@ import io.reactivex.subjects.Subject
 import org.drjekyll.fontchooser.FontDialog
 import java.awt.*
 import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import java.io.File
 import javax.swing.*
@@ -28,7 +27,7 @@ fun main() {
  */
 class Controls {
 
-    private lateinit var controlPanel: JPanel
+    private lateinit var controlPanel: ControlsPanel
     private val events: Subject<Event> = BehaviorSubject.create()
 
     fun events(): Observable<Event> = events
@@ -98,7 +97,7 @@ class Controls {
             val frame = JFrame("Controls")
             frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             val menuBar = makeMenu()
-            controlPanel = MyPanel()
+            controlPanel = ControlsPanel()
             //controlPanel.setOpaque(true) //content panes must be opaque
 
             frame.add(controlPanel)
@@ -133,15 +132,9 @@ class Controls {
         }
     }
 
-    inner class EventMenuItemListener constructor(
-        private val ev: UiObject
-    ) : ActionListener {
-        override fun actionPerformed(e: ActionEvent) {
-            events.onNext(Event(ev, null))
-        }
-    }
-
-    inner class MyPanel constructor() : JPanel() {
+    inner class ControlsPanel constructor() : JPanel() {
+        lateinit var stateList: JList<File>
+        lateinit var textList: JList<File>
 
         init {
             //construct preComponents
@@ -157,13 +150,21 @@ class Controls {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
                 add(JPanel().apply {
                     titledBorder("State")
-                    val stateList = stateDir.listFiles()?.toList() ?: listOf()
-                    add(JList<File>().setup(stateList) { events.onNext(Event(MENU_OPEN_STATE, it)) })
+                    val stateFiles = stateDir.listFiles()?.toList() ?: listOf()
+                    JList<File>()
+                        .also { stateList = it }
+                        .setup(stateFiles) { events.onNext(Event(MENU_OPEN_STATE, it)) }
+                        .also { add(it) }
+
                 })
                 add(JPanel().apply {
                     titledBorder("Text")
-                    val textList = textDir.listFiles()?.toList() ?: listOf()
-                    add(JList<File>().setup(textList) { events.onNext(Event(MENU_OPEN_TEXT, it)) })
+                    val textFiles = textDir.listFiles()?.toList() ?: listOf()
+                    JList<File>()
+                        .also { textList = it }
+                        .setup(textFiles) { events.onNext(Event(MENU_OPEN_TEXT, it)) }
+                        .also { add(it) }
+
                 })
             }, BorderLayout.WEST)
 
@@ -177,11 +178,10 @@ class Controls {
                 add(JButton("Line").setup { events.onNext(Event(SHADER_LINE_LINE)) })
                 add(JButton("Neon").setup { events.onNext(Event(SHADER_LINE_NEON)) })
                 add(JPanel().apply { preferredSize = Dimension(10, 20) })
-                add(JButton("None").apply {
+                add(JButton("Color").apply {
                     addActionListener {
                         val color = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
                         color?.let {
-                            events.onNext(Event(SHADER_BG, NONE))
                             events.onNext(Event(SHADER_BG_COLOR, it))
 
                             @Suppress("LABEL_NAME_CLASH")
@@ -189,6 +189,7 @@ class Controls {
                         }
                     }
                 })
+                add(JButton("None").setup { events.onNext(Event(SHADER_BG, NONE)) })
                 add(JButton("Nebula").setup { events.onNext(Event(SHADER_BG, NEBULA)) })
                 add(JButton("ColdFlame").setup { events.onNext(Event(SHADER_BG, COLDFLAME)) })
                 add(JButton("Refraction").setup { events.onNext(Event(SHADER_BG, REFRACTION_PATTERN)) })
@@ -199,6 +200,10 @@ class Controls {
                 add(JButton("Fractal pyramid").setup { events.onNext(Event(SHADER_BG, FRACTAL_PYRAMID)) })
                 add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
                 add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_COUDS)) })
+                add(JButton("Eclipse").setup { events.onNext(Event(SHADER_BG, ECLIPSE)) })
+                add(JButton("OneWarp").setup { events.onNext(Event(SHADER_BG, ONEWARP)) })
+//                add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
+
             }, BorderLayout.EAST)
 
             // center panel - motion, text
@@ -560,6 +565,7 @@ class Controls {
             }
         }
         stateMenu.add(openStateMenuItem)
+
         val saveStateMenuItem = JMenuItem("Save State")
         saveStateMenuItem.mnemonic = KeyEvent.VK_S
         //saveStateMenuItem.icon("baseline_movie_black_18.png")
@@ -571,13 +577,24 @@ class Controls {
             }
         }
         stateMenu.add(saveStateMenuItem)
+
+        stateMenu.addSeparator()
+
+        val refreshMenuItem = JMenuItem("Refresh")
+        refreshMenuItem.mnemonic = KeyEvent.VK_S
+        //saveStateMenuItem.icon("baseline_movie_black_18.png")
+        refreshMenuItem.actionCommand = "Refresh"
+        refreshMenuItem.addActionListener {
+            refreshFiles()
+        }
+        stateMenu.add(refreshMenuItem)
         menuBar.add(stateMenu)
 
         val textMenu = JMenu("Text")
         textMenu.mnemonic = KeyEvent.VK_F
         //create menu items
         val openTextMenuItem = JMenuItem("Open Text")
-        openTextMenuItem.mnemonic = KeyEvent.VK_O
+//        openTextMenuItem.mnemonic = KeyEvent.VK_O
         //openTextMenuItem.icon("baseline_movie_black_18.png")
         openTextMenuItem.actionCommand = "Open"
         openTextMenuItem.addActionListener {
@@ -588,7 +605,7 @@ class Controls {
         }
         textMenu.add(openTextMenuItem)
         val saveTextMenuItem = JMenuItem("Save Text")
-        saveTextMenuItem.mnemonic = KeyEvent.VK_S
+//        saveTextMenuItem.mnemonic = KeyEvent.VK_S
         //saveTextMenuItem.icon("baseline_movie_black_18.png")
         saveTextMenuItem.actionCommand = "Save"
         saveTextMenuItem.addActionListener {
@@ -600,5 +617,13 @@ class Controls {
         textMenu.add(saveTextMenuItem)
         menuBar.add(textMenu)
         return menuBar
+    }
+
+    fun refreshFiles() {
+        val stateFiles = stateDir.listFiles()?.toList() ?: listOf()
+        controlPanel.stateList.setData(stateFiles)
+
+        val textFiles = textDir.listFiles()?.toList() ?: listOf()
+        controlPanel.textList.setData(textFiles)
     }
 }

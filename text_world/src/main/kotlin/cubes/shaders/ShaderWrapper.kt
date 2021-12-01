@@ -3,6 +3,7 @@ package cubes.shaders
 import cubes.util.pushMatrix
 import processing.core.*
 import processing.opengl.PShader
+import java.awt.Color
 import java.awt.Point
 
 abstract class ShaderWrapper(
@@ -15,6 +16,7 @@ abstract class ShaderWrapper(
         private set
 
     var mouse: Point? = null
+    var color: Color? = null
 
     open protected val type: Int? = PConstants.TRIANGLES // POINTS, LINES, or TRIANGLES
 
@@ -28,14 +30,16 @@ abstract class ShaderWrapper(
             ?: p.loadShader(fragPath)
 
     fun setDefaultShaderParams() {
-//        shader.set("u_resolution", p.width.toFloat(), p.height.toFloat())
         shader.set("u_resolution", resolution.x.toFloat(), resolution.y.toFloat())
-        (mouse ?: Point(p.mouseX, p.mouseY)).apply {
-            System.out.println("u_mouse.x=$x u_mouse.y=$y")
-            shader.set("u_mouse", x.toFloat(), y.toFloat())
-        }
+
+        (mouse ?: Point(p.mouseX, p.mouseY))
+            .apply { shader.set("u_mouse", x.toFloat(), y.toFloat()) }
 
         shader.set("u_time", p.millis() / 1000.0f)
+
+        Triple(((color?.red ?: 0) / 255f), ((color?.green ?: 0) / 255f), ((color?.blue ?: 0) / 255f))
+            .apply { shader.set("u_color", first, second, third) }
+            .apply { println(this) }
     }
 
     fun set(param: String, vararg value: Any): ShaderWrapper {
