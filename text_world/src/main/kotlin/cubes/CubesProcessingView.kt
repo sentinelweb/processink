@@ -15,6 +15,7 @@ import speecher.generator.osc.OscController
 import speecher.generator.osc.OscReceiver
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
+import java.awt.Point
 
 fun main() {
     val cubes = CubesProcessingView()
@@ -35,6 +36,8 @@ fun main() {
     private lateinit var deformShader: DeformShader
     private lateinit var monjoriShader: MonjoriShader
     private lateinit var waterShader: WaterShader
+    private lateinit var fujiShader: FujiShader
+
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
 
@@ -81,6 +84,8 @@ fun main() {
         deformShader = DeformShader(this)
         monjoriShader = MonjoriShader(this)
         waterShader = WaterShader(this)
+        waterShader.mouse = Point(604, 595)
+        fujiShader = FujiShader(this)
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
         ribbons = Ribbons(this)
@@ -165,6 +170,7 @@ fun main() {
                 DEFORM -> currentBackground = deformShader
                 MONJORI -> currentBackground = monjoriShader
                 WATER -> currentBackground = waterShader
+                FUJI -> currentBackground = fujiShader
             }
             lastBackgroundShaderType = cubesPresenter.cstate?.background
         }

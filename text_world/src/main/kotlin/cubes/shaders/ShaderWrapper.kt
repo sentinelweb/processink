@@ -1,14 +1,26 @@
 package cubes.shaders
 
+import cubes.util.pushMatrix
 import processing.core.*
 import processing.opengl.PShader
+import java.awt.Point
 
 abstract class ShaderWrapper(
     protected val p: PApplet,
     fragPath: String,
-    vertPath: String? = null
+    vertPath: String? = null,
+    dimOverride: Point? = null
 ) {
+    var resolution: Point
+        private set
+
+    var mouse: Point? = null
+
     open protected val type: Int? = PConstants.TRIANGLES // POINTS, LINES, or TRIANGLES
+
+    init {
+        resolution = dimOverride ?: Point(p.width, p.height)
+    }
 
     protected val shader: PShader =
         vertPath
@@ -16,8 +28,13 @@ abstract class ShaderWrapper(
             ?: p.loadShader(fragPath)
 
     fun setDefaultShaderParams() {
-        shader.set("u_resolution", p.width.toFloat(), p.height.toFloat())
-        shader.set("u_mouse", p.mouseX.toFloat(), p.mouseY.toFloat())
+//        shader.set("u_resolution", p.width.toFloat(), p.height.toFloat())
+        shader.set("u_resolution", resolution.x.toFloat(), resolution.y.toFloat())
+        (mouse ?: Point(p.mouseX, p.mouseY)).apply {
+            System.out.println("u_mouse.x=$x u_mouse.y=$y")
+            shader.set("u_mouse", x.toFloat(), y.toFloat())
+        }
+
         shader.set("u_time", p.millis() / 1000.0f)
     }
 
@@ -53,6 +70,10 @@ abstract class ShaderWrapper(
 
     open fun engage() {
         type?.let { p.shader(shader, it) } ?: p.shader(shader)
-        p.rect(0f, 0f, p.width.toFloat(), p.height.toFloat())
+        //p.rect(0f, 0f, p.width.toFloat(), p.height.toFloat())
+        p.pushMatrix {
+            p.scale((p.width / resolution.x).toFloat(), (p.height / resolution.y).toFloat())
+            p.rect(0f, 0f, resolution.x.toFloat(), resolution.y.toFloat())
+        }
     }
 }

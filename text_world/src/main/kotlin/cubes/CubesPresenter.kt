@@ -1,6 +1,5 @@
 package cubes
 
-import cubes.CubesContract.BackgroundShaderType.*
 import cubes.gui.Controls
 import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
@@ -44,13 +43,12 @@ class CubesPresenter constructor(
                     SHADER_LINE_NONE -> shaderButtonNone()
                     SHADER_LINE_LINE -> shaderButtonLine()
                     SHADER_LINE_NEON -> shaderButtonNeon()
-                    SHADER_BG_NONE -> shaderButtonBgNone(it.data as Color)
-                    SHADER_BG_NEBULA -> shaderButtonNebula()
-                    SHADER_BG_FLAME -> shaderButtonColdFlame()
-                    SHADER_BG_REFRACT -> shaderButtonRefraction()
-                    SHADER_BG_DEFORM -> shaderButtonDeform()
-                    SHADER_BG_MONJORI -> shaderButtonMonjori()
-                    SHADER_BG_WATER -> shaderButtonWater()
+                    SHADER_BG -> {
+                        state.background = it.data as CubesContract.BackgroundShaderType
+                    }
+                    SHADER_BG_COLOR -> {
+                        state.backgroundColor = it.data as Color
+                    }
                     MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
                     CUBES_ROTATION_SLIDER -> motionSliderRotationSpeed(it.data as Float)
                     CUBES_ROTATION_OFFEST_SLIDER -> motionSliderRotationOffset(it.data as Float)
@@ -162,35 +160,6 @@ class CubesPresenter constructor(
 
     private fun shaderButtonNeon() {
         //view.setShaderType(NEON)
-    }
-
-    private fun shaderButtonDeform() {
-        state.background = DEFORM
-    }
-
-    private fun shaderButtonMonjori() {
-        state.background = MONJORI
-    }
-
-    private fun shaderButtonWater() {
-        state.background = WATER
-    }
-
-    private fun shaderButtonBgNone(color: Color) {
-        state.background = NONE
-        state.backgroundColor = color
-    }
-
-    private fun shaderButtonNebula() {
-        state.background = NEBULA
-    }
-
-    private fun shaderButtonColdFlame() {
-        state.background = COLDFLAME
-    }
-
-    private fun shaderButtonRefraction() {
-        state.background = REFRACTION_PATTERN
     }
 
     private fun strokeWeight(value: Float) {

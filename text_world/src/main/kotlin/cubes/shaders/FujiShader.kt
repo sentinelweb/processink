@@ -4,10 +4,10 @@ import cubes.CubesProcessingView.Companion.BASE_RESOURCES
 import processing.core.PApplet
 import java.awt.Point
 
-class WaterShader constructor(
+class FujiShader constructor(
     p: PApplet
 ) : ShaderWrapper(
     p,
-    "$BASE_RESOURCES/cubes/st_water.glsl",
-    dimOverride = Point(320, 180)
+    "$BASE_RESOURCES/cubes/st_fuji.glsl",
+    dimOverride = Point(640, 360)
 )
