@@ -196,6 +196,9 @@ class Controls {
                 add(JButton("Monjori").setup { events.onNext(Event(SHADER_BG, MONJORI)) })
                 add(JButton("Water").setup { events.onNext(Event(SHADER_BG, WATER)) })
                 add(JButton("Fuji").setup { events.onNext(Event(SHADER_BG, FUJI)) })
+                add(JButton("Fractal pyramid").setup { events.onNext(Event(SHADER_BG, FRACTAL_PYRAMID)) })
+                add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
+                add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_COUDS)) })
             }, BorderLayout.EAST)
 
             // center panel - motion, text

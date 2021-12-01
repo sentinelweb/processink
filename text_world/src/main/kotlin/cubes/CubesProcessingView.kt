@@ -37,6 +37,9 @@ fun main() {
     private lateinit var monjoriShader: MonjoriShader
     private lateinit var waterShader: WaterShader
     private lateinit var fujiShader: FujiShader
+    private lateinit var fractalPyramidShader: FractalPyramidShader
+    private lateinit var octagramsShader: OctagramShader
+    private lateinit var proteanCloudsShader: ProteanCloudsShader
 
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
@@ -55,8 +58,8 @@ fun main() {
 
     override fun settings() {
 //        size(320, 180, PConstants.P3D)
-//        size(640, 480, PConstants.P3D)
-        size(1280, 720, PConstants.P3D)
+        size(640, 360, PConstants.P3D)
+//        size(1280, 720, PConstants.P3D)
 //        size(1920, 1080, PConstants.P3D)
     }
 
@@ -86,6 +89,10 @@ fun main() {
         waterShader = WaterShader(this)
         waterShader.mouse = Point(604, 595)
         fujiShader = FujiShader(this)
+        fractalPyramidShader = FractalPyramidShader(this)
+        octagramsShader = OctagramShader(this)
+        proteanCloudsShader = ProteanCloudsShader(this)
+
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
         ribbons = Ribbons(this)
@@ -171,6 +178,9 @@ fun main() {
                 MONJORI -> currentBackground = monjoriShader
                 WATER -> currentBackground = waterShader
                 FUJI -> currentBackground = fujiShader
+                FRACTAL_PYRAMID -> currentBackground = fractalPyramidShader
+                OCTAGRAMS -> currentBackground = octagramsShader
+                PROTEAN_COUDS -> currentBackground = proteanCloudsShader
             }
             lastBackgroundShaderType = cubesPresenter.cstate?.background
         }
