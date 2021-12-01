@@ -14,31 +14,32 @@ import org.drjekyll.fontchooser.FontDialog
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.io.File
 import javax.swing.*
 
 fun main() {
-    Controls()
+    val filesDir = File(System.getProperty("user.home"), "cubes")
+    Controls(filesDir)
         .showWindow()
 }
 
 /**
  * TODO make a model object to hold data
  */
-class Controls {
+class Controls(
+    private var filesDir: File
+) {
 
     private lateinit var controlPanel: ControlsPanel
     private val events: Subject<Event> = BehaviorSubject.create()
 
     fun events(): Observable<Event> = events
-
-    // todo move to state
-    private var filesDir: File = File(System.getProperty("user.home"), "cubes")
-    private var stateDir: File = File(filesDir, "state")
-    private var textDir: File = File(filesDir, "text")
-
-    private var stateFile: File = File(stateDir, "state.json")
-    private var textFile: File = File(textDir, "text.txt")
+    val stateDir: File
+        get() = File(filesDir, "state")
+    val textDir: File
+        get() = File(filesDir, "text")
 
     data class Event constructor(
         val uiObject: UiObject,
@@ -90,12 +91,18 @@ class Controls {
         MENU_SAVE_STATE,
         MENU_OPEN_TEXT,
         MENU_SAVE_TEXT,
+        MENU_EXIT,
     }
 
     fun showWindow() {
         SwingUtilities.invokeLater {
             val frame = JFrame("Controls")
-            frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+            frame.defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
+            frame.addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    events.onNext(Event(MENU_EXIT, null))
+                }
+            })
             val menuBar = makeMenu()
             controlPanel = ControlsPanel()
             //controlPanel.setOpaque(true) //content panes must be opaque
@@ -559,8 +566,7 @@ class Controls {
         //openStateMenuItem.icon("baseline_movie_black_18.png")
         openStateMenuItem.actionCommand = "Open"
         openStateMenuItem.addActionListener {
-            showOpenDialog("Open state", stateFile) {
-                stateFile = it
+            showOpenDialog("Open state", stateDir) {
                 events.onNext(Event(MENU_OPEN_STATE, it))
             }
         }
@@ -571,8 +577,7 @@ class Controls {
         //saveStateMenuItem.icon("baseline_movie_black_18.png")
         saveStateMenuItem.actionCommand = "Save"
         saveStateMenuItem.addActionListener {
-            showSaveDialog("Save state", stateFile) {
-                stateFile = it
+            showSaveDialog("Save state", stateDir) {
                 events.onNext(Event(MENU_SAVE_STATE, it))
             }
         }
@@ -599,7 +604,6 @@ class Controls {
         openTextMenuItem.actionCommand = "Open"
         openTextMenuItem.addActionListener {
             showOpenDialog("Open text", textDir) {
-                textFile = it
                 events.onNext(Event(MENU_OPEN_TEXT, it))
             }
         }
@@ -610,7 +614,6 @@ class Controls {
         saveTextMenuItem.actionCommand = "Save"
         saveTextMenuItem.addActionListener {
             showSaveDialog("Save text", textDir) {
-                textFile = it
                 events.onNext(Event(MENU_OPEN_TEXT, it))
             }
         }

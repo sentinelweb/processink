@@ -8,6 +8,7 @@ import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
+import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
@@ -16,11 +17,13 @@ import speecher.util.serialization.stateJsonSerializer
 import java.awt.Color
 import java.awt.Font
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class CubesPresenter constructor(
     private val controls: Controls,
     private val view: CubesContract.View,
     private val oscController: OscContract.External,
+    private val filesDir: File,
     private val disposables: CompositeDisposable = CompositeDisposable()
 ) : CubesContract.Presenter {
 
@@ -30,6 +33,13 @@ class CubesPresenter constructor(
         } else null
 
     private lateinit var state: CubesState
+
+    val stateDir: File
+        get() = File(filesDir, "state")
+    val lastStateFile: File
+        get() = File(stateDir, "last_state.json")
+    val textDir: File
+        get() = File(filesDir, "text")
 
     init {
         oscController.initialise()
@@ -90,6 +100,7 @@ class CubesPresenter constructor(
                     MENU_SAVE_STATE -> saveState(it.data as File)
                     MENU_OPEN_STATE -> openState(it.data as File)
                     MENU_OPEN_TEXT -> openText(it.data as File)
+                    MENU_EXIT -> exit()
                     else -> println("Couldnt handle : ${it.uiObject} ")
                 }
             }, {
@@ -98,6 +109,16 @@ class CubesPresenter constructor(
             })
         )
         controls.showWindow()
+
+        Completable
+            .fromCallable { openState(lastStateFile) }
+            .delay(10, TimeUnit.SECONDS)
+            .subscribe()
+    }
+
+    private fun exit() {
+        saveState(lastStateFile)
+        System.exit(0)
     }
 
     private fun saveState(file: File) {
@@ -108,17 +129,19 @@ class CubesPresenter constructor(
     }
 
     private fun openState(file: File) {
-        val json = file.readText()
-        setState(stateJsonSerializer
-            .decodeFromString(CubesState.serializer(), json)
-            .apply {
-                cubeList.apply {
-                    setApplet(view.getApplet())
-                    cubeListMotion = VelocityRotationMotion.make(state)
+        if (file.exists()) {
+            val json = file.readText()
+            setState(stateJsonSerializer
+                .decodeFromString(CubesState.serializer(), json)
+                .apply {
+                    cubeList.apply {
+                        setApplet(view.getApplet())
+                        cubeListMotion = VelocityRotationMotion.make(state)
+                    }
+                    textList.apply { setApplet(view.getApplet()) }
                 }
-                textList.apply { setApplet(view.getApplet()) }
-            }
-        )
+            )
+        }
     }
 
     private fun openText(file: File) {

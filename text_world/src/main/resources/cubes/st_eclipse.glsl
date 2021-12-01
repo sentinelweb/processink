@@ -108,8 +108,8 @@ vec3 getCol(vec3 viewDir)
 
     // Fog
     uv *= rotate(0.3);
-    col = mix(col, u_color, perlinNoise(uv + vec2(u_time * 0.05, 0.0) + vec2(4.0)) * pow(1.0 - uv.y*uv.y, 4.0) * 0.8 * min(lenUV*1.5, 1.0));
-    col = mix(col, u_color, perlinNoise(uv + vec2(u_time * 0.01, 0.0) + vec2(2.0)) * pow(1.0 - uv.y*uv.y, 4.0) * 0.8 * min(lenUV*1.5, 1.0));
+    col = mix(col, u_color*0.7, perlinNoise(uv + vec2(u_time * 0.05, 0.0) + vec2(4.0)) * pow(1.0 - uv.y*uv.y, 4.0) * 0.8 * min(lenUV*1.5, 1.0));
+    col = mix(col, u_color*0.7, perlinNoise(uv + vec2(u_time * 0.01, 0.0) + vec2(2.0)) * pow(1.0 - uv.y*uv.y, 4.0) * 0.8 * min(lenUV*1.5, 1.0));
 
     return col;
 }

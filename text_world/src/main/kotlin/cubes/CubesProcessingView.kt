@@ -16,14 +16,16 @@ import speecher.generator.osc.OscReceiver
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Point
+import java.io.File
 
 fun main() {
     val cubes = CubesProcessingView()
-    val controls = Controls()
+    val filesDir = File(System.getProperty("user.home"), "cubes")
+    val controls = Controls(filesDir)
     val log = LogWrapper(TimeFormatter())
     val receiver = OscReceiver(log)
     val oscController = OscController(receiver, log)
-    val presenter = CubesPresenter(controls, cubes, oscController)
+    val presenter = CubesPresenter(controls, cubes, oscController, filesDir)
     cubes.cubesPresenter = presenter
     cubes.run()
 }
@@ -103,7 +105,7 @@ fun main() {
         currentBackground = nebulaShader
         ribbons = Ribbons(this)
         ribbons.setup()
-        cubesPresenter.setup()
+
         yinyang = loadShape("${BASE_RESOURCES}/cubes/faith.svg")
         yinyang.setStroke(webc("#aaaaaa"))
         yinyang.setFill(webc("#dddddd"))
@@ -112,6 +114,8 @@ fun main() {
         lotus.setStroke(webc("#384FA0"))
         lotus.setFill(webc("#6C8DFF"))
         lotus.setStroke(true)
+
+        cubesPresenter.setup()
     }
 
     // make a algo to send different cubes to catch each other up.
