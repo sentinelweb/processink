@@ -34,12 +34,13 @@ abstract class ShaderWrapper(
 
         (mouse ?: Point(p.mouseX, p.mouseY))
             .apply { shader.set("u_mouse", x.toFloat(), y.toFloat()) }
+        //  .apply { println(this) }
 
         shader.set("u_time", p.millis() / 1000.0f)
 
         Triple(((color?.red ?: 0) / 255f), ((color?.green ?: 0) / 255f), ((color?.blue ?: 0) / 255f))
             .apply { shader.set("u_color", first, second, third) }
-            .apply { println(this) }
+//            .apply { println(this) }
     }
 
     fun set(param: String, vararg value: Any): ShaderWrapper {

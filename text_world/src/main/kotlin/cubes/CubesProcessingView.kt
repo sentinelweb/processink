@@ -4,15 +4,15 @@ import cubes.CubesContract.BackgroundShaderType.*
 import cubes.gui.Controls
 import cubes.objects.CubeList
 import cubes.objects.TextList
+import cubes.osc.*
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
 import cubes.util.wrapper.TimeFormatter
+import net.robmunro.processing.util.toProcessing
 import net.robmunro.processing.util.webc
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
-import speecher.generator.osc.OscController
-import speecher.generator.osc.OscReceiver
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Point
@@ -22,9 +22,9 @@ fun main() {
     val cubes = CubesProcessingView()
     val filesDir = File(System.getProperty("user.home"), "cubes")
     val controls = Controls(filesDir)
-    val log = LogWrapper(TimeFormatter())
-    val receiver = OscReceiver(log)
-    val oscController = OscController(receiver, log)
+    val receiver = OscReceiver(LogWrapper(TimeFormatter()), OscMessageMapper(OscTypeTagsParser()))
+    val oscController =
+        OscController(receiver, OscEventMapper(LogWrapper(TimeFormatter())), LogWrapper(TimeFormatter()))
     val presenter = CubesPresenter(controls, cubes, oscController, filesDir)
     cubes.cubesPresenter = presenter
     cubes.run()
@@ -124,13 +124,20 @@ fun main() {
         cubesPresenter.updateBeforeDraw()
 
         cubesPresenter.cstate?.apply {
-            background(backgroundColor.red.toFloat(), backgroundColor.green.toFloat(), backgroundColor.blue.toFloat())
             noStroke()
-
             setBackgroundShaderType(background)
-            currentBackground?.color = backgroundColor
-            currentBackground?.setDefaultShaderParams()
-            currentBackground?.engage()
+            currentBackground?.apply {
+                background(Color.BLACK.toProcessing(this@CubesProcessingView))
+                color = backgroundColor
+                setDefaultShaderParams()
+                engage()
+            } ?: apply {
+                background(
+                    backgroundColor.red.toFloat(),
+                    backgroundColor.green.toFloat(),
+                    backgroundColor.blue.toFloat()
+                )
+            }
 
             currentShader?.engage() ?: resetShader()
 
@@ -190,7 +197,7 @@ fun main() {
                 FUJI -> fujiShader
                 FRACTAL_PYRAMID -> fractalPyramidShader
                 OCTAGRAMS -> octagramsShader
-                PROTEAN_COUDS -> proteanCloudsShader
+                PROTEAN_CLOUDS -> proteanCloudsShader
                 ECLIPSE -> eclipseShader
                 ONEWARP -> onewarpShader
                 //CLOUDS -> cloudsShader

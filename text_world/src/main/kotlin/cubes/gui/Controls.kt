@@ -5,7 +5,8 @@ package cubes.gui
 //Home Page http://guigenie.cjb.net - Check often for new versions!
 
 import cubes.CubesContract.BackgroundShaderType.*
-import cubes.gui.Controls.UiObject.*
+import cubes.CubesContract.Control.*
+import cubes.CubesContract.Event
 import cubes.shaders.LineShader
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
@@ -40,59 +41,6 @@ class Controls(
         get() = File(filesDir, "state")
     val textDir: File
         get() = File(filesDir, "text")
-
-    data class Event constructor(
-        val uiObject: UiObject,
-        val data: Any? = null
-    )
-
-    enum class UiObject {
-        SHADER_LINE_NONE, SHADER_LINE_LINE, SHADER_LINE_NEON,
-        SHADER_BG, SHADER_BG_COLOR,
-        MOTION_ANIMATION_TIME,
-        CUBES_ROTATION_SLIDER,
-        CUBES_ROTATION_OFFEST_RESET,
-        CUBES_ROTATION_OFFEST_SLIDER,
-        CUBES_ROTATION_X,
-        CUBES_ROTATION_Y,
-        CUBES_ROTATION_Z,
-        CUBES_ROTATION_RESET,
-        CUBES_ROTATION_ALIGN,
-        CUBES_VISIBLE,
-        CUBES_GRID,
-        CUBES_LINE,
-        CUBES_SQUARE,
-        CUBES_TRANSLATION_RESET,
-        CUBES_SCALE_BASE_SLIDER,
-        CUBES_SCALE_OFFSET_SLIDER,
-        CUBES_SCALE_APPLY,
-        CUBES_COLOR_FILL_START,
-        CUBES_COLOR_FILL_END,
-        CUBES_FILL,
-        CUBES_COLOR_FILL_ALPHA,
-        CUBES_COLOR_STROKE,
-        CUBES_STROKE,
-        CUBES_STROKE_WEIGHT,
-        TEXT_ORDER_RANDOM,
-        TEXT_ORDER_NEAR_RANDOM,
-        TEXT_ORDER_INORDER,
-        TEXT_FONT,
-        TEXT_MOTION_CUBE,
-        TEXT_MOTION_AROUND,
-        TEXT_MOTION_FADE,
-        TEXT_COLOR_FILL,
-        TEXT_COLOR_FILL_END,
-        TEXT_FILL,
-        TEXT_FILL_ALPHA,
-        TEXT_COLOR_STROKE,
-        TEXT_STROKE_WEIGHT,
-        TEXT_STROKE,
-        MENU_OPEN_STATE,
-        MENU_SAVE_STATE,
-        MENU_OPEN_TEXT,
-        MENU_SAVE_TEXT,
-        MENU_EXIT,
-    }
 
     fun showWindow() {
         SwingUtilities.invokeLater {
@@ -206,7 +154,7 @@ class Controls(
                 add(JButton("Fuji").setup { events.onNext(Event(SHADER_BG, FUJI)) })
                 add(JButton("Fractal pyramid").setup { events.onNext(Event(SHADER_BG, FRACTAL_PYRAMID)) })
                 add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
-                add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_COUDS)) })
+                add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_CLOUDS)) })
                 add(JButton("Eclipse").setup { events.onNext(Event(SHADER_BG, ECLIPSE)) })
                 add(JButton("OneWarp").setup { events.onNext(Event(SHADER_BG, ONEWARP)) })
 //                add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
@@ -245,14 +193,14 @@ class Controls(
                                 JSlider(-400, 400)
                                     .setup(0, 1, 200, false) {
                                         val source = it.source as JSlider
-                                        events.onNext(Event(CUBES_ROTATION_SLIDER, source.value.toFloat()))
+                                        events.onNext(Event(CUBES_ROTATION_SPEED, source.value.toFloat()))
                                     })
-                            add(JButton("0ffest").setup { events.onNext(Event(CUBES_ROTATION_OFFEST_RESET)) })
+                            add(JButton("0ffset").setup { events.onNext(Event(CUBES_ROTATION_OFFEST_RESET)) })
                             add(
                                 JSlider(-100, 100)
                                     .setup(0, 1, 50, false) {
                                         val source = it.source as JSlider
-                                        events.onNext(Event(CUBES_ROTATION_OFFEST_SLIDER, source.value.toFloat()))
+                                        events.onNext(Event(CUBES_ROTATION_OFFEST_SPEED, source.value.toFloat()))
                                     }
                                     .apply { value = 1 }
                             )
@@ -346,7 +294,7 @@ class Controls(
                             JSlider(0, 255)
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
-                                    events.onNext(Event(CUBES_COLOR_FILL_ALPHA, source.value.toFloat()))
+                                    events.onNext(Event(CUBES_COLOR_FILL_ALPHA, source.value))
                                 }
                                 .apply { value = 3000 }
                                 .wrapWithLabel("Alpha")
@@ -500,8 +448,7 @@ class Controls(
                             JSlider(0, 255)
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
-                                    events.onNext(Event(TEXT_FILL_ALPHA, source.value.toFloat()))
-                                    //listener.textFillAlpha(source.value.toFloat())
+                                    events.onNext(Event(TEXT_FILL_ALPHA, source.value))
                                 }
                                 .apply { value = 255 }
                                 .wrapWithLabel("Alpha")

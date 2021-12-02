@@ -1,18 +1,19 @@
 package cubes
 
+import cubes.CubesContract.Control.*
+import cubes.CubesContract.TextTransition.*
 import cubes.gui.Controls
-import cubes.gui.Controls.UiObject.*
 import cubes.motion.*
 import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.*
+import cubes.osc.OscContract
 import io.reactivex.Completable
 import io.reactivex.disposables.CompositeDisposable
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
-import speecher.generator.osc.OscContract
 import speecher.util.serialization.stateJsonSerializer
 import java.awt.Color
 import java.awt.Font
@@ -47,66 +48,68 @@ class CubesPresenter constructor(
 
     override fun setup() {
         disposables.add(
-            controls.events().subscribe({
-                println("receive : ${it.uiObject} : ${it.data} ")
-                when (it.uiObject) {
-                    SHADER_LINE_NONE -> shaderButtonNone()
-                    SHADER_LINE_LINE -> shaderButtonLine()
-                    SHADER_LINE_NEON -> shaderButtonNeon()
-                    SHADER_BG -> {
-                        state.background = it.data as CubesContract.BackgroundShaderType
+            controls.events()
+                .mergeWith(oscController.events())
+                .subscribe({
+                    println("receive : ${it.control} : ${it.data} ")
+                    when (it.control) {
+                        SHADER_LINE_NONE -> shaderButtonNone()
+                        SHADER_LINE_LINE -> shaderButtonLine()
+                        SHADER_LINE_NEON -> shaderButtonNeon()
+                        SHADER_BG -> {
+                            state.background = it.data as CubesContract.BackgroundShaderType
+                        }
+                        SHADER_BG_COLOR -> {
+                            state.backgroundColor = it.data as Color
+                        }
+                        MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
+                        CUBES_ROTATION_SPEED -> motionSliderRotationSpeed(it.data as Float)
+                        CUBES_ROTATION_OFFEST_SPEED -> motionSliderRotationOffset(it.data as Float)
+                        CUBES_ROTATION_OFFEST_RESET -> motionRotationOffsetReset()
+                        CUBES_ROTATION_X -> motionRotX(it.data as Boolean)
+                        CUBES_ROTATION_Y -> motionRotY(it.data as Boolean)
+                        CUBES_ROTATION_Z -> motionRotZ(it.data as Boolean)
+                        CUBES_ROTATION_RESET -> motionRotationReset()
+                        CUBES_ROTATION_ALIGN -> motionAlignExecute()
+                        CUBES_VISIBLE -> cubesVisible(it.data as Boolean)
+                        CUBES_GRID -> motionGrid()
+                        CUBES_LINE -> motionLine()
+                        CUBES_SQUARE -> motionSquare()
+                        CUBES_TRANSLATION_RESET -> motionTranslationReset()
+                        CUBES_SCALE_BASE_SLIDER -> motionSliderScale(it.data as Float)
+                        CUBES_SCALE_OFFSET_SLIDER -> motionSliderScaleDist(it.data as Float)
+                        CUBES_SCALE_APPLY -> motionApplyScale()
+                        CUBES_COLOR_FILL_START -> fillColor(it.data as Color)
+                        CUBES_COLOR_FILL_END -> fillEndColor(it.data as Color)
+                        CUBES_FILL -> fill(it.data as Boolean)
+                        CUBES_COLOR_FILL_ALPHA -> fillAlpha(it.data as Int)
+                        CUBES_COLOR_STROKE -> strokeColor(it.data as Color)
+                        CUBES_STROKE -> stroke(it.data as Boolean)
+                        CUBES_STROKE_WEIGHT -> strokeWeight(it.data as Float)
+                        TEXT_ORDER_RANDOM -> textRandom(it.data as Boolean)
+                        TEXT_ORDER_NEAR_RANDOM -> textNearRandom(it.data as Boolean)
+                        TEXT_ORDER_INORDER -> textInOrder(it.data as Boolean)
+                        TEXT_FONT -> textFont(it.data as Font)
+                        TEXT_MOTION_CUBE -> textMotionCube(it.data as Boolean)
+                        TEXT_MOTION_AROUND -> textMotionAround(it.data as Boolean)
+                        TEXT_MOTION_FADE -> textMotionFade(it.data as Boolean)
+                        TEXT_COLOR_FILL -> textFillColor(it.data as Color)
+                        TEXT_COLOR_FILL_END -> textFillEndColor(it.data as Color)
+                        TEXT_FILL -> textFill(it.data as Boolean)
+                        TEXT_FILL_ALPHA -> textFillAlpha(it.data as Int)
+                        TEXT_COLOR_STROKE -> textStrokeColor(it.data as Color)
+                        TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
+                        TEXT_STROKE -> textStroke(it.data as Boolean)
+                        MENU_SAVE_STATE -> saveState(it.data as File)
+                        MENU_OPEN_STATE -> openState(it.data as File)
+                        MENU_OPEN_TEXT -> openText(it.data as File)
+                        MENU_EXIT -> exit()
+                        else -> println("Couldnt handle : ${it.control} ")
                     }
-                    SHADER_BG_COLOR -> {
-                        state.backgroundColor = it.data as Color
-                    }
-                    MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
-                    CUBES_ROTATION_SLIDER -> motionSliderRotationSpeed(it.data as Float)
-                    CUBES_ROTATION_OFFEST_SLIDER -> motionSliderRotationOffset(it.data as Float)
-                    CUBES_ROTATION_OFFEST_RESET -> motionRotationOffsetReset()
-                    CUBES_ROTATION_X -> motionRotX(it.data as Boolean)
-                    CUBES_ROTATION_Y -> motionRotY(it.data as Boolean)
-                    CUBES_ROTATION_Z -> motionRotZ(it.data as Boolean)
-                    CUBES_ROTATION_RESET -> motionRotationReset()
-                    CUBES_ROTATION_ALIGN -> motionAlignExecute()
-                    CUBES_VISIBLE -> cubesVisible(it.data as Boolean)
-                    CUBES_GRID -> motionGrid()
-                    CUBES_LINE -> motionLine()
-                    CUBES_SQUARE -> motionSquare()
-                    CUBES_TRANSLATION_RESET -> motionTranslationReset()
-                    CUBES_SCALE_BASE_SLIDER -> motionSliderScale(it.data as Float)
-                    CUBES_SCALE_OFFSET_SLIDER -> motionSliderScaleDist(it.data as Float)
-                    CUBES_SCALE_APPLY -> motionApplyScale()
-                    CUBES_COLOR_FILL_START -> fillColor(it.data as Color)
-                    CUBES_COLOR_FILL_END -> fillEndColor(it.data as Color)
-                    CUBES_FILL -> fill(it.data as Boolean)
-                    CUBES_COLOR_FILL_ALPHA -> fillAlpha(it.data as Float)
-                    CUBES_COLOR_STROKE -> strokeColor(it.data as Color)
-                    CUBES_STROKE -> stroke(it.data as Boolean)
-                    CUBES_STROKE_WEIGHT -> strokeWeight(it.data as Float)
-                    TEXT_ORDER_RANDOM -> textRandom(it.data as Boolean)
-                    TEXT_ORDER_NEAR_RANDOM -> textNearRandom(it.data as Boolean)
-                    TEXT_ORDER_INORDER -> textInOrder(it.data as Boolean)
-                    TEXT_FONT -> textFont(it.data as Font)
-                    TEXT_MOTION_CUBE -> textMotionCube(it.data as Boolean)
-                    TEXT_MOTION_AROUND -> textMotionAround(it.data as Boolean)
-                    TEXT_MOTION_FADE -> textMotionFade(it.data as Boolean)
-                    TEXT_COLOR_FILL -> textFillColor(it.data as Color)
-                    TEXT_COLOR_FILL_END -> textFillEndColor(it.data as Color)
-                    TEXT_FILL -> textFill(it.data as Boolean)
-                    TEXT_FILL_ALPHA -> textFillAlpha(it.data as Float)
-                    TEXT_COLOR_STROKE -> textStrokeColor(it.data as Color)
-                    TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
-                    TEXT_STROKE -> textStroke(it.data as Boolean)
-                    MENU_SAVE_STATE -> saveState(it.data as File)
-                    MENU_OPEN_STATE -> openState(it.data as File)
-                    MENU_OPEN_TEXT -> openText(it.data as File)
-                    MENU_EXIT -> exit()
-                    else -> println("Couldnt handle : ${it.uiObject} ")
-                }
-            }, {
-                println("Exception from UI : ${it.message} ")
-                it.printStackTrace()
-            })
+                }, {
+                    println("Exception from UI : ${it.message} ")
+                    it.printStackTrace()
+                })
         )
         controls.showWindow()
 
@@ -286,10 +289,10 @@ class CubesPresenter constructor(
         state.cubeList.cubes.forEach { it.stroke = selected }
     }
 
-    private fun fillAlpha(alpha: Float) {
-        state.fillAlpha = alpha
+    private fun fillAlpha(alpha: Int) {
+        state.fillAlpha = alpha.toFloat()
         state.cubeList.cubes.forEach {
-            it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha.toInt())
+            it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha)
         }
     }
 
@@ -310,14 +313,14 @@ class CubesPresenter constructor(
             this.timeMs = timeMs
             texts.forEach { it.fillColor = TRANSPARENT }
             motion = when (state.textTransition) {
-                TextTransition.FADE -> textColorMotion(timeMs)
-                TextTransition.FADE_ZOOM -> CompositeMotion(
+                FADE -> textColorMotion(timeMs)
+                FADE_ZOOM -> CompositeMotion(
                     listOf(
                         textColorMotion(timeMs),
                         textTransitionMotion(timeMs)
                     )
                 )
-                TextTransition.ZOOM -> textTransitionMotion(timeMs)
+                ZOOM -> textTransitionMotion(timeMs)
             }.apply { start() }
             endFunction = fun() {
                 startText(timeMs)
@@ -382,17 +385,17 @@ class CubesPresenter constructor(
     }
 
     private fun textMotionCube(selected: Boolean) {
-        state.textTransition = TextTransition.ZOOM
+        state.textTransition = ZOOM
         startText(state.animationTime)
     }
 
     private fun textMotionAround(selected: Boolean) {
-        state.textTransition = TextTransition.FADE_ZOOM
+        state.textTransition = FADE_ZOOM
         startText(state.animationTime)
     }
 
     private fun textMotionFade(selected: Boolean) {
-        state.textTransition = TextTransition.FADE
+        state.textTransition = FADE
         startText(state.animationTime)
     }
 
@@ -414,12 +417,12 @@ class CubesPresenter constructor(
         }
     }
 
-    private fun textFillAlpha(alpha: Float) {
+    private fun textFillAlpha(alpha: Int) {
         val old = state.textList.fillColor
-        state.textList.fillColor = Color(old.red, old.green, old.blue, alpha.toInt())
+        state.textList.fillColor = Color(old.red, old.green, old.blue, alpha)
         state.textList.texts.forEach {
             val oldt = it.fillColor
-            it.fillColor = Color(oldt.red, oldt.green, oldt.blue, alpha.toInt())
+            it.fillColor = Color(oldt.red, oldt.green, oldt.blue, alpha)
         }
     }
 

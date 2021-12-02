@@ -1,4 +1,4 @@
-package speecher.generator.osc
+package cubes.osc
 
 import com.illposed.osc.MessageSelector
 import com.illposed.osc.OSCMessageEvent
@@ -7,7 +7,8 @@ import com.illposed.osc.transport.udp.OSCPortInBuilder
 import speecher.util.wrapper.LogWrapper
 
 class OscReceiver constructor(
-    private val log: LogWrapper
+    private val log: LogWrapper,
+    private val mapper: OscMessageMapper
 ) : OscContract.Receiver {
 
     private var portIn: OSCPortIn? = null
@@ -56,13 +57,9 @@ class OscReceiver constructor(
 
     private fun processEvent(e: OSCMessageEvent) {
         e.apply { log.d("osc event : ${message.address} -> ${message.arguments} info.typetags = [${message.info.argumentTypeTags.map { it }}]") }
-        controller.processEvent(
-            OscContract.Event(
-                e.message.address,
-                e.message.arguments,
-                e.message.info.argumentTypeTags
-            )
-        )
+        mapper.map(e).apply {
+            controller.processEvent(this)
+        }
     }
 
     override fun isRunning(): Boolean = portIn?.isListening ?: false

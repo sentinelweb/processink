@@ -1,4 +1,7 @@
-package speecher.generator.osc
+package cubes.osc
+
+import cubes.CubesContract
+import io.reactivex.Observable
 
 interface OscContract {
 
@@ -10,7 +13,7 @@ interface OscContract {
     }
 
     interface Controller {
-        fun processEvent(e: Event)
+        fun processEvent(e: OscEvent)
     }
 
     interface External {
@@ -18,25 +21,24 @@ interface OscContract {
         fun initialise()
         fun shutdown()
         fun isRunning(): Boolean
+        fun events(): Observable<CubesContract.Event>
+    }
+
+    data class OscEvent(
+        val message: String,
+        val args: List<Arg>
+
+    ) {
+        data class Arg(
+            val value: Any?,
+            val type: String
+        )
     }
 
     interface Listener {
         fun onReceiverStarted()
         fun onReceiverStopped()
-        fun onPlaySentence()
-        fun onPlayNextWord()
-        fun onRewindSentence()
-        fun onLooping(loop: Boolean)
-        fun onVolume(vol: Float)
-        fun onLoadSentence(index: Int)
-        fun onPause()
-        fun onPlayOneWord(playOneWord: Boolean)
     }
 
-    data class Event(
-        val message: String,
-        val args: List<Any>,
-        val typeTags: CharSequence
-    )
 
 }

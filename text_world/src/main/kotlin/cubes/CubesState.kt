@@ -1,8 +1,10 @@
 package cubes
 
 import cubes.CubesContract.BackgroundShaderType.REFRACTION_PATTERN
+import cubes.CubesContract.TextTransition.FADE
 import cubes.objects.CubeList
 import cubes.objects.TextList
+import cubes.objects.TextList.Ordering.INORDER
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.awt.Color
@@ -23,8 +25,8 @@ data class CubesState constructor(
     @Contextual
     var fillColor: Color = Color.YELLOW,
     var fillAlpha: Float = 255f,
-    var textTransition: TextTransition = TextTransition.FADE,
-    var textOrder: TextList.Ordering = TextList.Ordering.INORDER,
+    var textTransition: CubesContract.TextTransition = FADE,
+    var textOrder: TextList.Ordering = INORDER,
     @Contextual
     var backgroundColor: Color = Color.BLACK,
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN
@@ -35,7 +37,3 @@ data class PAppletInfo(
     val width: Int,
     val height: Int
 )
-
-enum class TextTransition {
-    FADE, FADE_ZOOM, ZOOM
-}
