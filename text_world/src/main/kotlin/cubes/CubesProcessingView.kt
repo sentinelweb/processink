@@ -45,6 +45,7 @@ fun main() {
     private lateinit var proteanCloudsShader: ProteanCloudsShader
     private lateinit var eclipseShader: EclipseShader
     private lateinit var onewarpShader: OneWarpShader
+    private lateinit var procWarpShader: ProceduralWarpShader
 //    private lateinit var cloudsShader: CloudsShader
 
     private var currentShader: ShaderWrapper? = null
@@ -100,6 +101,7 @@ fun main() {
         proteanCloudsShader = ProteanCloudsShader(this)
         eclipseShader = EclipseShader(this)
         onewarpShader = OneWarpShader(this)
+        procWarpShader = ProceduralWarpShader(this)
         //cloudsShader = CloudsShader(this)
 
         hint(PConstants.DISABLE_DEPTH_MASK)
@@ -202,6 +204,7 @@ fun main() {
                 PROTEAN_CLOUDS -> proteanCloudsShader
                 ECLIPSE -> eclipseShader
                 ONEWARP -> onewarpShader
+                PROCWARP -> procWarpShader
                 //CLOUDS -> cloudsShader
                 else -> null
             }

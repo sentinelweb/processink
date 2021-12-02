@@ -8,7 +8,7 @@ interface CubesContract {
 
     enum class BackgroundShaderType {
         NEBULA, COLDFLAME, REFRACTION_PATTERN, DEFORM, MONJORI, WATER, FUJI, FRACTAL_PYRAMID, OCTAGRAMS, PROTEAN_CLOUDS,
-        ECLIPSE, CLOUDS, ONEWARP, NONE
+        ECLIPSE, CLOUDS, ONEWARP, PROCWARP, NONE
     }
 
     enum class TextTransition { FADE, SPIN, FADE_ZOOM }

@@ -66,7 +66,6 @@ float map(vec3 pos, float u_time) {
     return box_set1;
 }
 
-
 void main() {
     vec2 p = (gl_FragCoord.xy * 2. - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
     vec3 ro = vec3(0., -0.2, u_time * 4.);
@@ -76,7 +75,6 @@ void main() {
     float t = 0.1;
     vec3 col = vec3(0.);
     float ac = 0.0;
-
 
     for (int i = 0; i < 99; i++){
         vec3 pos = ro + ray * t;
@@ -93,8 +91,7 @@ void main() {
 
     col = vec3(ac * 0.02);
 
-    col +=vec3(0., 0.2 * abs(sin(u_time)), 0.5 + sin(u_time) * 0.2);
-
+    col += vec3(0., 0.2 * abs(sin(u_time)), 0.5 + sin(u_time) * 0.2);
 
     gl_FragColor = vec4(col, 1.0 - t * (0.02 + 0.02 * sin (u_time)));
 }

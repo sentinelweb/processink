@@ -151,6 +151,7 @@ class Controls(
                 add(JButton("Monjori").setup { events.onNext(Event(SHADER_BG, MONJORI)) })
                 add(JButton("Eclipse").setup { events.onNext(Event(SHADER_BG, ECLIPSE)) })
                 add(JButton("OneWarp").setup { events.onNext(Event(SHADER_BG, ONEWARP)) })
+                add(JButton("ProcWarp").setup { events.onNext(Event(SHADER_BG, PROCWARP)) })
                 add(JButton("Nebula").setup { events.onNext(Event(SHADER_BG, NEBULA)) })
                 add(JButton("ColdFlame").setup { events.onNext(Event(SHADER_BG, COLDFLAME)) })
                 add(JButton("Refraction").setup { events.onNext(Event(SHADER_BG, REFRACTION_PATTERN)) })
