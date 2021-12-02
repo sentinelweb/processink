@@ -129,6 +129,7 @@ fun main() {
             setBackgroundShaderType(background)
             currentBackground?.apply {
                 background(Color.BLACK.toProcessing(this@CubesProcessingView))
+                fill(Color.BLACK.toProcessing(this@CubesProcessingView))
                 color = backgroundColor
                 setDefaultShaderParams()
                 engage()
