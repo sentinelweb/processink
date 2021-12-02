@@ -1,7 +1,7 @@
 package cubes.motion
 
-import cubes.objects.Cube
 import cubes.CubesState
+import cubes.objects.Cube
 import cubes.objects.Shape
 import processing.core.PVector
 import provider.TimeProvider
@@ -12,7 +12,7 @@ class VelocityRotationMotion(
     private val motionRotation: Triple<Boolean, Boolean, Boolean> = Triple(true, true, true),
     timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : RotationMotion<Cube>(0f, listOf(), timeProvider, endFunction) {
+) : RotationMotion<Cube>(0f, listOf(), timeProvider, null, endFunction) {
 
     override fun isEnded() = false
 

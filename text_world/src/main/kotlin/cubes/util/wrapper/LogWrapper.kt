@@ -3,6 +3,8 @@ package speecher.util.wrapper
 import cubes.util.wrapper.TimeFormatter
 import java.time.LocalTime
 import kotlin.reflect.KClass
+fun logFactory(tag: Any? = null) = LogWrapper(TimeFormatter())
+    .apply { tag?.apply { tag(this) } }
 
 class LogWrapper constructor(private val timeFormatter: TimeFormatter, var tag: String? = null) {
 

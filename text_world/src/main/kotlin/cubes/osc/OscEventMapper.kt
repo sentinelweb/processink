@@ -2,6 +2,7 @@ package cubes.osc
 
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
+import java.awt.Font
 
 class OscEventMapper(
     private val log: LogWrapper
@@ -94,6 +95,7 @@ class OscEventMapper(
     fun getBoolean(event: OscContract.OscEvent, arg: Int): Boolean = when (event.args[arg].type) {
         "i" -> (event.args[arg].value as Int) == 1
         "s" -> event.args[arg].value == "true"
+        "f" -> (event.args[arg].value as Float) == 1f
         else -> {
             log.e("${event.message}: arg:$arg not a boolean = ${event.args[arg]}");
             false
@@ -140,4 +142,18 @@ class OscEventMapper(
             0f
         }
     }
+
+    fun getFont(e: OscContract.OscEvent): Font? =
+        (e.args.get(0).value as? String)?.let { name ->
+            if (e.args.size > 1) {
+                when (e.args.get(1).type) {
+                    "s" -> Font(name, Font.PLAIN, getInt(e, 1))
+                    "f" -> Font(name, Font.PLAIN, getInt(e, 1))
+                    "i" -> Font(name, Font.PLAIN, getInt(e, 1))
+                    else -> Font(name, Font.PLAIN, 60)
+                }
+            } else {
+                Font(name, Font.PLAIN, 60)
+            }
+        }
 }

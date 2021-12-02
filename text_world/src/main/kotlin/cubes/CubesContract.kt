@@ -4,18 +4,16 @@ import processing.core.PApplet
 
 interface CubesContract {
 
-    enum class ShaderType {
-        NONE, LINES, NEON
-    }
+    enum class ShaderType { NONE, LINES, NEON }
 
     enum class BackgroundShaderType {
         NEBULA, COLDFLAME, REFRACTION_PATTERN, DEFORM, MONJORI, WATER, FUJI, FRACTAL_PYRAMID, OCTAGRAMS, PROTEAN_CLOUDS,
         ECLIPSE, CLOUDS, ONEWARP, NONE
     }
 
-    enum class TextTransition {
-        FADE, FADE_ZOOM, ZOOM
-    }
+    enum class TextTransition { FADE, SPIN, FADE_ZOOM }
+    enum class Formation { GRID, LINE, CIRCLE, SQUARE, CENTER }
+    enum class RotationAxis { X, Y, Z }
 
     interface View {
         fun getApplet(): PApplet
@@ -33,23 +31,18 @@ interface CubesContract {
 
     enum class Control {
         SHADER_LINE_NONE, SHADER_LINE_LINE, SHADER_LINE_NEON,
-        SHADER_BG, SHADER_BG_COLOR,
+        SHADER_BG, BG_COLOR,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SPEED,
         CUBES_ROTATION_OFFEST_RESET,
         CUBES_ROTATION_OFFEST_SPEED,
-        CUBES_ROTATION_X,
-        CUBES_ROTATION_Y,
-        CUBES_ROTATION_Z,
+        CUBES_ROTATION,
         CUBES_ROTATION_RESET,
         CUBES_ROTATION_ALIGN,
         CUBES_VISIBLE,
-        CUBES_GRID,
-        CUBES_LINE,
-        CUBES_SQUARE,
-        CUBES_TRANSLATION_RESET,
-        CUBES_SCALE_BASE_SLIDER,
-        CUBES_SCALE_OFFSET_SLIDER,
+        CUBES_FORMATION,
+        CUBES_SCALE_BASE,
+        CUBES_SCALE_OFFSET,
         CUBES_SCALE_APPLY,
         CUBES_COLOR_FILL_START,
         CUBES_COLOR_FILL_END,
@@ -58,13 +51,10 @@ interface CubesContract {
         CUBES_COLOR_STROKE,
         CUBES_STROKE,
         CUBES_STROKE_WEIGHT,
-        TEXT_ORDER_RANDOM,
-        TEXT_ORDER_NEAR_RANDOM,
-        TEXT_ORDER_INORDER,
+        CUBES_LENGTH,
+        TEXT_ORDER,
         TEXT_FONT,
-        TEXT_MOTION_CUBE,
-        TEXT_MOTION_AROUND,
-        TEXT_MOTION_FADE,
+        TEXT_MOTION,
         TEXT_COLOR_FILL,
         TEXT_COLOR_FILL_END,
         TEXT_FILL,
@@ -72,6 +62,7 @@ interface CubesContract {
         TEXT_COLOR_STROKE,
         TEXT_STROKE_WEIGHT,
         TEXT_STROKE,
+        TEXT_VISIBLE,
         MENU_OPEN_STATE,
         MENU_SAVE_STATE,
         MENU_OPEN_TEXT,

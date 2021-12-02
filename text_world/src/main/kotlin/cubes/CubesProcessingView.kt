@@ -7,6 +7,7 @@ import cubes.objects.TextList
 import cubes.osc.*
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
+import cubes.util.wrapper.FilesWrapper
 import cubes.util.wrapper.TimeFormatter
 import net.robmunro.processing.util.toProcessing
 import net.robmunro.processing.util.webc
@@ -20,12 +21,12 @@ import java.io.File
 
 fun main() {
     val cubes = CubesProcessingView()
-    val filesDir = File(System.getProperty("user.home"), "cubes")
-    val controls = Controls(filesDir)
+    val files = FilesWrapper(File(System.getProperty("user.home"), "cubes"))
+    val controls = Controls(files)
     val receiver = OscReceiver(LogWrapper(TimeFormatter()), OscMessageMapper(OscTypeTagsParser()))
     val oscController =
-        OscController(receiver, OscEventMapper(LogWrapper(TimeFormatter())), LogWrapper(TimeFormatter()))
-    val presenter = CubesPresenter(controls, cubes, oscController, filesDir)
+        OscController(receiver, OscEventMapper(LogWrapper(TimeFormatter())), LogWrapper(TimeFormatter()), files)
+    val presenter = CubesPresenter(controls, cubes, oscController, files)
     cubes.cubesPresenter = presenter
     cubes.run()
 }
@@ -75,7 +76,7 @@ fun main() {
                 .apply { fillColor = Color.YELLOW; visible = false },
             cubeList = CubeList(this, 16, 50f, 400f).apply { visible = true },
             rotationSpeed = 0.001f,
-            animationTime = 2000f,
+            animationTime = 1000f,
             info = getInfo(),
             cubeScale = 10f,
             cubeScaleDist = 0f,
@@ -157,7 +158,7 @@ fun main() {
 //                draw(lotus)
 //            }
 //
-//            textList.draw()
+            textList.draw()
         }
     }
 
