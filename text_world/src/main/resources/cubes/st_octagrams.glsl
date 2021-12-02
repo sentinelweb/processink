@@ -63,7 +63,6 @@ float box_set(vec3 pos, float u_time) {
 float map(vec3 pos, float u_time) {
     vec3 pos_origin = pos;
     float box_set1 = box_set(pos, u_time);
-
     return box_set1;
 }
 
