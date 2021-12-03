@@ -16,7 +16,6 @@ import processing.core.PConstants
 import processing.core.PShape
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
-import java.awt.Point
 import java.io.File
 
 fun main() {
@@ -93,7 +92,6 @@ fun main() {
         deformShader = DeformShader(this)
         monjoriShader = MonjoriShader(this)
         waterShader = WaterShader(this)
-        waterShader.mouse = Point(604, 595)
         fujiShader = FujiShader(this)
         fractalPyramidShader = FractalPyramidShader(this)
         octagramsShader = OctagramShader(this)
