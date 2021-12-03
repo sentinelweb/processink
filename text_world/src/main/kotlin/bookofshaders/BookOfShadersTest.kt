@@ -8,6 +8,7 @@ import java.awt.Color
 fun main() {
     BookOfShadersTest().run()
 }
+
 class BookOfShadersTest : PApplet() {
 
     private val shaders = listOf(
@@ -21,6 +22,12 @@ class BookOfShadersTest : PApplet() {
         "st_spaceGif_orig.glsl",
         "st_starField.glsl",
         "st_starField_orig.glsl",
+        "7_circleFrag.glsl",
+        "7_distanceFieldFrag.glsl",
+        "7_frameFrag.glsl",
+        "7_nGon.glsl",
+        "7_polarFrag.glsl",
+        "8_motionRotationFrag.glsl",
     )
     private var index = 0;
     private lateinit var shader: PShader
