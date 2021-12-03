@@ -17,14 +17,14 @@ object PVectorSerializer : KSerializer<PVector> {
 
     override fun serialize(encoder: Encoder, value: PVector) {
         value.run { "${x}:${y}:${z}" }
-            .apply { println("pvec:" + this) }
+//            .apply { println("pvec:" + this) }
             .apply { encoder.encodeString(this) }
 
     }
 
     override fun deserialize(decoder: Decoder): PVector {
         return decoder.decodeString()
-            .apply { println("pvec:" + this) }
+//            .apply { println("pvec:" + this) }
             .run { split(":") }
             .takeIf { it.size == 3 }
             ?.run { PVector(get(0).toFloat(), get(1).toFloat(), get(2).toFloat()) }

@@ -1,7 +1,7 @@
 package cubes.motion
 
+import cubes.models.Shape
 import cubes.motion.interpolator.Interpolator
-import cubes.objects.Shape
 import provider.TimeProvider
 
 abstract class Motion<out T : Shape, out D : Any> constructor(

@@ -1,4 +1,4 @@
-package cubes.objects
+package cubes.models
 
 import cubes.motion.Motion
 import cubes.motion.VelocityRotationMotion
@@ -39,19 +39,19 @@ class CubeList constructor(
         }
     }
 
-    fun updateState() {
+    override fun updateState() {
+        motion.execute(0, this)
         cubes.forEachIndexed { i, cube ->
             cubeListMotion.execute(i, cube)
         }
     }
 
-    fun draw(contextFunction: ((i: Int, cube: Cube) -> Unit)? = null) {
+    override fun draw() {
         if (visible) {
             p?.apply {
                 pushMatrix {
                     translate(width / 2f, height / 2f)
                     cubes.forEachIndexed { i, cube ->
-                        contextFunction?.let { it(i, cube) }
                         cube.draw()
                     }
                 }

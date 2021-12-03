@@ -1,10 +1,12 @@
 package cubes
 
+import cubes.models.MilleniumFalcon
+import cubes.models.Shape
+import cubes.models.Terminator
 import processing.core.PApplet
+import kotlin.reflect.KClass
 
 interface CubesContract {
-
-    enum class ShaderType { NONE, LINES, NEON }
 
     enum class BackgroundShaderType {
         NEBULA, COLDFLAME, REFRACTION_PATTERN, DEFORM, MONJORI, WATER, FUJI, FRACTAL_PYRAMID, OCTAGRAMS, PROTEAN_CLOUDS,
@@ -14,6 +16,11 @@ interface CubesContract {
     enum class TextTransition { FADE, SPIN, FADE_ZOOM }
     enum class Formation { GRID, LINE, CIRCLE, SQUARE, CENTER }
     enum class RotationAxis { X, Y, Z }
+
+    enum class Model3D(val clazz: KClass<out Shape>) {
+        TERMINATOR(Terminator::class),
+        MILLENIUM_FALCON(MilleniumFalcon::class)
+    }
 
     interface View {
         fun getApplet(): PApplet
@@ -30,7 +37,6 @@ interface CubesContract {
     )
 
     enum class Control {
-        SHADER_LINE_NONE, SHADER_LINE_LINE, SHADER_LINE_NEON,
         SHADER_BG, BG_COLOR,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SPEED,
@@ -63,6 +69,9 @@ interface CubesContract {
         TEXT_STROKE_WEIGHT,
         TEXT_STROKE,
         TEXT_VISIBLE,
+        TEXT_NEXT,
+        ADD_MODEL,
+        REMOVE_MODEL,
         MENU_OPEN_STATE,
         MENU_SAVE_STATE,
         MENU_OPEN_TEXT,

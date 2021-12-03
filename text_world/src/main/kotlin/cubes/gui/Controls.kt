@@ -9,8 +9,10 @@ import cubes.CubesContract.BackgroundShaderType.*
 import cubes.CubesContract.Control.*
 import cubes.CubesContract.Event
 import cubes.CubesContract.Formation.*
+import cubes.CubesContract.Model3D.MILLENIUM_FALCON
+import cubes.CubesContract.Model3D.TERMINATOR
 import cubes.CubesContract.TextTransition.*
-import cubes.objects.TextList
+import cubes.models.TextList
 import cubes.shaders.LineShader
 import cubes.util.wrapper.FilesWrapper
 import io.reactivex.Observable
@@ -88,19 +90,15 @@ class Controls(
         }
     }
 
-    inner class ControlsPanel constructor() : JPanel() {
-        lateinit var stateList: JList<File>
-        lateinit var textList: JList<File>
+    inner class ControlsPanel : JPanel() {
+        var stateList: JList<File>
+        var textList: JList<File>
 
         init {
-            //construct preComponents
-            //val jcomp7Items = arrayOf("circle", "square", "triangle", "flower", "rect", "ngon")
-            //selectShaderCombo = JComboBox(jcomp7Items)
-
-            preferredSize = Dimension(1100, 700)
+            preferredSize = Dimension(1100, 760)
             layout = BorderLayout()
 
-            // east panel - shader
+            // west panel - states/texts
             add(JPanel().apply {
                 preferredSize = Dimension(200, 400)
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
@@ -128,12 +126,7 @@ class Controls(
             add(JPanel().apply {
                 preferredSize = Dimension(200, 400)
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                titledBorder("Shader")
-
-                add(JButton("None").setup { events.onNext(Event(SHADER_LINE_NONE)) })
-                add(JButton("Line").setup { events.onNext(Event(SHADER_LINE_LINE)) })
-                add(JButton("Neon").setup { events.onNext(Event(SHADER_LINE_NEON)) })
-                add(JPanel().apply { preferredSize = Dimension(10, 20) })
+                titledBorder("Background")
                 add(JButton("BG Color").apply {
                     addActionListener {
                         val color = JColorChooser.showDialog(this, "Background Color", Color.WHITE)
@@ -160,7 +153,6 @@ class Controls(
                 add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
                 add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_CLOUDS)) })
                 add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
-
             }, BorderLayout.EAST)
 
             // center panel - motion, text
@@ -456,6 +448,28 @@ class Controls(
                         )
                     }.wrapWithLabel("Stroke"))
 
+                })
+                add(JPanel().apply {
+                    layout = GridLayout(-1, 1)
+                    titledBorder("Objects")
+
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.X_AXIS)
+                        add(JToggleButton("Terminator").setup { ae ->
+                            if (isSelected(ae)) {
+                                events.onNext(Event(ADD_MODEL, TERMINATOR))
+                            } else {
+                                events.onNext(Event(REMOVE_MODEL, TERMINATOR))
+                            }
+                        })
+                        add(JToggleButton("MF").setup { ae ->
+                            if (isSelected(ae)) {
+                                events.onNext(Event(ADD_MODEL, MILLENIUM_FALCON))
+                            } else {
+                                events.onNext(Event(REMOVE_MODEL, MILLENIUM_FALCON))
+                            }
+                        })
+                    }, BorderLayout.CENTER)
                 })
             }, BorderLayout.CENTER)
         }

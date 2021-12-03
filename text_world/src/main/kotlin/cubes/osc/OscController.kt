@@ -4,7 +4,9 @@ import cubes.CubesContract
 import cubes.CubesContract.BackgroundShaderType
 import cubes.CubesContract.Control.*
 import cubes.CubesContract.Event
-import cubes.objects.TextList
+import cubes.CubesContract.Model3D.TERMINATOR
+import cubes.CubesContract.TextTransition.FADE
+import cubes.models.TextList.Ordering.INORDER
 import cubes.util.wrapper.FilesWrapper
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
@@ -85,7 +87,6 @@ class OscController(
                 }
                 "/cubes/length" -> events.onNext(Event(CUBES_LENGTH, eventMapper.getInt(e, 0)))
 
-
                 // text
                 "/text/stroke/visible" -> events.onNext(Event(TEXT_STROKE, eventMapper.getBoolean(e, 0)))
                 "/text/stroke/color" -> events.onNext(Event(TEXT_COLOR_STROKE, eventMapper.getColor(e)))
@@ -95,20 +96,14 @@ class OscController(
                 "/text/fill" -> events.onNext(Event(TEXT_FILL, eventMapper.getBoolean(e, 0)))
                 "/text/font" -> events.onNext(Event(TEXT_FONT, eventMapper.getFont(e)))
                 "/text/visible" -> events.onNext(Event(TEXT_VISIBLE, eventMapper.getBoolean(e, 0)))
-                "/text/motion" -> events.onNext(
-                    // todo get enum
-                    Event(TEXT_MOTION, CubesContract.TextTransition.valueOf(eventMapper.getString(e, 0)))
-                )
-                "/text/order" -> events.onNext(
-                    Event(TEXT_ORDER, TextList.Ordering.valueOf(eventMapper.getString(e, 0)))
-                )
-
+                "/text/motion" -> events.onNext(Event(TEXT_MOTION, eventMapper.getEnum(e, 0, FADE)))
+                "/text/order" -> events.onNext(Event(TEXT_ORDER, eventMapper.getEnum(e, 0, INORDER)))
                 "/text/load" -> events.onNext(
                     Event(MENU_OPEN_TEXT, File(files.textDir, eventMapper.getString(e, 0)))
                 )
-                "text/next" -> {/*trigger next text*/
-                }
-
+                "/text/next" -> events.onNext(Event(TEXT_NEXT, null))
+                "/obj/load" -> events.onNext(Event(ADD_MODEL, eventMapper.getEnum(e, 0, TERMINATOR)))
+                "/obj/unload" -> events.onNext(Event(REMOVE_MODEL, eventMapper.getEnum(e, 0, TERMINATOR)))
                 else -> {
                     log.d("no handler for message ${e.message}")
                 }

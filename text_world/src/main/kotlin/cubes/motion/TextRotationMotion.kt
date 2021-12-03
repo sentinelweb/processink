@@ -1,8 +1,8 @@
 package cubes.motion
 
 
+import cubes.models.TextList
 import cubes.motion.interpolator.Interpolator
-import cubes.objects.TextList
 import processing.core.PVector
 import provider.TimeProvider
 import speecher.util.wrapper.LogWrapper

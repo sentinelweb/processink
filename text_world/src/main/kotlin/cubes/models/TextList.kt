@@ -1,4 +1,4 @@
-package cubes.objects
+package cubes.models
 
 import cubes.motion.Motion
 import cubes.util.pushMatrix
@@ -16,18 +16,14 @@ data class TextList constructor(
     override var p: PApplet? = null
 ) : Shape(p) {
 
-    enum class Mode {
-        SINGLE, ALL
-    }
+    enum class Mode { SINGLE, ALL }
 
-    enum class Ordering {
-        RANDOM, NEAR_RANDOM, INORDER, REVERSE
-    }
+    enum class Ordering { RANDOM, NEAR_RANDOM, INORDER, REVERSE }
 
     val texts: MutableList<Text> = mutableListOf()
 
     @Transient
-    var motion: Motion<Text, Any>? = null
+    var textMotion: Motion<Text, Any>? = null
 
     @Transient
     var endFunction: () -> Unit = {}
@@ -61,8 +57,9 @@ data class TextList constructor(
         }
     }
 
-    fun updateState() {
-        motion?.run {
+    override fun updateState() {
+        motion.execute(0, this)
+        textMotion?.run {
             texts.forEachIndexed { i, text ->
                 if (thisTextVisible(i)) {
                     execute(i, text)
@@ -96,7 +93,7 @@ data class TextList constructor(
         return mode == Mode.ALL || (mode == Mode.SINGLE && currentIndex == i)
     }
 
-    fun draw() {
+    override fun draw() {
         if (visible) {
             setProps()
             updateState()
@@ -158,6 +155,10 @@ data class TextList constructor(
         pFont = p?.createFont(selectedFont.fontName, selectedFont.size.toFloat())
     }
 
+    fun next() {
+        selectNextIndex()
+    }
+
     @Serializable
     class Text constructor(
         @Transient
@@ -165,7 +166,7 @@ data class TextList constructor(
         private val text: String
     ) : Shape(p) {
 
-        fun draw() {
+        override fun draw() {
             if (visible) {
                 p?.apply {
                     pushMatrix {
@@ -188,6 +189,4 @@ data class TextList constructor(
             p = applet
         }
     }
-
-
 }

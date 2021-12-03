@@ -1,31 +1,37 @@
-package cubes.objects
+package cubes.models
 
 import cubes.CubesProcessingView
-import cubes.motion.Motion
-import cubes.motion.NoMotion
+import cubes.motion.VelocityRotationMotion
 import cubes.util.pushMatrix
+import cubes.util.set
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import processing.core.PApplet
 import processing.core.PShape
 
 @Serializable
-class MillenuimFalcon constructor(
+class MilleniumFalcon constructor(
     @Transient
     override var p: PApplet? = null,
 ) : Shape(p) {
 
     @Transient
-    var motion: Motion<Shape, Any> = NoMotion()
-
-    @Transient
     private lateinit var falcon: PShape
 
     init {
+        loadFalcon()
+    }
+
+    private fun loadFalcon() {
         falcon = p!!.loadShape("${CubesProcessingView.BASE_RESOURCES}/obj/millennium-falcon/source/mf.obj")
     }
 
-    fun draw() {
+    override fun setApplet(applet: PApplet) {
+        super.setApplet(applet)
+        loadFalcon()
+    }
+
+    override fun draw() {
         p?.apply {
             lights()
             pushMatrix {
@@ -42,7 +48,14 @@ class MillenuimFalcon constructor(
         }
     }
 
-    fun updateState() {
-        motion.execute(0, this)
+    companion object {
+        fun create(p: PApplet) =
+            MilleniumFalcon(p)
+                .apply { scale.set(5f) }
+                .apply { position.set(p.width / 2f, p.height * 4f / 5, -20f) }
+                .apply { angle.set(Math.PI.toFloat(), 0f, Math.PI.toFloat()) }
+                .apply { fill = true }
+                .apply { motion = VelocityRotationMotion(0.01f, 0.0f, Triple(false, false, true)) }
     }
+
 }

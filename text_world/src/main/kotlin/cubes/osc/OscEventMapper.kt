@@ -92,6 +92,13 @@ class OscEventMapper(
         ""
     }
 
+    fun <E : Enum<E>> getEnum(event: OscContract.OscEvent, arg: Int, def: E): E = if (event.args[arg].type == "s") {
+        def::class.java.enumConstants.find { it.name == event.args[arg].value as String } ?: def
+    } else {
+        log.e("${event.message}: arg:$arg not a enum value of ${def::class.java.simpleName}= ${event.args[arg]}");
+        def
+    }
+
     fun getBoolean(event: OscContract.OscEvent, arg: Int): Boolean = when (event.args[arg].type) {
         "i" -> (event.args[arg].value as Int) == 1
         "s" -> event.args[arg].value == "true"

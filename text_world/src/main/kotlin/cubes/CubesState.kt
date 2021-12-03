@@ -2,12 +2,13 @@ package cubes
 
 import cubes.CubesContract.BackgroundShaderType.REFRACTION_PATTERN
 import cubes.CubesContract.TextTransition.FADE
-import cubes.objects.CubeList
-import cubes.objects.Shape
-import cubes.objects.TextList
-import cubes.objects.TextList.Ordering.INORDER
+import cubes.models.CubeList
+import cubes.models.Shape
+import cubes.models.TextList
+import cubes.models.TextList.Ordering.INORDER
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.awt.Color
 
 @Serializable
@@ -31,7 +32,8 @@ data class CubesState constructor(
     @Contextual
     var backgroundColor: Color = Color.BLACK,
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN,
-    val shapes: MutableList<Shape> = mutableListOf()
+    @Transient
+    val models: MutableList<Shape> = mutableListOf()
 )
 
 @Serializable

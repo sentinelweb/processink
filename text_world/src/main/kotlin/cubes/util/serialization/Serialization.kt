@@ -1,10 +1,10 @@
 package speecher.util.serialization
 
 import cubes.CubesState
-import cubes.objects.Cube
-import cubes.objects.CubeList
-import cubes.objects.Shape
-import cubes.objects.TextList
+import cubes.models.Cube
+import cubes.models.CubeList
+import cubes.models.Shape
+import cubes.models.TextList
 import cubes.util.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule

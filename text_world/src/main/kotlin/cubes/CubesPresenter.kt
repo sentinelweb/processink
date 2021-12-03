@@ -2,20 +2,24 @@ package cubes
 
 import cubes.CubesContract.Control.*
 import cubes.CubesContract.Formation.*
+import cubes.CubesContract.Model3D.MILLENIUM_FALCON
+import cubes.CubesContract.Model3D.TERMINATOR
 import cubes.CubesContract.TextTransition.*
 import cubes.gui.Controls
+import cubes.models.CubeList
+import cubes.models.MilleniumFalcon
+import cubes.models.Terminator
+import cubes.models.TextList
 import cubes.motion.*
 import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
-import cubes.objects.CubeList
-import cubes.objects.MillenuimFalcon
-import cubes.objects.TextList
-import cubes.objects.TextList.Ordering.RANDOM
 import cubes.osc.OscContract
 import cubes.util.wrapper.FilesWrapper
 import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
 import processing.core.PVector
 import speecher.util.serialization.stateJsonSerializer
@@ -52,9 +56,6 @@ class CubesPresenter constructor(
                 .subscribe({
                     println("receive : ${it.control} : ${it.data} ")
                     when (it.control) {
-                        SHADER_LINE_NONE -> shaderButtonNone()
-                        SHADER_LINE_LINE -> shaderButtonLine()
-                        SHADER_LINE_NEON -> shaderButtonNeon()
                         SHADER_BG -> {
                             _state.background = it.data as CubesContract.BackgroundShaderType
                         }
@@ -94,10 +95,13 @@ class CubesPresenter constructor(
                         TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
                         TEXT_STROKE -> textStroke(it.data as Boolean)
                         TEXT_VISIBLE -> textVisible(it.data as Boolean)
+                        TEXT_NEXT -> textNext()
                         MENU_SAVE_STATE -> saveState(it.data as File)
                         MENU_OPEN_STATE -> openState(it.data as File)
                         MENU_OPEN_TEXT -> openText(it.data as File)
                         MENU_EXIT -> exit()
+                        ADD_MODEL -> addModel(it.data as CubesContract.Model3D)
+                        REMOVE_MODEL -> removeModel(it.data as CubesContract.Model3D)
                         else -> println("Couldnt handle : ${it.control} ")
                     }
                 }, {
@@ -111,6 +115,25 @@ class CubesPresenter constructor(
             .fromCallable { openState(files.lastStateFile) }
             .delay(10, TimeUnit.SECONDS)
             .subscribe()
+    }
+
+    private fun removeModel(model: CubesContract.Model3D) {
+        _state.models
+            .removeIf { it::class == model.clazz }
+    }
+
+    private fun addModel(model: CubesContract.Model3D) {
+        Single.fromCallable {
+            when (model) {
+                TERMINATOR -> Terminator.create(view.getApplet())
+                MILLENIUM_FALCON -> MilleniumFalcon.create(view.getApplet())
+            }
+        }
+            .subscribeOn(Schedulers.io())
+            .subscribe({
+                _state.models.add(it)
+            }, {})
+
     }
 
     private fun exit() {
@@ -136,6 +159,7 @@ class CubesPresenter constructor(
                         cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state)
                     }
                     textList.apply { setApplet(view.getApplet()) }
+                    models.forEach { it.setApplet(view.getApplet()) }
                 }
             )
         }
@@ -150,12 +174,7 @@ class CubesPresenter constructor(
 
     fun updateBeforeDraw() {
         _state.cubeList.updateState()
-        _state.shapes.forEach {
-            when (it) {
-                is MillenuimFalcon -> it.updateState()
-            }
-
-        }
+        _state.models.forEach { it.updateState() }
     }
 
     private fun cubesLength(i: Int) {
@@ -179,18 +198,6 @@ class CubesPresenter constructor(
     private fun motionRotationOffsetReset() {
         _state.cubesRotationOffset = 0f
         setCubeVelocity()
-    }
-
-    private fun shaderButtonNone() {
-        //view.setShaderType(CubesContract.ShaderType.NONE)
-    }
-
-    private fun shaderButtonLine() {
-        //view.setShaderType(LINES)
-    }
-
-    private fun shaderButtonNeon() {
-        //view.setShaderType(NEON)
     }
 
     private fun strokeWeight(value: Float) {
@@ -302,16 +309,6 @@ class CubesPresenter constructor(
         }
     }
 
-    private fun textRandom(selected: Boolean) {
-        if (selected) {
-            _state.textOrder = RANDOM
-            startText(_state.animationTime)
-        } else {
-            _state.textList.visible = false
-            _state.textList.stop()
-        }
-    }
-
     private fun startText(timeMs: Float) {
         _state.textList.apply {
             this.ordering = _state.textOrder
@@ -333,6 +330,10 @@ class CubesPresenter constructor(
             }
             start()
         }
+    }
+
+    private fun textNext() {
+        _state.textList.next()
     }
 
     private fun TextList.textColorMotion(timeMs: Float): Motion<TextList.Text, Any> {
@@ -394,16 +395,6 @@ class CubesPresenter constructor(
         )
     }
 
-//    private fun textNearRandom(selected: Boolean) {
-//        if (selected) {
-//            state.textOrder = NEAR_RANDOM
-//            startText(state.animationTime)
-//        } else {
-//            state.textList.visible(false)
-//            state.textList.stop()
-//        }
-//    }
-
     private fun textOrder(order: TextList.Ordering) {
         _state.textOrder = order
         startText(_state.animationTime)
@@ -413,7 +404,6 @@ class CubesPresenter constructor(
         _state.textTransition = transition
         startText(_state.animationTime)
     }
-
 
     private fun textFillColor(color: Color) {
         _state.textList.fillColor = color

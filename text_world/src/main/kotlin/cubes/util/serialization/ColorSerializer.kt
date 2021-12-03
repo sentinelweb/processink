@@ -23,7 +23,7 @@ object ColorSerializer : KSerializer<Color> {
 
     override fun deserialize(decoder: Decoder): Color {
         val decodeInt = decoder.decodeInt()
-        println("int:" + decodeInt)
+//        println("int:" + decodeInt)
         return parseInt(decodeInt)
     }
 

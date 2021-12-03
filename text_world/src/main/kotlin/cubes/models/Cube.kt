@@ -1,4 +1,4 @@
-package cubes.objects
+package cubes.models
 
 import cubes.util.pushMatrix
 import kotlinx.serialization.Serializable
@@ -29,7 +29,7 @@ data class Cube constructor(
         }
     }
 
-    fun draw() {
+    override fun draw() {
         p?.apply {
             pushMatrix {
                 translate(position.x, position.y, position.z)

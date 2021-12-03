@@ -1,5 +1,7 @@
-package cubes.objects
+package cubes.models
 
+import cubes.motion.Motion
+import cubes.motion.NoMotion
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -9,7 +11,7 @@ import processing.core.PVector
 import java.awt.Color
 
 @Serializable
-open class Shape constructor(
+abstract class Shape constructor(
     @Transient
     open var p: PApplet? = null,
     @Contextual
@@ -36,6 +38,19 @@ open class Shape constructor(
         }
     var visible = true
 
+    @Transient
+    var motion: Motion<Shape, Any> = NoMotion()
+
+    open fun setApplet(applet: PApplet) {
+        p = applet
+    }
+
+    abstract fun draw()
+
+    open fun updateState() {
+        motion.execute(0, this)
+    }
+
     protected fun updateColors() {
         p?.apply {
             if (fill) {
@@ -55,9 +70,4 @@ open class Shape constructor(
             }
         }
     }
-
-    open fun setApplet(applet: PApplet) {
-        p = applet
-    }
-
 }

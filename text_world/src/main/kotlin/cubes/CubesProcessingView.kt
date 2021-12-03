@@ -2,8 +2,8 @@ package cubes
 
 import cubes.CubesContract.BackgroundShaderType.*
 import cubes.gui.Controls
-import cubes.objects.CubeList
-import cubes.objects.TextList
+import cubes.models.CubeList
+import cubes.models.TextList
 import cubes.osc.*
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
@@ -53,9 +53,7 @@ fun main() {
 
     override fun getApplet(): PApplet = this
 
-//    lateinit var terminator: Terminator
-//    lateinit var millenuimFalcon: MillenuimFalcon
-lateinit var cubesPresenter: CubesPresenter
+    lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
     private lateinit var yinyang: PShape
     private lateinit var lotus: PShape
@@ -72,17 +70,6 @@ lateinit var cubesPresenter: CubesPresenter
     }
 
     override fun setup() {
-//        terminator = Terminator(this)
-//            .apply { scale.set(10f, 10f, 10f) }
-//            .apply { position.set(width / 2f, height.toFloat()) }
-//            .apply { angle.set(0f,0f, PI) }
-
-//        millenuimFalcon = MillenuimFalcon(this)
-//            .apply { scale.set(5f, 5f, 5f) }
-//            .apply { position.set(width / 2f, height * 4f / 5, -20f) }
-//            .apply { angle.set(PI, 0f, PI) }
-//            .apply { fill = true }
-//            .apply { motion = VelocityRotationMotion(0.01f, 0.0f, Triple(true, false, false)) }
         val cubesState = CubesState(
             textList = TextList(this)
                 .apply { fillColor = Color.YELLOW; visible = false },
@@ -95,8 +82,7 @@ lateinit var cubesPresenter: CubesPresenter
             cubesFillStartColor = Color.WHITE,
             cubesFillEndColor = Color.GRAY,
             animationTime = 1000f,
-            info = getInfo(),
-//            shapes = mutableListOf(millenuimFalcon)
+            info = getInfo()
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
@@ -122,11 +108,12 @@ lateinit var cubesPresenter: CubesPresenter
         ribbons = Ribbons(this)
         ribbons.setup()
 
-        yinyang = loadShape("${BASE_RESOURCES}/cubes/faith.svg")
+        // todo move out
+        yinyang = loadShape("${BASE_RESOURCES}/svg/faith.svg")
         yinyang.setStroke(webc("#aaaaaa"))
         yinyang.setFill(webc("#dddddd"))
         yinyang.setStroke(true)
-        lotus = loadShape("${BASE_RESOURCES}/cubes/lotus.svg")
+        lotus = loadShape("${BASE_RESOURCES}/svg/lotus.svg")
         lotus.setStroke(webc("#384FA0"))
         lotus.setFill(webc("#6C8DFF"))
         lotus.setStroke(true)
@@ -134,8 +121,6 @@ lateinit var cubesPresenter: CubesPresenter
         cubesPresenter.setup()
     }
 
-    // make a algo to send different cubes to catch each other up.
-    //  - starting random text nebulaShader shader bg but fill in cubes doesn't work
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
 
@@ -161,9 +146,9 @@ lateinit var cubesPresenter: CubesPresenter
             cubeList.draw()
 
             resetShader()
-            //terminator.draw()
-//            millenuimFalcon.draw()
             // ribbons.draw()
+            models.forEach { it.draw() }
+
 //            pushMatrix {
 //                translate(width / 5f, height / 2f)
 //                scale(3f)
@@ -184,23 +169,6 @@ lateinit var cubesPresenter: CubesPresenter
         (shape.getWidth() / shape.getHeight() * size)
             .let { shape(shape, -it / 2f, -size / 2f, it, size) }
     }
-
-//    fun setShaderType(type: ShaderType) {
-//        when (type) {
-//            ShaderType.NONE -> currentShader = null
-//            ShaderType.LINES -> currentShader = lineShader
-//            NEON -> currentShader = null // TODO glow shader
-//        }
-//    }
-//
-//    fun setShaderParam(type: ShaderType, param: String, value: Any) {
-//        when (type) {
-//            ShaderType.NONE -> {
-//            }
-//            ShaderType.LINES -> lineShader.set(param, value)
-//            NEON -> flameShader.set(param, value)
-//        }
-//    }
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         if (cubesPresenter.state?.background != lastBackgroundShaderType) {
