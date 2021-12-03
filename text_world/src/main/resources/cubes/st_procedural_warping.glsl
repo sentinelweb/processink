@@ -9,7 +9,6 @@
 // of your educational material. If these conditions are too restrictive
 // please contact me and we'll definitely work it out.
 
-
 // See here for a tutorial on how to make this:
 //
 // http://www.iquilezles.org/www/articles/warp/warp.htm
@@ -84,8 +83,8 @@ void main()
     float f = func(p, on);
 
     vec3 col = vec3(0.0);
-    //    col = mix(vec3(0.2, 0.1, 0.4), vec3(0.3, 0.05, 0.05), f);
-    col = mix(u_color, u_color/2, f);
+    col = mix(vec3(0.2, 0.1, 0.4), vec3(0.3, 0.05, 0.05), f);
+    //col = mix(u_color, u_color/2, f);
 
     col = mix(col, vec3(0.9, 0.9, 0.9), dot(on.zw, on.zw));
     col = mix(col, vec3(0.4, 0.3, 0.3), 0.2 + 0.5*on.y*on.y);
@@ -108,7 +107,7 @@ void main()
     vec3 lin = vec3(0.70, 0.90, 0.95)*(nor.y*0.5+0.5) + vec3(0.15, 0.10, 0.05)*dif;
     col *= 1.2*lin;
     col = 1.0 - col;
-    col = 1.1*col*col;
+    col = 1.1*col*col * u_color;
 
     gl_FragColor = vec4(col, 1.0);
 }

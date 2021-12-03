@@ -46,7 +46,7 @@ fun main() {
     private lateinit var eclipseShader: EclipseShader
     private lateinit var onewarpShader: OneWarpShader
     private lateinit var procWarpShader: ProceduralWarpShader
-//    private lateinit var cloudsShader: CloudsShader
+    private lateinit var cloudsShader: CloudsShader
 
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
@@ -102,7 +102,7 @@ fun main() {
         eclipseShader = EclipseShader(this)
         onewarpShader = OneWarpShader(this)
         procWarpShader = ProceduralWarpShader(this)
-        //cloudsShader = CloudsShader(this)
+        cloudsShader = CloudsShader(this)
 
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
@@ -205,7 +205,7 @@ fun main() {
                 ECLIPSE -> eclipseShader
                 ONEWARP -> onewarpShader
                 PROCWARP -> procWarpShader
-                //CLOUDS -> cloudsShader
+                CLOUDS -> cloudsShader
                 else -> null
             }
             lastBackgroundShaderType = cubesPresenter.cstate?.background

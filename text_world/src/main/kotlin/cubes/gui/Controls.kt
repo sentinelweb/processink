@@ -159,7 +159,7 @@ class Controls(
                 add(JButton("Fractal pyramid").setup { events.onNext(Event(SHADER_BG, FRACTAL_PYRAMID)) })
                 add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
                 add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_CLOUDS)) })
-//                add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
+                add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
 
             }, BorderLayout.EAST)
 

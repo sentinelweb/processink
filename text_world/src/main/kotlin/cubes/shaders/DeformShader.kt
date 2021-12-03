@@ -14,7 +14,7 @@ class DeformShader constructor(
 
     override val type: Int? = null
 
-    var texName: String = "tex1.jpg"
+    var texName: String = "deform_tex.jpg"
         set(value) {
             field = value
             tex = p.loadImage("$BASE_RESOURCES/cubes/$value")

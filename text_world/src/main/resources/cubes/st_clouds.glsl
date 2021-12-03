@@ -23,12 +23,12 @@
 //
 // https://iquilezles.org/www/articles/derivative/derivative.htm
 
-// TODO needs the texture patterns to load properly
-
 // https://www.shadertoy.com/view/XslGRr
 #ifdef GL_ES
 precision mediump float;
 #endif
+uniform sampler2D texture;
+
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
@@ -56,16 +56,16 @@ float noise(in vec3 x)
     #endif
     #if NOISE_METHOD==1
     vec2 uv = (p.xy+vec2(37.0, 239.0)*p.z) + f.xy;
-    vec2 rg = textureLod(iChannel0, (uv+0.5)/256.0, 0.0).yx;
+    vec2 rg = textureLod(texture, (uv+0.5)/256.0, 0.0).yx;
     return mix(rg.x, rg.y, f.z)*2.0-1.0;
     #endif
     #if NOISE_METHOD==2
     ivec3 q = ivec3(p);
     ivec2 uv = q.xy + ivec2(37, 239)*q.z;
-    vec2 rg = mix(mix(texelFetch(iChannel0, (uv)&255, 0),
-    texelFetch(iChannel0, (uv+ivec2(1, 0))&255, 0), f.x),
-    mix(texelFetch(iChannel0, (uv+ivec2(0, 1))&255, 0),
-    texelFetch(iChannel0, (uv+ivec2(1, 1))&255, 0), f.x), f.y).yx;
+    vec2 rg = mix(mix(texelFetch(texture, (uv)&255, 0),
+    texelFetch(texture, (uv+ivec2(1, 0))&255, 0), f.x),
+    mix(texelFetch(texture, (uv+ivec2(0, 1))&255, 0),
+    texelFetch(texture, (uv+ivec2(1, 1))&255, 0), f.x), f.y).yx;
     return mix(rg.x, rg.y, f.z)*2.0-1.0;
     #endif
 }
@@ -128,7 +128,7 @@ vec4 raymarch(in vec3 ro, in vec3 rd, in vec3 bgcol, in ivec2 px)
     }
 
     // dithered near distance
-    float t = tmin + 0.1*texelFetch(iChannel1, px&1023, 0).x;
+    float t = tmin + 0.1*texelFetch(texture, px&1023, 0).x;//noise2
 
     // raymarch loop
     vec4 sum = vec4(0.0);
@@ -201,10 +201,10 @@ vec4 render(in vec3 ro, in vec3 rd, in ivec2 px)
     return vec4(col, 1.0);
 }
 
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
+void main()
 {
-    vec2 p = (2.0*gl_FragCoord.xy-iResolution.xy)/u_resolution.y;
-    vec2 m =                iMouse.xy      /u_resolution.xy;
+    vec2 p = (2.0*gl_FragCoord.xy-u_resolution.xy)/u_resolution.y;
+    vec2 m =                u_mouse.xy      /u_resolution.xy;
 
     // camera
     vec3 ro = 4.0*normalize(vec3(sin(3.0*m.x), 0.8*m.y, cos(3.0*m.x))) - vec3(0.0, 0.1, 0.0);
