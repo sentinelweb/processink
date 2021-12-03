@@ -20,11 +20,9 @@ open class Shape constructor(
     val scale: PVector = PVector(1f, 1f, 1f)
 ) {
     var fill: Boolean = false
-
     @Contextual
     var fillColor: Color = Color.WHITE
     var stroke: Boolean = true
-
     @Contextual
     var strokeColor: Color = Color.GRAY
     var strokeWeight: Float = 2f

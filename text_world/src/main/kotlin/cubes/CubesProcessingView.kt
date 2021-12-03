@@ -53,8 +53,9 @@ fun main() {
 
     override fun getApplet(): PApplet = this
 
-    //lateinit var terminator:Terminator
-    lateinit var cubesPresenter: CubesPresenter
+//    lateinit var terminator: Terminator
+//    lateinit var millenuimFalcon: MillenuimFalcon
+lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
     private lateinit var yinyang: PShape
     private lateinit var lotus: PShape
@@ -71,19 +72,31 @@ fun main() {
     }
 
     override fun setup() {
-        //terminator = Terminator(this)
+//        terminator = Terminator(this)
+//            .apply { scale.set(10f, 10f, 10f) }
+//            .apply { position.set(width / 2f, height.toFloat()) }
+//            .apply { angle.set(0f,0f, PI) }
+
+//        millenuimFalcon = MillenuimFalcon(this)
+//            .apply { scale.set(5f, 5f, 5f) }
+//            .apply { position.set(width / 2f, height * 4f / 5, -20f) }
+//            .apply { angle.set(PI, 0f, PI) }
+//            .apply { fill = true }
+//            .apply { motion = VelocityRotationMotion(0.01f, 0.0f, Triple(true, false, false)) }
         val cubesState = CubesState(
             textList = TextList(this)
                 .apply { fillColor = Color.YELLOW; visible = false },
-            cubeList = CubeList(this, 16, 50f, 400f).apply { visible = true },
-            rotationSpeed = 0.001f,
-            animationTime = 1000f,
-            info = getInfo(),
+            cubeList = CubeList(this, 16, 50f, 400f)
+                .apply { visible = true },
+            cubesRotationSpeed = 0.001f,
             cubeScale = 10f,
             cubeScaleDist = 0f,
-            rotationOffset = 0f,
-            fillColor = Color.WHITE,
-            fillEndColor = Color.GRAY
+            cubesRotationOffset = 0f,
+            cubesFillStartColor = Color.WHITE,
+            cubesFillEndColor = Color.GRAY,
+            animationTime = 1000f,
+            info = getInfo(),
+//            shapes = mutableListOf(millenuimFalcon)
         )
         cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
@@ -126,7 +139,7 @@ fun main() {
     override fun draw() {
         cubesPresenter.updateBeforeDraw()
 
-        cubesPresenter.cstate?.apply {
+        cubesPresenter.state?.apply {
             noStroke()
             setBackgroundShaderType(background)
             currentBackground?.apply {
@@ -148,7 +161,8 @@ fun main() {
             cubeList.draw()
 
             resetShader()
-
+            //terminator.draw()
+//            millenuimFalcon.draw()
             // ribbons.draw()
 //            pushMatrix {
 //                translate(width / 5f, height / 2f)
@@ -189,7 +203,7 @@ fun main() {
 //    }
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
-        if (cubesPresenter.cstate?.background != lastBackgroundShaderType) {
+        if (cubesPresenter.state?.background != lastBackgroundShaderType) {
             currentBackground = when (type) {
                 NONE -> null
                 NEBULA -> nebulaShader
@@ -208,7 +222,7 @@ fun main() {
                 CLOUDS -> cloudsShader
                 else -> null
             }
-            lastBackgroundShaderType = cubesPresenter.cstate?.background
+            lastBackgroundShaderType = cubesPresenter.state?.background
         }
     }
 

@@ -28,7 +28,8 @@ class VelocityRotationMotion(
     }
 
     companion object {
-        fun make(state:CubesState) = VelocityRotationMotion(state.rotationSpeed, state.rotationOffset, state.cubeRotationAxes)
+        fun makeCubesRotation(state: CubesState) =
+            VelocityRotationMotion(state.cubesRotationSpeed, state.cubesRotationOffset, state.cubeRotationAxes)
     }
 
     override fun getStartData(): List<PVector> = listOf()

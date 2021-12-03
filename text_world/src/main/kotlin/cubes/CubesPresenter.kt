@@ -9,6 +9,7 @@ import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.objects.CubeList
+import cubes.objects.MillenuimFalcon
 import cubes.objects.TextList
 import cubes.objects.TextList.Ordering.RANDOM
 import cubes.osc.OscContract
@@ -33,12 +34,12 @@ class CubesPresenter constructor(
     private val disposables: CompositeDisposable = CompositeDisposable()
 ) : CubesContract.Presenter {
 
-    val cstate: CubesState?
-        get() = if (this::state.isInitialized) {
-            state
+    val state: CubesState?
+        get() = if (this::_state.isInitialized) {
+            _state
         } else null
 
-    private lateinit var state: CubesState
+    private lateinit var _state: CubesState
 
     init {
         oscController.initialise()
@@ -55,10 +56,10 @@ class CubesPresenter constructor(
                         SHADER_LINE_LINE -> shaderButtonLine()
                         SHADER_LINE_NEON -> shaderButtonNeon()
                         SHADER_BG -> {
-                            state.background = it.data as CubesContract.BackgroundShaderType
+                            _state.background = it.data as CubesContract.BackgroundShaderType
                         }
                         BG_COLOR -> {
-                            state.backgroundColor = it.data as Color
+                            _state.backgroundColor = it.data as Color
                         }
                         MOTION_ANIMATION_TIME -> motionSliderAnimationTime(it.data as Float)
                         CUBES_ROTATION_SPEED -> motionSliderRotationSpeed(it.data as Float)
@@ -119,7 +120,7 @@ class CubesPresenter constructor(
 
     private fun saveState(file: File) {
         stateJsonSerializer
-            .encodeToString(CubesState.serializer(), state)
+            .encodeToString(CubesState.serializer(), _state)
             .apply { file.writeText(this) }
             .apply { controls.refreshFiles() }
     }
@@ -132,7 +133,7 @@ class CubesPresenter constructor(
                 .apply {
                     cubeList.apply {
                         setApplet(view.getApplet())
-                        cubeListMotion = VelocityRotationMotion.make(state)
+                        cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state)
                     }
                     textList.apply { setApplet(view.getApplet()) }
                 }
@@ -142,35 +143,41 @@ class CubesPresenter constructor(
 
     private fun openText(file: File) {
         val list = file.readLines()
-        state.textList = TextList(view.getApplet())
+        _state.textList = TextList(view.getApplet())
             .apply { list.forEach { addText(it) } }
             .apply { fillColor = Color.YELLOW; visible = true }
     }
 
     fun updateBeforeDraw() {
-        state.cubeList.updateState()
+        _state.cubeList.updateState()
+        _state.shapes.forEach {
+            when (it) {
+                is MillenuimFalcon -> it.updateState()
+            }
+
+        }
     }
 
     private fun cubesLength(i: Int) {
-        state.cubeList = CubeList(view.getApplet(), i, 50f, 50f).apply { visible = true }
+        _state.cubeList = CubeList(view.getApplet(), i, 50f, 50f).apply { visible = true }
     }
 
     private fun motionSliderRotationSpeed(value: Float) {
-        state.rotationSpeed = value / 10000f
+        _state.cubesRotationSpeed = value / 10000f
         setCubeVelocity()
     }
 
     private fun motionSliderRotationOffset(offset: Float) {
-        state.rotationOffset = offset / 10000f
+        _state.cubesRotationOffset = offset / 10000f
         setCubeVelocity()
     }
 
     private fun motionRotationReset() {
-        state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
+        _state.cubeList.cubes.forEach { it.angle.set(0f, 0f, 0f) }
     }
 
     private fun motionRotationOffsetReset() {
-        state.rotationOffset = 0f
+        _state.cubesRotationOffset = 0f
         setCubeVelocity()
     }
 
@@ -188,60 +195,60 @@ class CubesPresenter constructor(
 
     private fun strokeWeight(value: Float) {
         //view.setShaderParam(LINES, "weight", value)
-        state.cubeList.cubes.forEach { it.strokeWeight = value }
+        _state.cubeList.cubes.forEach { it.strokeWeight = value }
     }
 
     private fun motionRot(axis: CubesContract.RotationAxis, selected: Boolean) {
-        state.cubeRotationAxes = when (axis) {
-            CubesContract.RotationAxis.X -> state.cubeRotationAxes.copy(first = selected)
-            CubesContract.RotationAxis.Y -> state.cubeRotationAxes.copy(second = selected)
-            CubesContract.RotationAxis.Z -> state.cubeRotationAxes.copy(third = selected)
+        _state.cubeRotationAxes = when (axis) {
+            CubesContract.RotationAxis.X -> _state.cubeRotationAxes.copy(first = selected)
+            CubesContract.RotationAxis.Y -> _state.cubeRotationAxes.copy(second = selected)
+            CubesContract.RotationAxis.Z -> _state.cubeRotationAxes.copy(third = selected)
         }
         setCubeVelocity()
     }
 
     private fun motionAlignExecute() {
-        state.cubeList.cubeListMotion = CubeRotationAlignMotion(state.cubeList, state.animationTime) {
-            state.cubeList.cubeListMotion = VelocityRotationMotion.make(state)
+        _state.cubeList.cubeListMotion = CubeRotationAlignMotion(_state.cubeList, _state.animationTime) {
+            _state.cubeList.cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state)
         }.apply { start() }
     }
 
     private fun motionSliderAnimationTime(alignTime: Float) {
-        state.animationTime = alignTime
+        _state.animationTime = alignTime
     }
 
     private fun formation(form: CubesContract.Formation) {
         when (form) {
             GRID ->
-                state.cubeList.cubeListMotion =
+                _state.cubeList.cubeListMotion =
                     CompositeMotion(
                         listOf(
                             CubeTranslationMotion.grid(
-                                state.cubeList,
-                                state.animationTime,
-                                sqrt(state.cubeList.length.toDouble()).toInt(),
+                                _state.cubeList,
+                                _state.animationTime,
+                                sqrt(_state.cubeList.length.toDouble()).toInt(),
                                 500f
                             ),
                             cubeScaleMotion(),
-                            VelocityRotationMotion.make(state)
+                            VelocityRotationMotion.makeCubesRotation(_state)
                         )
                     ).apply { start() }
             LINE ->
-                state.cubeList.cubeListMotion =
+                _state.cubeList.cubeListMotion =
                     CompositeMotion(
                         listOf(
-                            CubeTranslationMotion.line(state.cubeList, state.animationTime, 1000f),
+                            CubeTranslationMotion.line(_state.cubeList, _state.animationTime, 1000f),
                             cubeScaleMotion(),
-                            VelocityRotationMotion.make(state)
+                            VelocityRotationMotion.makeCubesRotation(_state)
                         )
                     ).apply { start() }
             CENTER ->
-                state.cubeList.cubeListMotion =
+                _state.cubeList.cubeListMotion =
                     CompositeMotion(
                         listOf(
-                            CubeTranslationMotion.zero(state.cubeList, state.animationTime),
+                            CubeTranslationMotion.zero(_state.cubeList, _state.animationTime),
                             cubeScaleMotion(),
-                            VelocityRotationMotion.make(state)
+                            VelocityRotationMotion.makeCubesRotation(_state)
                         )
                     ).apply { start() }
             else -> Unit
@@ -249,69 +256,69 @@ class CubesPresenter constructor(
     }
 
     private fun motionSliderScale(scale: Float) {
-        state.cubeScale = scale
+        _state.cubeScale = scale
     }
 
     private fun motionSliderScaleDist(dist: Float) {
-        state.cubeScaleDist = dist
+        _state.cubeScaleDist = dist
     }
 
     private fun fill(selected: Boolean) {
-        state.cubeList.cubes.forEach { it.fill = selected }
+        _state.cubeList.cubes.forEach { it.fill = selected }
     }
 
     private fun fillColor(color: Color) {
-        state.fillColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
-        state.cubeList.cubes.forEach { it.fillColor = state.fillColor }
+        _state.cubesFillStartColor = Color(color.red, color.green, color.blue, _state.cubesFillAlpha.toInt())
+        _state.cubeList.cubes.forEach { it.fillColor = _state.cubesFillStartColor }
     }
 
     private fun fillEndColor(color: Color) {
-        state.fillEndColor = Color(color.red, color.green, color.blue, state.fillAlpha.toInt())
-        ShapeList.coloriseListGradient(state.cubeList.cubes, state.fillColor, state.fillEndColor)
+        _state.cubesFillEndColor = Color(color.red, color.green, color.blue, _state.cubesFillAlpha.toInt())
+        ShapeList.coloriseListGradient(_state.cubeList.cubes, _state.cubesFillStartColor, _state.cubesFillEndColor)
     }
 
     private fun motionApplyScale() {
-        state.cubeList.cubeListMotion =
+        _state.cubeList.cubeListMotion =
             CompositeMotion(
                 listOf(
                     cubeScaleMotion(),
-                    VelocityRotationMotion.make(state)
+                    VelocityRotationMotion.makeCubesRotation(_state)
                 )
             ).apply { start() }
     }
 
     private fun strokeColor(color: Color) {
-        state.cubeList.cubes.forEach { it.strokeColor = color }
+        _state.cubeList.cubes.forEach { it.strokeColor = color }
     }
 
     private fun stroke(selected: Boolean) {
-        state.cubeList.cubes.forEach { it.stroke = selected }
+        _state.cubeList.cubes.forEach { it.stroke = selected }
     }
 
     private fun fillAlpha(alpha: Int) {
-        state.fillAlpha = alpha.toFloat()
-        state.cubeList.cubes.forEach {
+        _state.cubesFillAlpha = alpha.toFloat()
+        _state.cubeList.cubes.forEach {
             it.fillColor = Color(it.fillColor.red, it.fillColor.green, it.fillColor.blue, alpha)
         }
     }
 
     private fun textRandom(selected: Boolean) {
         if (selected) {
-            state.textOrder = RANDOM
-            startText(state.animationTime)
+            _state.textOrder = RANDOM
+            startText(_state.animationTime)
         } else {
-            state.textList.visible = false
-            state.textList.stop()
+            _state.textList.visible = false
+            _state.textList.stop()
         }
     }
 
     private fun startText(timeMs: Float) {
-        state.textList.apply {
-            this.ordering = state.textOrder
+        _state.textList.apply {
+            this.ordering = _state.textOrder
             visible(true)
             this.timeMs = timeMs
             texts.forEach { it.fillColor = TRANSPARENT }
-            motion = when (state.textTransition) {
+            motion = when (_state.textTransition) {
                 FADE -> textColorMotion(timeMs)
                 FADE_ZOOM -> CompositeMotion(
                     listOf(
@@ -332,9 +339,9 @@ class CubesPresenter constructor(
         val animTimeEdge = (timeMs - 1000f) / 2
         return SeriesMotion(
             listOf(
-                TextColorMotion(state.textList, animTimeEdge, TRANSPARENT, fillColor),
+                TextColorMotion(_state.textList, animTimeEdge, TRANSPARENT, fillColor),
                 WaitMotion(1000f),
-                TextColorMotion(state.textList, animTimeEdge, fillColor, TRANSPARENT)
+                TextColorMotion(_state.textList, animTimeEdge, fillColor, TRANSPARENT)
             )
         )
     }
@@ -372,7 +379,7 @@ class CubesPresenter constructor(
                 ),
                 TextRotationMotion(
                     this, animTimeEdge,
-                    target = PVector(360f, 0f, 0f),
+                    target = PVector((Math.PI * 2).toFloat(), 0f, 0f),
                     interp = QuadInterpolator(IN),
                     log = logFactory(TextTranslationMotion::class.java)
                 ),
@@ -398,19 +405,19 @@ class CubesPresenter constructor(
 //    }
 
     private fun textOrder(order: TextList.Ordering) {
-        state.textOrder = order
-        startText(state.animationTime)
+        _state.textOrder = order
+        startText(_state.animationTime)
     }
 
     private fun textMotion(transition: CubesContract.TextTransition) {
-        state.textTransition = transition
-        startText(state.animationTime)
+        _state.textTransition = transition
+        startText(_state.animationTime)
     }
 
 
     private fun textFillColor(color: Color) {
-        state.textList.fillColor = color
-        state.textList.texts.forEach {
+        _state.textList.fillColor = color
+        _state.textList.texts.forEach {
             it.fillColor = color
         }
     }
@@ -420,66 +427,66 @@ class CubesPresenter constructor(
     }
 
     private fun textFill(selected: Boolean) {
-        state.textList.fill = selected
-        state.textList.texts.forEach {
+        _state.textList.fill = selected
+        _state.textList.texts.forEach {
             it.fill = selected
         }
     }
 
     private fun textFillAlpha(alpha: Int) {
-        val old = state.textList.fillColor
-        state.textList.fillColor = Color(old.red, old.green, old.blue, alpha)
-        state.textList.texts.forEach {
+        val old = _state.textList.fillColor
+        _state.textList.fillColor = Color(old.red, old.green, old.blue, alpha)
+        _state.textList.texts.forEach {
             val oldt = it.fillColor
             it.fillColor = Color(oldt.red, oldt.green, oldt.blue, alpha)
         }
     }
 
     private fun textStrokeColor(color: Color) {
-        state.textList.strokeColor = color
-        state.textList.texts.forEach {
+        _state.textList.strokeColor = color
+        _state.textList.texts.forEach {
             it.strokeColor = color
         }
     }
 
     private fun textStroke(selected: Boolean) {
-        state.textList.stroke = selected
-        state.textList.texts.forEach {
+        _state.textList.stroke = selected
+        _state.textList.texts.forEach {
             it.stroke = selected
         }
     }
 
     private fun textVisible(selected: Boolean) {
-        state.textList.visible = selected
+        _state.textList.visible = selected
     }
 
     private fun textStrokeWeight(weight: Float) {
-        state.textList.strokeWeight = weight
-        state.textList.texts.forEach {
+        _state.textList.strokeWeight = weight
+        _state.textList.texts.forEach {
             it.strokeWeight = weight
         }
     }
 
     private fun textFont(selectedFont: Font) {
-        state.textList.setFont(selectedFont)
+        _state.textList.setFont(selectedFont)
     }
 
     private fun cubesVisible(selected: Boolean) {
-        state.cubeList.visible = selected
+        _state.cubeList.visible = selected
     }
 
-    private fun cubeScaleMotion() = if (state.cubeScaleDist == 0f) {
-        CubeScaleMotion.scale(state.cubeList, state.animationTime, state.cubeScale)
+    private fun cubeScaleMotion() = if (_state.cubeScaleDist == 0f) {
+        CubeScaleMotion.scale(_state.cubeList, _state.animationTime, _state.cubeScale)
     } else {
-        CubeScaleMotion.range(state.cubeList, state.animationTime, state.cubeScale, state.cubeScaleDist)
+        CubeScaleMotion.range(_state.cubeList, _state.animationTime, _state.cubeScale, _state.cubeScaleDist)
     }
 
     override fun setState(state: CubesState) {
-        this.state = state
+        this._state = state
     }
 
     private fun setCubeVelocity() {
-        state.cubeList.cubeListMotion = VelocityRotationMotion.make(state).apply { start() }
+        _state.cubeList.cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state).apply { start() }
     }
 
 
