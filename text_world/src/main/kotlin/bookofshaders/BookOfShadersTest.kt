@@ -22,12 +22,12 @@ class BookOfShadersTest : PApplet() {
         "st_spaceGif_orig.glsl",
         "st_starField.glsl",
         "st_starField_orig.glsl",
-        "7_circleFrag.glsl",
-        "7_distanceFieldFrag.glsl",
-        "7_frameFrag.glsl",
-        "7_nGon.glsl",
-        "7_polarFrag.glsl",
-        "8_motionRotationFrag.glsl",
+        // "7_circleFrag.glsl",
+        //"7_distanceFieldFrag.glsl",
+        //"7_frameFrag.glsl",
+        //"7_nGon.glsl",
+        //"7_polarFrag.glsl",
+        //"8_motionRotationFrag.glsl",
     )
     private var index = 0;
     private lateinit var shader: PShader
@@ -42,11 +42,12 @@ class BookOfShadersTest : PApplet() {
     }
 
     private fun load() {
-        shader = loadShader("$BASE_RESOURCES/shadertoy/${shaders[index]}")
+        val name = shaders[index]
+        shader = loadShader("$BASE_RESOURCES/shadertoy/$name")
+        println("shader = $name")
     }
 
     override fun draw() {
-//        val c = Color.decode("#3949ab")
         val c = Color.BLACK
         background(c.red.toFloat(), c.green.toFloat(), c.blue.toFloat())
         shader.set("u_resolution", width.toFloat(), height.toFloat())

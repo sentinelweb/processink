@@ -150,6 +150,8 @@ class Controls(
                 add(JButton("Eclipse").setup { events.onNext(Event(SHADER_BG, ECLIPSE)) })
                 add(JButton("OneWarp").setup { events.onNext(Event(SHADER_BG, ONEWARP)) })
                 add(JButton("ProcWarp").setup { events.onNext(Event(SHADER_BG, PROCWARP)) })
+                add(JButton("BurningStar").setup { events.onNext(Event(SHADER_BG, BURNING_STAR)) })
+                add(JLabel("-- Non-colourised---"))
                 add(JButton("Nebula").setup { events.onNext(Event(SHADER_BG, NEBULA)) })
                 add(JButton("ColdFlame").setup { events.onNext(Event(SHADER_BG, COLDFLAME)) })
                 add(JButton("Refraction").setup { events.onNext(Event(SHADER_BG, REFRACTION_PATTERN)) })
@@ -158,6 +160,8 @@ class Controls(
                 add(JButton("Octagrams").setup { events.onNext(Event(SHADER_BG, OCTAGRAMS)) })
                 add(JButton("Protean clouds").setup { events.onNext(Event(SHADER_BG, PROTEAN_CLOUDS)) })
                 add(JButton("Clouds").setup { events.onNext(Event(SHADER_BG, CLOUDS)) })
+                add(JButton("Hyperfield").setup { events.onNext(Event(SHADER_BG, HYPERFIELD)) })
+                add(JButton("Starfield1").setup { events.onNext(Event(SHADER_BG, STARFIELD_1)) })
             }, BorderLayout.EAST)
 
             // center panel - motion, text

@@ -42,6 +42,9 @@ fun main() {
     private lateinit var onewarpShader: OneWarpShader
     private lateinit var procWarpShader: ProceduralWarpShader
     private lateinit var cloudsShader: CloudsShader
+    private lateinit var hyperfierldShader: HyperfierldShader
+    private lateinit var starField1Shader: Starfield1Shader
+    private lateinit var burningStarShader: BurningStarShader
 
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
@@ -78,6 +81,9 @@ fun main() {
         onewarpShader = OneWarpShader(this)
         procWarpShader = ProceduralWarpShader(this)
         cloudsShader = CloudsShader(this)
+        hyperfierldShader = HyperfierldShader(this)
+        starField1Shader = Starfield1Shader(this)
+        burningStarShader = BurningStarShader(this)
 
         hint(PConstants.DISABLE_DEPTH_MASK)
         currentBackground = nebulaShader
@@ -141,6 +147,9 @@ fun main() {
                 ONEWARP -> onewarpShader
                 PROCWARP -> procWarpShader
                 CLOUDS -> cloudsShader
+                HYPERFIELD -> hyperfierldShader
+                STARFIELD_1 -> starField1Shader
+                BURNING_STAR -> burningStarShader
                 else -> null
             }
             lastBackgroundShaderType = cubesPresenter.state?.background
