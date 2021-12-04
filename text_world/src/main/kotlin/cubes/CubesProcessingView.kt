@@ -2,8 +2,6 @@ package cubes
 
 import cubes.CubesContract.BackgroundShaderType.*
 import cubes.gui.Controls
-import cubes.models.CubeList
-import cubes.models.TextList
 import cubes.osc.*
 import cubes.ribbons.Ribbons
 import cubes.shaders.*
@@ -48,16 +46,13 @@ fun main() {
     private var currentShader: ShaderWrapper? = null
     private var currentBackground: ShaderWrapper? = null
 
-    override fun getApplet(): PApplet = this
+    override val applet: PApplet
+        get() = this
 
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
-//    private lateinit var yinyang: PShape
-//    private lateinit var lotus: PShape
 
     private var lastBackgroundShaderType: CubesContract.BackgroundShaderType? = null
-
-    fun getInfo() = PAppletInfo(width, height)
 
     override fun settings() {
 //        size(320, 180, PConstants.P3D)
@@ -67,21 +62,6 @@ fun main() {
     }
 
     override fun setup() {
-        val cubesState = CubesState(
-            textList = TextList(this)
-                .apply { fillColor = Color.YELLOW; visible = false },
-            cubeList = CubeList(this, 16, 50f, 400f)
-                .apply { visible = true },
-            cubesRotationSpeed = 0.001f,
-            cubeScale = 10f,
-            cubeScaleDist = 0f,
-            cubesRotationOffset = 0f,
-            cubesFillStartColor = Color.WHITE,
-            cubesFillEndColor = Color.GRAY,
-            animationTime = 1000f,
-            info = getInfo()
-        )
-        cubesPresenter.setState(cubesState)
         lineShader = LineShader(this)
         lineShader.setWeight(5f)
         flameShader = FlameShader(this)
@@ -103,16 +83,6 @@ fun main() {
         currentBackground = nebulaShader
         ribbons = Ribbons(this)
         ribbons.setup()
-
-        // todo move out
-//        yinyang = loadShape("${BASE_RESOURCES}/svg/yinyang.svg")
-//        yinyang.setStroke("#aaaaaa".webc(this))
-//        yinyang.setFill("#dddddd".webc(this))
-//        yinyang.setStroke(true)
-//        lotus = loadShape("${BASE_RESOURCES}/svg/lotus.svg")
-//        lotus.setStroke("#384FA0".webc(this))
-//        lotus.setFill("#6C8DFF".webc(this))
-//        lotus.setStroke(true)
 
         cubesPresenter.setup()
     }
@@ -146,26 +116,9 @@ fun main() {
             models.forEach { it.draw() }
             // ribbons.draw()
 
-//            pushMatrix {
-//                translate(width / 5f, height / 2f)
-//                scale(3f)
-//                draw(yinyang)
-//            }
-//            pushMatrix {
-//                translate(width / 5f * 4, height / 2f)
-//                scale(3f)
-//                draw(lotus)
-//            }
-
             textList.draw()
         }
     }
-
-//    private fun draw(shape: PShape) {
-//        val size = 100f
-//        (shape.getWidth() / shape.getHeight() * size)
-//            .let { shape(shape, -it / 2f, -size / 2f, it, size) }
-//    }
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         if (cubesPresenter.state?.background != lastBackgroundShaderType) {

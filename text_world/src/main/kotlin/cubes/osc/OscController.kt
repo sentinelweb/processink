@@ -1,9 +1,10 @@
 package cubes.osc
 
 import cubes.CubesContract
-import cubes.CubesContract.BackgroundShaderType
+import cubes.CubesContract.BackgroundShaderType.NONE
 import cubes.CubesContract.Control.*
 import cubes.CubesContract.Event
+import cubes.CubesContract.Formation.CENTER
 import cubes.CubesContract.Model3D.TERMINATOR
 import cubes.CubesContract.TextTransition.FADE
 import cubes.models.TextList.Ordering.INORDER
@@ -46,7 +47,7 @@ class OscController(
                 "/background/color" -> events.onNext(Event(BG_COLOR, eventMapper.getColor(e)))
                 "/background" -> events.onNext(
                     // todo get enum
-                    Event(SHADER_BG, BackgroundShaderType.valueOf(eventMapper.getString(e, 0)))
+                    Event(SHADER_BG, eventMapper.getEnum(e, 0, NONE))
                 )
                 "/animation/time" -> events.onNext(Event(MOTION_ANIMATION_TIME, eventMapper.getFloat(e, 0)))
 
@@ -68,7 +69,7 @@ class OscController(
                     Event(CUBES_ROTATION, Pair(CubesContract.RotationAxis.Z, eventMapper.getBoolean(e, 0)))
                 )
                 "/cubes/formation" -> events.onNext(
-                    Event(CUBES_FORMATION, CubesContract.Formation.valueOf(eventMapper.getString(e, 0)))
+                    Event(CUBES_FORMATION, eventMapper.getEnum(e, 0, CENTER))
                 )
                 "/cubes/fill" -> events.onNext(Event(CUBES_FILL, eventMapper.getBoolean(e, 0)))
                 "/cubes/fill/alpha" -> events.onNext(Event(CUBES_COLOR_FILL_ALPHA, eventMapper.getInt0To255(e, 0)))
@@ -88,12 +89,8 @@ class OscController(
                 "/cubes/length" -> events.onNext(Event(CUBES_LENGTH, eventMapper.getInt(e, 0)))
 
                 // text
-                "/text/stroke/visible" -> events.onNext(Event(TEXT_STROKE, eventMapper.getBoolean(e, 0)))
-                "/text/stroke/color" -> events.onNext(Event(TEXT_COLOR_STROKE, eventMapper.getColor(e)))
                 "/text/fill/color/start" -> events.onNext(Event(TEXT_COLOR_FILL, eventMapper.getColor(e)))
-                "/text/fill/color/end" -> events.onNext(Event(TEXT_COLOR_FILL_END, eventMapper.getColor(e)))
                 "/text/fill/alpha" -> events.onNext(Event(TEXT_FILL_ALPHA, eventMapper.getInt0To255(e, 0)))
-                "/text/fill" -> events.onNext(Event(TEXT_FILL, eventMapper.getBoolean(e, 0)))
                 "/text/font" -> events.onNext(Event(TEXT_FONT, eventMapper.getFont(e)))
                 "/text/visible" -> events.onNext(Event(TEXT_VISIBLE, eventMapper.getBoolean(e, 0)))
                 "/text/motion" -> events.onNext(Event(TEXT_MOTION, eventMapper.getEnum(e, 0, FADE)))

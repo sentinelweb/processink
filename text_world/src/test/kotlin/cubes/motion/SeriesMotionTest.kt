@@ -38,7 +38,11 @@ class SeriesMotionTest {
         fixtMotion2 = TestMotion(FIXT_TIME, mockTimeProvider, end2)
         fixtMotion3 = TestMotion(FIXT_TIME, mockTimeProvider, end3)
         fixtMotion4 = TestMotion(FIXT_TIME, mockTimeProvider, end4)
-        fixtShape = object : Shape(mockApplet) {}
+        fixtShape = object : Shape(mockApplet) {
+            override fun draw() {
+
+            }
+        }
     }
 
     @Test

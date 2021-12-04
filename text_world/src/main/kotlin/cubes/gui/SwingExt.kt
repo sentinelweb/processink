@@ -1,6 +1,7 @@
 package cubes.gui
 
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.io.File
@@ -44,9 +45,19 @@ fun <T : Any> JList<T>.setData(list: List<T>) {
 
 fun <T : Any> JList<T>.setup(list: List<T>, click: (T) -> Unit): JComponent {
     setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-    setSelectedIndex(0)
-//    fixedCellWidth = 200
-//    setVisibleRowCount(5)
+    fixedCellWidth = 150
+    setCellRenderer(object : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component? {
+            val text: String = (value as File).name
+            return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus)
+        }
+    })
     model = DefaultListModel<T>().let { model ->
         list.forEach {
             when (it) {

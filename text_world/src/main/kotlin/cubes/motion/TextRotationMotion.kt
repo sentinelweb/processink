@@ -23,7 +23,7 @@ class TextRotationMotion constructor(
     override fun ensureEndState() {
         textList.texts.forEachIndexed { i, text ->
             text.angle.set(target[i])
-            log.d("Angle: $i = ${target[i]}")
+//            log.d("Angle: $i = ${target[i]}")
         }
     }
 }

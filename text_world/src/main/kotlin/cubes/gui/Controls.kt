@@ -5,6 +5,7 @@ package cubes.gui
 //Home Page http://guigenie.cjb.net - Check often for new versions!
 
 import cubes.CubesContract
+import cubes.CubesContract.*
 import cubes.CubesContract.BackgroundShaderType.*
 import cubes.CubesContract.Control.*
 import cubes.CubesContract.Event
@@ -104,7 +105,9 @@ class Controls(
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
                 add(JPanel().apply {
                     titledBorder("State")
-                    val stateFiles = files.stateDir.listFiles()?.toList() ?: listOf()
+                    val stateFiles =
+                        files.stateDir.listFiles()?.toList()
+                            ?.filter { it.name.endsWith(".json") } ?: listOf()
                     JList<File>()
                         .also { stateList = it }
                         .setup(stateFiles) { events.onNext(Event(MENU_OPEN_STATE, it)) }
@@ -113,7 +116,9 @@ class Controls(
                 })
                 add(JPanel().apply {
                     titledBorder("Text")
-                    val textFiles = files.textDir.listFiles()?.toList() ?: listOf()
+                    val textFiles =
+                        files.textDir.listFiles()?.toList()
+                            ?.filter { it.name.endsWith(".txt") } ?: listOf()
                     JList<File>()
                         .also { textList = it }
                         .setup(textFiles) { events.onNext(Event(MENU_OPEN_TEXT, it)) }
@@ -138,7 +143,7 @@ class Controls(
                         }
                     }
                 })
-                add(JButton("None").setup { events.onNext(Event(SHADER_BG, NONE)) })
+                add(JButton("None").setup { events.onNext(Event(SHADER_BG, BackgroundShaderType.NONE)) })
                 add(JButton("Fuji").setup { events.onNext(Event(SHADER_BG, FUJI)) })
                 add(JButton("Deform").setup { events.onNext(Event(SHADER_BG, DEFORM)) })
                 add(JButton("Monjori").setup { events.onNext(Event(SHADER_BG, MONJORI)) })
@@ -298,11 +303,11 @@ class Controls(
                             .setup { ae -> events.onNext(Event(CUBES_FILL, isSelected(ae))) })
                         add(
                             JSlider(0, 255)
+                                .apply { value = 3000 }
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
                                     events.onNext(Event(CUBES_COLOR_FILL_ALPHA, source.value))
                                 }
-                                .apply { value = 3000 }
                                 .wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
@@ -375,12 +380,10 @@ class Controls(
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JButton("Fade")
-                                .setup { ae -> events.onNext(Event(TEXT_MOTION, FADE)) })
-                            add(JButton("fade-zoom")
-                                .setup { ae -> events.onNext(Event(TEXT_MOTION, FADE_ZOOM)) })
-                            add(JButton("spin x")
-                                .setup { ae -> events.onNext(Event(TEXT_MOTION, SPIN)) })
+                            add(JButton("None").setup { ae -> events.onNext(Event(TEXT_MOTION, TextTransition.NONE)) })
+                            add(JButton("Fade").setup { ae -> events.onNext(Event(TEXT_MOTION, FADE)) })
+                            add(JButton("fade-zoom").setup { ae -> events.onNext(Event(TEXT_MOTION, FADE_ZOOM)) })
+                            add(JButton("spin x").setup { ae -> events.onNext(Event(TEXT_MOTION, SPIN)) })
 
                         }.wrapWithLabel("Motion")
                     )
@@ -400,57 +403,16 @@ class Controls(
                             }
                             isOpaque = true
                         })
-                        add(JButton("End").apply {
-                            addActionListener {
-                                val color = JColorChooser.showDialog(this, "Fill End Color", Color.WHITE)
-                                color?.let {
-                                    events.onNext(Event(TEXT_COLOR_FILL_END, it))
-                                    @Suppress("LABEL_NAME_CLASH")
-                                    this@apply.background = it
-                                }
-                            }
-                            isOpaque = true
-                        })
-                        add(JToggleButton("Fill")
-                            .setup { ae -> events.onNext(Event(TEXT_FILL, isSelected(ae))) })
                         add(
                             JSlider(0, 255)
+                                .apply { value = 255 }
                                 .setup(0, 1, 64, false) {
                                     val source = it.source as JSlider
                                     events.onNext(Event(TEXT_FILL_ALPHA, source.value))
                                 }
-                                .apply { value = 255 }
                                 .wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
-
-                    // stroke
-                    add(JPanel().apply {
-                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                        add(JButton("Color").apply {
-                            addActionListener {
-                                val color = JColorChooser.showDialog(this, "Stroke Color", Color.WHITE)
-                                color?.let {
-                                    //listener.textStrokeColor(it)
-                                    events.onNext(Event(TEXT_COLOR_STROKE, it))
-                                    @Suppress("LABEL_NAME_CLASH")
-                                    this@apply.background = it
-                                }
-                            }
-                            isOpaque = true
-                        })
-                        add(JToggleButton("Stroke")
-                            .setup { ae -> events.onNext(Event(TEXT_STROKE, isSelected(ae))) })
-                        add(
-                            JSlider(0, 20)
-                                .setup(LineShader.DEFAULT_WEIGHT.toInt(), 1, 5, false) {
-                                    val source = it.source as JSlider
-                                    events.onNext(Event(TEXT_STROKE_WEIGHT, source.value.toFloat()))
-                                    //listener.textStrokeWeight(source.value.toFloat())
-                                }
-                        )
-                    }.wrapWithLabel("Stroke"))
-
                 })
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)
@@ -460,6 +422,7 @@ class Controls(
                         layout = BoxLayout(this, BoxLayout.X_AXIS)
                         add(JToggleButton("Terminator").setup { ae -> addOrRemoveModel(ae, TERMINATOR) })
                         add(JToggleButton("MF").setup { ae -> addOrRemoveModel(ae, MILLENIUM_FALCON) })
+                        add(JLabel("|"))
                         add(JToggleButton("Buddah").setup { ae -> addOrRemoveImage(ae, "buddha.svg") })
                         add(JToggleButton("Yin Yang").setup { ae -> addOrRemoveImage(ae, "yinyang.svg") })
                         add(JToggleButton("Hand").setup { ae -> addOrRemoveImage(ae, "buddhism_hand2.svg") })
@@ -485,18 +448,6 @@ class Controls(
         }
 
         private fun isSelected(ae: ActionEvent) = (ae.source as JToggleButton).isSelected
-
-        private fun isSelectedDeselectOthers(ae: ActionEvent): Boolean {
-            val jToggleButton = ae.source as JToggleButton
-            val selected = jToggleButton.isSelected
-            jToggleButton.parent.components.forEach { component ->
-                if (component != jToggleButton && component is JToggleButton) {
-                    component.isSelected = false
-                }
-            }
-            return selected
-        }
-
     }
 
     private fun makeMenu(): JMenuBar {
@@ -523,7 +474,12 @@ class Controls(
         saveStateMenuItem.actionCommand = "Save"
         saveStateMenuItem.addActionListener {
             showSaveDialog("Save state", files.stateDir) {
-                events.onNext(Event(MENU_SAVE_STATE, it))
+                val file =
+                    if (it.name.endsWith(".json")) it
+                    else {
+                        File(it.absolutePath + ".json")
+                    }
+                events.onNext(Event(MENU_SAVE_STATE, file))
             }
         }
         stateMenu.add(saveStateMenuItem)
@@ -549,29 +505,21 @@ class Controls(
         openTextMenuItem.actionCommand = "Open"
         openTextMenuItem.addActionListener {
             showOpenDialog("Open text", files.textDir) {
-                events.onNext(Event(MENU_OPEN_TEXT, it))
+                if (it.name.endsWith(".txt")) {
+                    events.onNext(Event(MENU_OPEN_TEXT, it))
+                } else println("Not a valid text file")
             }
         }
         textMenu.add(openTextMenuItem)
-        val saveTextMenuItem = JMenuItem("Save Text")
-//        saveTextMenuItem.mnemonic = KeyEvent.VK_S
-        //saveTextMenuItem.icon("baseline_movie_black_18.png")
-        saveTextMenuItem.actionCommand = "Save"
-        saveTextMenuItem.addActionListener {
-            showSaveDialog("Save text", files.textDir) {
-                events.onNext(Event(MENU_OPEN_TEXT, it))
-            }
-        }
-        textMenu.add(saveTextMenuItem)
         menuBar.add(textMenu)
         return menuBar
     }
 
     fun refreshFiles() {
-        val stateFiles = files.stateDir.listFiles()?.toList() ?: listOf()
+        val stateFiles = files.stateDir.listFiles()?.toList()?.filter { it.name.endsWith(".json") } ?: listOf()
         controlPanel.stateList.setData(stateFiles)
 
-        val textFiles = files.textDir.listFiles()?.toList() ?: listOf()
+        val textFiles = files.textDir.listFiles()?.toList()?.filter { it.name.endsWith(".txt") } ?: listOf()
         controlPanel.textList.setData(textFiles)
     }
 }

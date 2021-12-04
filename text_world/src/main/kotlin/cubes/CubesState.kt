@@ -9,7 +9,9 @@ import cubes.models.TextList.Ordering.INORDER
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import processing.core.PApplet
 import java.awt.Color
+import java.awt.Font
 
 @Serializable
 data class CubesState constructor(
@@ -27,14 +29,36 @@ data class CubesState constructor(
     @Contextual
     var cubesFillStartColor: Color = Color.YELLOW,
     var cubesFillAlpha: Float = 255f,
+    // text
     var textTransition: CubesContract.TextTransition = FADE,
     var textOrder: TextList.Ordering = INORDER,
+    @Contextual
+    var textColor: Color = Color.ORANGE,
+    @Contextual
+    var textFont: Font? = null,
     @Contextual
     var backgroundColor: Color = Color.BLACK,
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN,
     @Transient
     val models: MutableList<Shape> = mutableListOf()
-)
+) {
+    companion object {
+        fun makeFromState(p: PApplet) = CubesState(
+            textList = TextList(p)
+                .apply { fillColor = Color.YELLOW; visible = false },
+            cubeList = CubeList(p, 16, 50f, 400f)
+                .apply { visible = true },
+            cubesRotationSpeed = 0.001f,
+            cubeScale = 10f,
+            cubeScaleDist = 0f,
+            cubesRotationOffset = 0f,
+            cubesFillStartColor = Color.WHITE,
+            cubesFillEndColor = Color.GRAY,
+            animationTime = 1000f,
+            info = PAppletInfo(p.width, p.height)
+        )
+    }
+}
 
 @Serializable
 data class PAppletInfo(

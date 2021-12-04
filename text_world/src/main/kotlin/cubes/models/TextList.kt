@@ -8,6 +8,7 @@ import kotlinx.serialization.Transient
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PFont
+import java.awt.Color
 import java.awt.Font
 
 @Serializable
@@ -21,6 +22,27 @@ data class TextList constructor(
     enum class Ordering { RANDOM, NEAR_RANDOM, INORDER, REVERSE }
 
     val texts: MutableList<Text> = mutableListOf()
+
+    @Contextual
+    override var fillColor: Color
+        get() = super.fillColor
+        set(value) {
+            super.fillColor = value
+            texts.forEach {
+                it.fillColor = value
+            }
+        }
+
+    @Contextual
+    override var fill: Boolean
+        get() = super.fill
+        set(value) {
+            super.fill = value
+            texts.forEach {
+                it.fill = value
+            }
+        }
+
 
     @Transient
     var textMotion: Motion<Text, Any>? = null
@@ -42,7 +64,8 @@ data class TextList constructor(
     private var startTime: Long? = null
 
     init {
-        javaFont = Font.getFont("ArialMT")
+        fill = true
+        javaFont = javaFont ?: Font.getFont("ArialMT")
         javaFont?.apply {
             pFont = p?.createFont(javaFont?.fontName, 40f)
         }

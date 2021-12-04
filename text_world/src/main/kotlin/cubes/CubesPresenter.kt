@@ -18,6 +18,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
+import net.robmunro.processing.util.encodeARGB
 import processing.core.PVector
 import speecher.util.serialization.stateJsonSerializer
 import speecher.util.wrapper.logFactory
@@ -42,6 +43,8 @@ class CubesPresenter constructor(
 
     private lateinit var _state: CubesState
 
+    private var readyForInput = false
+
     init {
         oscController.initialise()
     }
@@ -50,6 +53,7 @@ class CubesPresenter constructor(
         disposables.add(
             controls.events()
                 .mergeWith(oscController.events())
+                .filter { readyForInput }
                 .subscribe({
                     println("receive : ${it.control} : ${it.data} ")
                     when (it.control) {
@@ -85,12 +89,7 @@ class CubesPresenter constructor(
                         TEXT_FONT -> textFont(it.data as Font)
                         TEXT_MOTION -> textMotion(it.data as CubesContract.TextTransition)
                         TEXT_COLOR_FILL -> textFillColor(it.data as Color)
-                        TEXT_COLOR_FILL_END -> textFillEndColor(it.data as Color)
-                        TEXT_FILL -> textFill(it.data as Boolean)
                         TEXT_FILL_ALPHA -> textFillAlpha(it.data as Int)
-                        TEXT_COLOR_STROKE -> textStrokeColor(it.data as Color)
-                        TEXT_STROKE_WEIGHT -> textStrokeWeight(it.data as Float)
-                        TEXT_STROKE -> textStroke(it.data as Boolean)
                         TEXT_VISIBLE -> textVisible(it.data as Boolean)
                         TEXT_NEXT -> textNext()
                         MENU_SAVE_STATE -> saveState(it.data as File)
@@ -112,13 +111,13 @@ class CubesPresenter constructor(
 
         Completable
             .fromCallable { openState(files.lastStateFile) }
-            .delay(10, TimeUnit.SECONDS)
-            .subscribe()
+            .delay(1, TimeUnit.SECONDS)
+            .subscribe({ readyForInput = true }, { it.printStackTrace() })
     }
 
     private fun addImage(name: String) {
         if (_state.models.find { it::class == SvgImage::class && (it as SvgImage).name == name } == null) {
-            _state.models.add(SvgImage.create(view.getApplet(), name))
+            _state.models.add(SvgImage.create(view.applet, name))
         }
     }
 
@@ -136,8 +135,8 @@ class CubesPresenter constructor(
         if (_state.models.find { it::class == model.clazz } == null) {
             Single.fromCallable {
                 when (model) {
-                    TERMINATOR -> Terminator.create(view.getApplet())
-                    MILLENIUM_FALCON -> MilleniumFalcon.create(view.getApplet())
+                    TERMINATOR -> Terminator.create(view.applet)
+                    MILLENIUM_FALCON -> MilleniumFalcon.create(view.applet)
                 }
             }
                 .subscribeOn(Schedulers.io())
@@ -162,23 +161,31 @@ class CubesPresenter constructor(
             val json = file.readText()
             setState(stateJsonSerializer
                 .decodeFromString(CubesState.serializer(), json)
-                .apply {
-                    cubeList.apply {
-                        setApplet(view.getApplet())
-                        cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state)
-                    }
-                    textList.apply { setApplet(view.getApplet()) }
-                    models.forEach { it.setApplet(view.getApplet()) }
+                .also { newState ->
+                    newState.cubeList
+                        .apply { setApplet(view.applet) }
+                        .apply { cubeListMotion = VelocityRotationMotion.makeCubesRotation(newState) }
+                    newState.textList
+                        .apply { setApplet(view.applet) }
+                        .apply { fillColor = newState.textColor }
+                        .apply { newState.textFont?.also { setFont(it) } }
+                    newState.models
+                        .forEach { it.setApplet(view.applet) }
                 }
             )
+            _state.textList.apply { startText() }
+        } else {
+            setState(CubesState.makeFromState(view.applet))
         }
     }
 
     private fun openText(file: File) {
         val list = file.readLines()
-        _state.textList = TextList(view.getApplet())
+        _state.textList = TextList(view.applet)
             .apply { list.forEach { addText(it) } }
-            .apply { fillColor = Color.YELLOW; visible = true }
+            .apply { fillColor = _state.textColor }
+            .apply { _state.textFont?.also { setFont(it) } }
+            .apply { startText() }
     }
 
     fun updateBeforeDraw() {
@@ -187,7 +194,7 @@ class CubesPresenter constructor(
     }
 
     private fun cubesLength(i: Int) {
-        _state.cubeList = CubeList(view.getApplet(), i, 50f, 50f).apply { visible = true }
+        _state.cubeList = CubeList(view.applet, i, 50f, 50f).apply { visible = true }
     }
 
     private fun motionSliderRotationSpeed(value: Float) {
@@ -285,6 +292,7 @@ class CubesPresenter constructor(
 
     private fun fillColor(color: Color) {
         _state.cubesFillStartColor = Color(color.red, color.green, color.blue, _state.cubesFillAlpha.toInt())
+        // todo override fillCOlor in cubeList
         _state.cubeList.cubes.forEach { it.fillColor = _state.cubesFillStartColor }
     }
 
@@ -318,13 +326,12 @@ class CubesPresenter constructor(
         }
     }
 
-    private fun startText(timeMs: Float) {
+    private fun startText() {
         _state.textList.apply {
             this.ordering = _state.textOrder
             visible(true)
-            this.timeMs = timeMs
-            texts.forEach { it.fillColor = TRANSPARENT }
-            motion = when (_state.textTransition) {
+            this.timeMs = _state.animationTime
+            textMotion = when (_state.textTransition) {
                 FADE -> textColorMotion(timeMs)
                 FADE_ZOOM -> CompositeMotion(
                     listOf(
@@ -333,9 +340,10 @@ class CubesPresenter constructor(
                     )
                 )
                 SPIN -> textRotationMotion(timeMs)
+                NONE -> null
             }.apply { start() }
             endFunction = fun() {
-                startText(timeMs)
+                startText()
             }
             start()
         }
@@ -406,67 +414,33 @@ class CubesPresenter constructor(
 
     private fun textOrder(order: TextList.Ordering) {
         _state.textOrder = order
-        startText(_state.animationTime)
+        startText()
     }
 
     private fun textMotion(transition: CubesContract.TextTransition) {
         _state.textTransition = transition
-        startText(_state.animationTime)
+        startText()
     }
 
     private fun textFillColor(color: Color) {
+        println("fillColor: ${color.encodeARGB()}")
+        _state.textColor = color
         _state.textList.fillColor = color
-        _state.textList.texts.forEach {
-            it.fillColor = color
-        }
-    }
-
-    private fun textFillEndColor(color: Color) {
-
-    }
-
-    private fun textFill(selected: Boolean) {
-        _state.textList.fill = selected
-        _state.textList.texts.forEach {
-            it.fill = selected
-        }
     }
 
     private fun textFillAlpha(alpha: Int) {
-        val old = _state.textList.fillColor
-        _state.textList.fillColor = Color(old.red, old.green, old.blue, alpha)
-        _state.textList.texts.forEach {
-            val oldt = it.fillColor
-            it.fillColor = Color(oldt.red, oldt.green, oldt.blue, alpha)
-        }
-    }
-
-    private fun textStrokeColor(color: Color) {
-        _state.textList.strokeColor = color
-        _state.textList.texts.forEach {
-            it.strokeColor = color
-        }
-    }
-
-    private fun textStroke(selected: Boolean) {
-        _state.textList.stroke = selected
-        _state.textList.texts.forEach {
-            it.stroke = selected
-        }
+        _state.textColor = _state.textColor
+            .let { old -> Color(old.red, old.green, old.blue, alpha) }
+        println("fillColor: ${_state.textColor}")
+        _state.textList.fillColor = _state.textColor
     }
 
     private fun textVisible(selected: Boolean) {
         _state.textList.visible = selected
     }
 
-    private fun textStrokeWeight(weight: Float) {
-        _state.textList.strokeWeight = weight
-        _state.textList.texts.forEach {
-            it.strokeWeight = weight
-        }
-    }
-
     private fun textFont(selectedFont: Font) {
+        _state.textFont = selectedFont
         _state.textList.setFont(selectedFont)
     }
 

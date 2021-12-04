@@ -13,7 +13,7 @@ interface CubesContract {
         ECLIPSE, CLOUDS, ONEWARP, PROCWARP, NONE
     }
 
-    enum class TextTransition { FADE, SPIN, FADE_ZOOM }
+    enum class TextTransition { FADE, SPIN, FADE_ZOOM, NONE }
     enum class Formation { GRID, LINE, CIRCLE, SQUARE, CENTER }
     enum class RotationAxis { X, Y, Z }
 
@@ -23,7 +23,7 @@ interface CubesContract {
     }
 
     interface View {
-        fun getApplet(): PApplet
+        val applet: PApplet
     }
 
     interface Presenter {
@@ -62,12 +62,7 @@ interface CubesContract {
         TEXT_FONT,
         TEXT_MOTION,
         TEXT_COLOR_FILL,
-        TEXT_COLOR_FILL_END,
-        TEXT_FILL,
         TEXT_FILL_ALPHA,
-        TEXT_COLOR_STROKE,
-        TEXT_STROKE_WEIGHT,
-        TEXT_STROKE,
         TEXT_VISIBLE,
         TEXT_NEXT,
         ADD_MODEL,
