@@ -140,18 +140,6 @@ data class TextList constructor(
         startTime = null
     }
 
-    fun scatterText(low: Float, high: Float) {
-        p?.apply {
-            texts.forEach {
-                it.position.set(
-                    random(low, high),
-                    random(low, high),
-                    0f
-                )
-            }
-        }
-    }
-
     fun setFont(selectedFont: Font) {
         javaFont = selectedFont
         pFont = p?.createFont(selectedFont.fontName, selectedFont.size.toFloat())

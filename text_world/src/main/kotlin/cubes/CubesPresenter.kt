@@ -10,7 +10,7 @@ import cubes.models.*
 import cubes.motion.*
 import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
-import cubes.motion.interpolator.QuadInterpolator
+import cubes.motion.interpolator.SineInterpolator
 import cubes.osc.OscContract
 import cubes.util.set
 import cubes.util.wrapper.FilesWrapper
@@ -372,40 +372,35 @@ class CubesPresenter constructor(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, 0f),
                     startPosition = PVector(0f, 0f, startZPos),
-                    interp = QuadInterpolator(IN)
+                    interp = SineInterpolator(IN)
                 ),
                 WaitMotion(animTimeEdge),
                 TextTranslationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, startZPos),
-                    interp = QuadInterpolator(OUT)
+                    interp = SineInterpolator(OUT)
                 )
             )
         )
     }
 
-    // fixme : not working
     private fun TextList.textRotationMotion(timeMs: Float): Motion<TextList.Text, Any> {
-        val animTimeEdge = timeMs / 2f
+        val animTimeEdge = timeMs / 3f
         return SeriesMotion(
             listOf(
-                TextTranslationMotion(
-                    this, 100f,
-                    target = PVector(0f, 0f, 0f),
-                    interp = QuadInterpolator(IN)
-                ),
                 TextRotationMotion(
                     this, animTimeEdge,
-                    target = PVector((Math.PI * 2).toFloat(), 0f, 0f),
-                    interp = QuadInterpolator(IN),
-                    log = logFactory(TextTranslationMotion::class.java)
+                    target = PVector(0f, 0f, 0f),
+                    startAngle = PVector(0f, (Math.PI / 2).toFloat(), 0f),
+                    interp = SineInterpolator(IN),
+                    log = logFactory(TextRotationMotion::class.java)
                 ),
                 WaitMotion(animTimeEdge),
                 TextRotationMotion(
                     this, animTimeEdge,
-                    target = PVector(0f, 0f, 0f),
-                    interp = QuadInterpolator(OUT),
-                    log = logFactory(TextTranslationMotion::class.java)
+                    target = PVector(0f, -(Math.PI / 2).toFloat(), 0f),
+                    interp = SineInterpolator(OUT),
+                    log = logFactory(TextRotationMotion::class.java)
                 )
             )
         )
