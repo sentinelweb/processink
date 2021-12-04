@@ -72,6 +72,8 @@ interface CubesContract {
         TEXT_NEXT,
         ADD_MODEL,
         REMOVE_MODEL,
+        ADD_IMAGE,
+        REMOVE_IMAGE,
         MENU_OPEN_STATE,
         MENU_SAVE_STATE,
         MENU_OPEN_TEXT,

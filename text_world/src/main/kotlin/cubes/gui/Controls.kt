@@ -341,13 +341,16 @@ class Controls(
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JToggleButton("Visible")
+                                .setup { ae -> events.onNext(Event(TEXT_VISIBLE, isSelected(ae))) })
+                            add(JLabel("|"))
                             add(JButton("Random")
                                 .setup { ae -> events.onNext(Event(TEXT_ORDER, TextList.Ordering.RANDOM)) })
                             add(JButton("Near Random")
                                 .setup { ae -> events.onNext(Event(TEXT_ORDER, TextList.Ordering.NEAR_RANDOM)) })
                             add(JButton("In order")
                                 .setup { ae -> events.onNext(Event(TEXT_ORDER, TextList.Ordering.INORDER)) })
-
+                            add(JLabel("|"))
                             add(JButton("Font").apply {
                                 var selectedFont: Font? = null
                                 addActionListener {
@@ -455,23 +458,30 @@ class Controls(
 
                     add(JPanel().apply {
                         layout = BoxLayout(this, BoxLayout.X_AXIS)
-                        add(JToggleButton("Terminator").setup { ae ->
-                            if (isSelected(ae)) {
-                                events.onNext(Event(ADD_MODEL, TERMINATOR))
-                            } else {
-                                events.onNext(Event(REMOVE_MODEL, TERMINATOR))
-                            }
-                        })
-                        add(JToggleButton("MF").setup { ae ->
-                            if (isSelected(ae)) {
-                                events.onNext(Event(ADD_MODEL, MILLENIUM_FALCON))
-                            } else {
-                                events.onNext(Event(REMOVE_MODEL, MILLENIUM_FALCON))
-                            }
-                        })
+                        add(JToggleButton("Terminator").setup { ae -> addOrRemoveModel(ae, TERMINATOR) })
+                        add(JToggleButton("MF").setup { ae -> addOrRemoveModel(ae, MILLENIUM_FALCON) })
+                        add(JToggleButton("Buddah").setup { ae -> addOrRemoveImage(ae, "buddha.svg") })
+                        add(JToggleButton("Yin Yang").setup { ae -> addOrRemoveImage(ae, "yinyang.svg") })
+                        add(JToggleButton("Hand").setup { ae -> addOrRemoveImage(ae, "buddhism_hand2.svg") })
                     }, BorderLayout.CENTER)
                 })
             }, BorderLayout.CENTER)
+        }
+
+        private fun addOrRemoveModel(ae: ActionEvent, data: CubesContract.Model3D) {
+            if (isSelected(ae)) {
+                events.onNext(Event(ADD_MODEL, data))
+            } else {
+                events.onNext(Event(REMOVE_MODEL, data))
+            }
+        }
+
+        private fun addOrRemoveImage(ae: ActionEvent, data: String) {
+            if (isSelected(ae)) {
+                events.onNext(Event(ADD_IMAGE, data))
+            } else {
+                events.onNext(Event(REMOVE_IMAGE, data))
+            }
         }
 
         private fun isSelected(ae: ActionEvent) = (ae.source as JToggleButton).isSelected

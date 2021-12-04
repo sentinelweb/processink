@@ -6,10 +6,7 @@ import cubes.CubesContract.Model3D.MILLENIUM_FALCON
 import cubes.CubesContract.Model3D.TERMINATOR
 import cubes.CubesContract.TextTransition.*
 import cubes.gui.Controls
-import cubes.models.CubeList
-import cubes.models.MilleniumFalcon
-import cubes.models.Terminator
-import cubes.models.TextList
+import cubes.models.*
 import cubes.motion.*
 import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
@@ -102,6 +99,8 @@ class CubesPresenter constructor(
                         MENU_EXIT -> exit()
                         ADD_MODEL -> addModel(it.data as CubesContract.Model3D)
                         REMOVE_MODEL -> removeModel(it.data as CubesContract.Model3D)
+                        ADD_IMAGE -> addImage(it.data as String)
+                        REMOVE_IMAGE -> removeImage(it.data as String)
                         else -> println("Couldnt handle : ${it.control} ")
                     }
                 }, {
@@ -117,23 +116,33 @@ class CubesPresenter constructor(
             .subscribe()
     }
 
+    private fun addImage(name: String) {
+        if (_state.models.find { it::class == SvgImage::class && (it as SvgImage).name == name } == null) {
+            _state.models.add(SvgImage.create(view.getApplet(), name))
+        }
+    }
+
+    private fun removeImage(name: String) {
+        _state.models
+            .removeIf { it::class == SvgImage::class && (it as SvgImage).name == name }
+    }
+
     private fun removeModel(model: CubesContract.Model3D) {
         _state.models
             .removeIf { it::class == model.clazz }
     }
 
     private fun addModel(model: CubesContract.Model3D) {
-        Single.fromCallable {
-            when (model) {
-                TERMINATOR -> Terminator.create(view.getApplet())
-                MILLENIUM_FALCON -> MilleniumFalcon.create(view.getApplet())
+        if (_state.models.find { it::class == model.clazz } == null) {
+            Single.fromCallable {
+                when (model) {
+                    TERMINATOR -> Terminator.create(view.getApplet())
+                    MILLENIUM_FALCON -> MilleniumFalcon.create(view.getApplet())
+                }
             }
+                .subscribeOn(Schedulers.io())
+                .subscribe({ _state.models.add(it) }, { it.printStackTrace() })
         }
-            .subscribeOn(Schedulers.io())
-            .subscribe({
-                _state.models.add(it)
-            }, {})
-
     }
 
     private fun exit() {

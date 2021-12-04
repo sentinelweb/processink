@@ -33,11 +33,11 @@ class Terminator constructor(
             pushMatrix {
                 translate(position.x, position.y, position.z)
                 pushMatrix {
-                    super.updateColors()
                     rotateX(angle.x)
                     rotateY(angle.y)
                     rotateZ(angle.z)
                     scale(scale.x, scale.y, scale.z)
+                    updateShapeColors(terminator)
                     shape(terminator)
                 }
             }
@@ -46,11 +46,11 @@ class Terminator constructor(
 
     companion object {
         fun create(p: PApplet) = Terminator(p)
-            .apply { scale.set(3) }
+            .apply { scale.set(6) }
             .apply { position.set(p.width / 2f, p.height.toFloat()) }
             .apply { angle.set(0f, 0f, Math.PI.toFloat()) }
             .apply { fill = true }
-            .apply { fillColor = Color.RED }
+            .apply { fillColor = Color.GRAY }
             .apply { motion = VelocityRotationMotion(0.01f, 0.0f, Triple(false, true, false)) }
     }
 }

@@ -10,10 +10,8 @@ import cubes.shaders.*
 import cubes.util.wrapper.FilesWrapper
 import cubes.util.wrapper.TimeFormatter
 import net.robmunro.processing.util.toProcessing
-import net.robmunro.processing.util.webc
 import processing.core.PApplet
 import processing.core.PConstants
-import processing.core.PShape
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.io.File
@@ -54,8 +52,8 @@ fun main() {
 
     lateinit var cubesPresenter: CubesPresenter
     private lateinit var ribbons: Ribbons
-    private lateinit var yinyang: PShape
-    private lateinit var lotus: PShape
+//    private lateinit var yinyang: PShape
+//    private lateinit var lotus: PShape
 
     private var lastBackgroundShaderType: CubesContract.BackgroundShaderType? = null
 
@@ -107,14 +105,14 @@ fun main() {
         ribbons.setup()
 
         // todo move out
-        yinyang = loadShape("${BASE_RESOURCES}/svg/faith.svg")
-        yinyang.setStroke(webc("#aaaaaa"))
-        yinyang.setFill(webc("#dddddd"))
-        yinyang.setStroke(true)
-        lotus = loadShape("${BASE_RESOURCES}/svg/lotus.svg")
-        lotus.setStroke(webc("#384FA0"))
-        lotus.setFill(webc("#6C8DFF"))
-        lotus.setStroke(true)
+//        yinyang = loadShape("${BASE_RESOURCES}/svg/yinyang.svg")
+//        yinyang.setStroke("#aaaaaa".webc(this))
+//        yinyang.setFill("#dddddd".webc(this))
+//        yinyang.setStroke(true)
+//        lotus = loadShape("${BASE_RESOURCES}/svg/lotus.svg")
+//        lotus.setStroke("#384FA0".webc(this))
+//        lotus.setFill("#6C8DFF".webc(this))
+//        lotus.setStroke(true)
 
         cubesPresenter.setup()
     }
@@ -144,8 +142,9 @@ fun main() {
             cubeList.draw()
 
             resetShader()
-            // ribbons.draw()
+
             models.forEach { it.draw() }
+            // ribbons.draw()
 
 //            pushMatrix {
 //                translate(width / 5f, height / 2f)
@@ -157,16 +156,16 @@ fun main() {
 //                scale(3f)
 //                draw(lotus)
 //            }
-//
+
             textList.draw()
         }
     }
 
-    private fun draw(shape: PShape) {
-        val size = 100f
-        (shape.getWidth() / shape.getHeight() * size)
-            .let { shape(shape, -it / 2f, -size / 2f, it, size) }
-    }
+//    private fun draw(shape: PShape) {
+//        val size = 100f
+//        (shape.getWidth() / shape.getHeight() * size)
+//            .let { shape(shape, -it / 2f, -size / 2f, it, size) }
+//    }
 
     fun setBackgroundShaderType(type: CubesContract.BackgroundShaderType) {
         if (cubesPresenter.state?.background != lastBackgroundShaderType) {

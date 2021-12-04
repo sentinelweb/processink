@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.robmunro.processing.util.toProcessing
 import processing.core.PApplet
+import processing.core.PShape
 import processing.core.PVector
 import java.awt.Color
 
@@ -22,9 +23,11 @@ abstract class Shape constructor(
     val scale: PVector = PVector(1f, 1f, 1f)
 ) {
     var fill: Boolean = false
+
     @Contextual
     var fillColor: Color = Color.WHITE
     var stroke: Boolean = true
+
     @Contextual
     var strokeColor: Color = Color.GRAY
     var strokeWeight: Float = 2f
@@ -68,6 +71,15 @@ abstract class Shape constructor(
             } else {
                 noStroke()
             }
+        }
+    }
+
+    protected fun updateShapeColors(shape: PShape) {
+        p?.apply {
+            shape.setFill(fill)
+            shape.setFill(fillColor.toProcessing(this))
+            shape.setStroke(stroke)
+            shape.setStroke(strokeColor.toProcessing(this))
         }
     }
 }
