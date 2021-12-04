@@ -12,6 +12,7 @@ import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.QuadInterpolator
 import cubes.osc.OscContract
+import cubes.util.set
 import cubes.util.wrapper.FilesWrapper
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -351,18 +352,19 @@ class CubesPresenter constructor(
     }
 
     private fun TextList.textColorMotion(timeMs: Float): Motion<TextList.Text, Any> {
-        val animTimeEdge = (timeMs - 1000f) / 2
+        val animTimeEdge = timeMs / 3
+        this.scale.set(0)
         return SeriesMotion(
             listOf(
                 TextColorMotion(_state.textList, animTimeEdge, TRANSPARENT, fillColor),
-                WaitMotion(1000f),
+                WaitMotion(animTimeEdge),
                 TextColorMotion(_state.textList, animTimeEdge, fillColor, TRANSPARENT)
             )
         )
     }
 
     private fun TextList.textTransitionMotion(timeMs: Float): Motion<TextList.Text, Any> {
-        val animTimeEdge = (timeMs - 1000f) / 2
+        val animTimeEdge = timeMs / 3
         val startZPos = -1000f
         return SeriesMotion(
             listOf(
@@ -372,7 +374,7 @@ class CubesPresenter constructor(
                     startPosition = PVector(0f, 0f, startZPos),
                     interp = QuadInterpolator(IN)
                 ),
-                WaitMotion(1000f),
+                WaitMotion(animTimeEdge),
                 TextTranslationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, startZPos),
@@ -384,7 +386,7 @@ class CubesPresenter constructor(
 
     // fixme : not working
     private fun TextList.textRotationMotion(timeMs: Float): Motion<TextList.Text, Any> {
-        val animTimeEdge = (timeMs - 1000f) / 2
+        val animTimeEdge = timeMs / 2f
         return SeriesMotion(
             listOf(
                 TextTranslationMotion(
@@ -398,7 +400,7 @@ class CubesPresenter constructor(
                     interp = QuadInterpolator(IN),
                     log = logFactory(TextTranslationMotion::class.java)
                 ),
-                WaitMotion(1000f),
+                WaitMotion(animTimeEdge),
                 TextRotationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, 0f),

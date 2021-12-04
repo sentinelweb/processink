@@ -46,8 +46,8 @@ val stateJsonSerializer = Json {
             Shape::class to Shape.serializer(),
             CubeList::class to CubeList.serializer(),
             Cube::class to Cube.serializer()
-//            PlaylistItemDomain::class to PlaylistItemDomain.serializer(),
         )
+        // todo enable for shapes array
 //        polymorphic(Domain::class, PlaylistDomain::class, PlaylistDomain.serializer())
     }.plus(SerializersModule {
         contextual(Color::class, ColorSerializer)

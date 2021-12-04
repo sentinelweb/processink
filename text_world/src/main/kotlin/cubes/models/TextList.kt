@@ -131,6 +131,8 @@ data class TextList constructor(
 
     fun start() {
         startTime = System.currentTimeMillis()
+        textMotion?.start()
+        updateState()
         endWasCalled = false
     }
 

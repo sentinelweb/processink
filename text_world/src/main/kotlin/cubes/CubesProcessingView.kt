@@ -113,7 +113,10 @@ fun main() {
 
             resetShader()
 
-            models.forEach { it.draw() }
+            try {
+                models.forEach { it.draw() }
+            } catch (e: ConcurrentModificationException) {
+            }
             // ribbons.draw()
 
             textList.draw()
