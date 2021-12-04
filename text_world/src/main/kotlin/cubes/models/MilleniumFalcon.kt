@@ -53,8 +53,8 @@ class MilleniumFalcon constructor(
         fun create(p: PApplet) =
             MilleniumFalcon(p)
                 .apply { scale.set(5f) }
-                .apply { position.set(p.width / 2f, p.height * 4f / 5, -50f) }
-                .apply { angle.set(Math.PI.toFloat(), 0f, Math.PI.toFloat()) }
+                .apply { position.set(p.width / 2f, p.height * 4f / 5, 50f) }
+                .apply { angle.set(0f, 0f, -Math.PI.toFloat() / 2) }
                 .apply { fillColor = Color.GRAY }
                 .apply { fill = true }
                 .apply { motion = VelocityRotationMotion(0.01f, 0.0f, Triple(false, false, true)) }

@@ -31,9 +31,6 @@ class SvgImage(
 
     private fun load() {
         shape = p!!.loadShape("${BASE_RESOURCES}/svg/$name")
-//        shape.setStroke("#aaaaaa".webc(p!!))
-//        shape.setFill("#dddddd".webc(p!!))
-//        shape.setStroke(true)
     }
 
     override fun draw() {
@@ -46,16 +43,22 @@ class SvgImage(
                     rotateZ(angle.z)
                     scale(scale.x, scale.y, scale.z)
                     updateShapeColors(shape)
-                    shape(shape)
+                    drawMe(shape)
                 }
             }
         }
     }
 
+    private fun drawMe(shape: PShape) {
+        val size = 100f
+        (shape.getWidth() / shape.getHeight() * size)
+            .let { p!!.shape(shape, -it / 2f, -size / 2f, it, size) }
+    }
+
     companion object {
         fun create(p: PApplet, name: String) = SvgImage(p, name)
-            .apply { scale.set(1) }
-            .apply { position.set(p.width / 2f, p.height / 2f, -60f) }
+            .apply { scale.set(2) }
+            .apply { position.set(p.width / 2f, p.height / 2f, 0f) }
             .apply { fill = true }
             .apply { fillColor = Color.YELLOW }
             .apply { stroke = false }
@@ -65,8 +68,3 @@ class SvgImage(
 }
 
 
-//private fun draw(shape: PShape) {
-//    val size = 100f
-//    (shape.getWidth() / shape.getHeight() * size)
-//        .let { shape(shape, -it / 2f, -size / 2f, it, size) }
-//}
