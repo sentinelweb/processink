@@ -24,7 +24,7 @@ class MilleniumFalcon constructor(
     }
 
     private fun loadFalcon() {
-        falcon = p!!.loadShape("${CubesProcessingView.BASE_RESOURCES}/obj/millennium-falcon/source/mf.obj")
+        falcon = p!!.loadShape("${CubesProcessingView.BASE_RESOURCES}/obj/millennium-falcon/mf.obj")
     }
 
     override fun setApplet(applet: PApplet) {
