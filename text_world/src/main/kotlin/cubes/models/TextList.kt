@@ -43,7 +43,6 @@ data class TextList constructor(
             }
         }
 
-
     @Transient
     var textMotion: Motion<Text, Any>? = null
 
@@ -116,23 +115,6 @@ data class TextList constructor(
         return mode == Mode.ALL || (mode == Mode.SINGLE && currentIndex == i)
     }
 
-    override fun draw() {
-        if (visible) {
-            setProps()
-            updateState()
-            p?.apply {
-                pushMatrix {
-                    translate(width / 2f, height / 2f)
-                    texts.forEachIndexed { i, text ->
-                        if (thisTextVisible(i)) {
-                            text.draw()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fun setProps() {
         p?.apply {
             pFont?.apply { textFont(this) }
@@ -145,11 +127,6 @@ data class TextList constructor(
     fun addText(s: String): TextList {
         texts.add(Text(p, s))
         return this
-    }
-
-    fun visible(v: Boolean) {
-        visible = v
-        texts.forEach { it.visible = v }
     }
 
     fun start() {
@@ -180,6 +157,23 @@ data class TextList constructor(
 
     fun next() {
         selectNextIndex()
+    }
+
+    override fun draw() {
+        if (visible) {
+            setProps()
+            updateState()
+            p?.apply {
+                pushMatrix {
+                    translate(width / 2f, height / 2f)
+                    texts.forEachIndexed { i, text ->
+                        if (thisTextVisible(i)) {
+                            text.draw()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Serializable

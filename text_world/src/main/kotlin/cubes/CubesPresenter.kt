@@ -185,7 +185,7 @@ class CubesPresenter constructor(
             .apply { list.forEach { addText(it) } }
             .apply { fillColor = _state.textColor }
             .apply { _state.textFont?.also { setFont(it) } }
-            .apply { startText() }
+        startText()
     }
 
     fun updateBeforeDraw() {
@@ -329,7 +329,6 @@ class CubesPresenter constructor(
     private fun startText() {
         _state.textList.apply {
             this.ordering = _state.textOrder
-            visible(true)
             this.timeMs = _state.animationTime
             textMotion = when (_state.textTransition) {
                 FADE -> textColorMotion(timeMs)
@@ -341,10 +340,8 @@ class CubesPresenter constructor(
                 )
                 SPIN -> textRotationMotion(timeMs)
                 NONE -> null
-            }.apply { start() }
-            endFunction = fun() {
-                startText()
             }
+            endFunction = { startText() }
             start()
         }
     }
