@@ -104,9 +104,7 @@ data class TextList constructor(
         currentIndex = if (index < texts.size) index else texts.size - 1
     }
 
-    fun next() {
-        selectNextIndex()
-    }
+    fun next() = selectNextIndex()
 
     private fun selectNextIndex() {
         p?.apply {
@@ -154,10 +152,6 @@ data class TextList constructor(
             it.scale.set(1)
             it.angle.set(0)
         }
-    }
-
-    fun stop() {
-        startTime = null
     }
 
     fun setFont(selectedFont: Font) {
