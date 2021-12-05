@@ -44,7 +44,7 @@ class Test2 : PApplet() {
         // but not z-sorted.
         hint(PConstants.DISABLE_DEPTH_MASK)
         // Create the font
-        printArray(PFont.list())
+//        printArray(PFont.list())
 //        f = createFont("ArialMT", 24f);
         f = createFont("Thonburi", 24f)
         textFont(f)

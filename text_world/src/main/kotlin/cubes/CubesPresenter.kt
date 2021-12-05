@@ -14,6 +14,7 @@ import cubes.motion.interpolator.EasingType.IN
 import cubes.motion.interpolator.EasingType.OUT
 import cubes.motion.interpolator.SineInterpolator
 import cubes.osc.OscContract
+import cubes.particles.ParticleSystem
 import cubes.util.set
 import cubes.util.wrapper.FilesWrapper
 import io.reactivex.Completable
@@ -21,7 +22,6 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
-import net.robmunro.processing.util.encodeARGB
 import processing.core.PVector
 import speecher.util.serialization.stateJsonSerializer
 import speecher.util.wrapper.logFactory
@@ -97,6 +97,7 @@ class CubesPresenter constructor(
                         TEXT_NEXT -> textNext()
                         TEXT_SET -> textSet(it.data as List<String>)
                         TEXT_GOTO -> textGoto(it.data as Int)
+                        PARTICLE_SYS_CREATE -> createParticleSystem()
                         MENU_SAVE_STATE -> saveState(it.data as File)
                         MENU_OPEN_STATE -> openState(it.data as File)
                         MENU_OPEN_TEXT -> openText(it.data as File)
@@ -180,9 +181,11 @@ class CubesPresenter constructor(
                         .apply { newState.textFont?.also { setFont(it) } }
                     newState.models
                         .forEach { it.setApplet(view.applet) }
+
                 }
             )
             _state.textList.apply { startText() }
+            makeTestCube()
         } else {
             setState(CubesState.makeFromState(view.applet))
         }
@@ -196,6 +199,11 @@ class CubesPresenter constructor(
     fun updateBeforeDraw() {
         _state.cubeList.updateState()
         _state.models.forEach { it.updateState() }
+        _state.textList.updateState()
+        _state.particleSystem?.update()
+        if (_state.particleSystem?.isDead() ?: false) {
+            _state.particleSystem = null
+        }
     }
 
     /////////////////////////////////// CUBES //////////////////////////////////////////////////////
@@ -348,6 +356,7 @@ class CubesPresenter constructor(
     }
 
     // endregion cubes
+
     /////////////////////////////////// TEXT //////////////////////////////////////////////////////
     // region text
     private fun startText() {
@@ -459,7 +468,6 @@ class CubesPresenter constructor(
     }
 
     private fun textFillColor(color: Color) {
-        println("fillColor: ${color.encodeARGB()}")
         _state.textColor = color
         _state.textList.fillColor = color
     }
@@ -467,7 +475,6 @@ class CubesPresenter constructor(
     private fun textFillAlpha(alpha: Int) {
         _state.textColor = _state.textColor
             .let { old -> Color(old.red, old.green, old.blue, alpha) }
-        println("fillColor: ${_state.textColor}")
         _state.textList.fillColor = _state.textColor
     }
 
@@ -480,4 +487,28 @@ class CubesPresenter constructor(
         _state.textList.setFont(selectedFont)
     }
     // endregion text
+
+    /////////////////////////////////// PARTICLE SYSTEMS /////////////////////////////////////////////
+    // region psys
+    fun createParticleSystem() {
+        if (_state.particleSystem == null) {
+            _state.particleSystem = ParticleSystem(view.applet, 30) { i ->
+                Cube(view.applet, 2f)
+                    .apply { fill = true }
+                    .apply { fillColor = Color.RED }
+            }.apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
+        }
+    }
+
+    fun makeTestCube() {
+        _state.testCube = Cube(view.applet, 2f)
+            .apply { fill = true }
+            .apply { fillColor = Color.RED }
+            .apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
+            .apply { scale.set(5) }
+            .apply { stroke = true }
+            .apply { strokeColor = Color.YELLOW }
+            .apply { strokeWeight(3f) }
+    }
+    // endregion psys
 }

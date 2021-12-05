@@ -23,10 +23,15 @@ data class Cube constructor(
         initialise()
     }
 
+    override fun setApplet(applet: PApplet) {
+        super.setApplet(applet)
+        p = applet
+        initialise()
+    }
+
     fun initialise() {
-        cubeShape = p?.createShape(PConstants.BOX, width, height, depth).apply {
-            this?.disableStyle()
-        }
+        cubeShape = p?.createShape(PConstants.BOX, width, height, depth)
+            .apply { this?.disableStyle() }
     }
 
     override fun draw() {
@@ -45,10 +50,5 @@ data class Cube constructor(
         }
     }
 
-    override fun setApplet(applet: PApplet) {
-        super.setApplet(applet)
-        p = applet
-        initialise()
-    }
 
 }

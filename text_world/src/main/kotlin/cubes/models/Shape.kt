@@ -14,7 +14,7 @@ import java.awt.Color
 @Serializable
 abstract class Shape constructor(
     @Transient
-    open var p: PApplet? = null,
+    protected open var p: PApplet? = null,
     @Contextual
     val angle: PVector = PVector(),
     @Contextual

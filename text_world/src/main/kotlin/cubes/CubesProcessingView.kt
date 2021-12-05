@@ -123,6 +123,10 @@ fun main() {
                 models.forEach { it.draw() }
             } catch (e: ConcurrentModificationException) {
             }
+
+            particleSystem?.draw()
+
+            testCube?.draw()
             // ribbons.draw()
 
             textList.draw()

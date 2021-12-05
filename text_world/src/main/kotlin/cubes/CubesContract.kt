@@ -37,7 +37,8 @@ interface CubesContract {
     )
 
     enum class Control {
-        SHADER_BG, BG_COLOR,
+        SHADER_BG,
+        BG_COLOR,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SPEED,
         CUBES_ROTATION_OFFEST_RESET,
@@ -67,6 +68,7 @@ interface CubesContract {
         TEXT_NEXT,
         TEXT_SET,
         TEXT_GOTO,
+        PARTICLE_SYS_CREATE,
         ADD_MODEL,
         REMOVE_MODEL,
         ADD_IMAGE,

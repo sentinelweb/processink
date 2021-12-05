@@ -394,7 +394,7 @@ class Controls(
                     // fill
                     add(JPanel().apply {
                         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
-                        add(JButton("Start").apply {
+                        add(JButton("Color").apply {
                             addActionListener {
                                 val color = JColorChooser.showDialog(this, "Fill Start Color", Color.WHITE)
                                 color?.let {
@@ -444,6 +444,9 @@ class Controls(
                         add(JToggleButton("Buddha").setup { ae -> addOrRemoveImage(ae, "buddha.svg") })
                         add(JToggleButton("Yin Yang").setup { ae -> addOrRemoveImage(ae, "yinyang.svg") })
                         add(JToggleButton("Hand").setup { ae -> addOrRemoveImage(ae, "buddhism_hand2.svg") })
+                        add(JLabel("|"))
+                        add(JButton("Psys")
+                            .apply { addActionListener { events.onNext(Event(PARTICLE_SYS_CREATE, 0)) } })
                     }, BorderLayout.CENTER)
                 })
             }, BorderLayout.CENTER)

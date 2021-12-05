@@ -2,10 +2,12 @@ package cubes
 
 import cubes.CubesContract.BackgroundShaderType.REFRACTION_PATTERN
 import cubes.CubesContract.TextTransition.FADE
+import cubes.models.Cube
 import cubes.models.CubeList
 import cubes.models.Shape
 import cubes.models.TextList
 import cubes.models.TextList.Ordering.INORDER
+import cubes.particles.ParticleSystem
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -40,7 +42,11 @@ data class CubesState constructor(
     var backgroundColor: Color = Color.BLACK,
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN,
     @Transient
-    val models: MutableList<Shape> = mutableListOf()
+    val models: MutableList<Shape> = mutableListOf(),
+    @Transient
+    var particleSystem: ParticleSystem? = null,
+    @Transient
+    var testCube: Cube? = null
 ) {
     companion object {
         fun makeFromState(p: PApplet) = CubesState(
