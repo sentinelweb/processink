@@ -2,6 +2,7 @@ package cubes.models
 
 import cubes.motion.Motion
 import cubes.util.pushMatrix
+import cubes.util.set
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -96,7 +97,16 @@ data class TextList constructor(
     }
 
     fun currentIndex() = currentIndex
+
     fun currentText() = texts[currentIndex]
+
+    fun goto(index: Int) {
+        currentIndex = if (index < texts.size) index else texts.size - 1
+    }
+
+    fun next() {
+        selectNextIndex()
+    }
 
     private fun selectNextIndex() {
         p?.apply {
@@ -121,7 +131,6 @@ data class TextList constructor(
             textSize(60f)
             textAlign(PConstants.CENTER, PConstants.CENTER)
         }
-        //textMode(PConstants.SHAPE)
     }
 
     fun addText(s: String): TextList {
@@ -130,10 +139,21 @@ data class TextList constructor(
     }
 
     fun start() {
+        resetTextsState()
         startTime = System.currentTimeMillis()
         textMotion?.start()
         updateState()
         endWasCalled = false
+    }
+
+    private fun resetTextsState() {
+        this.fillColor = fillColor
+        this.fill = fill
+        texts.forEach {
+            it.position.set(0)
+            it.scale.set(1)
+            it.angle.set(0)
+        }
     }
 
     fun stop() {
@@ -143,10 +163,6 @@ data class TextList constructor(
     fun setFont(selectedFont: Font) {
         javaFont = selectedFont
         pFont = p?.createFont(selectedFont.fontName, selectedFont.size.toFloat())
-    }
-
-    fun next() {
-        selectNextIndex()
     }
 
     override fun draw() {

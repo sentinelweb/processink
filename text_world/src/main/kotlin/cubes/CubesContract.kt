@@ -13,7 +13,7 @@ interface CubesContract {
         ECLIPSE, CLOUDS, ONEWARP, PROCWARP, HYPERFIELD, STARFIELD_1, BURNING_STAR, NONE
     }
 
-    enum class TextTransition { FADE, SPIN, FADE_ZOOM, NONE }
+    enum class TextTransition { FADE, FADE_ZOOM, SPIN_X, SPIN_Y, NONE }
     enum class Formation { GRID, LINE, CIRCLE, SQUARE, CENTER }
     enum class RotationAxis { X, Y, Z }
 
@@ -65,6 +65,8 @@ interface CubesContract {
         TEXT_FILL_ALPHA,
         TEXT_VISIBLE,
         TEXT_NEXT,
+        TEXT_SET,
+        TEXT_GOTO,
         ADD_MODEL,
         REMOVE_MODEL,
         ADD_IMAGE,

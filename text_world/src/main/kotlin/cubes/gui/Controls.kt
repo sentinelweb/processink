@@ -167,9 +167,8 @@ class Controls(
             // center panel - motion, text
             add(JPanel().apply {
                 layout = BoxLayout(this, BoxLayout.PAGE_AXIS)
-                // cubes panel
                 add(JPanel().apply {
-                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    layout = GridLayout(-1, 1)
                     titledBorder("Animation")
                     // animation
                     add(JPanel().apply {
@@ -184,9 +183,56 @@ class Controls(
                         )
                     })
                 })
+                // cubes panel
                 add(JPanel().apply {
-                    layout = GridLayout(-1, 1)//BoxLayout(this, BoxLayout.PAGE_AXIS)
+                    layout = GridLayout(-1, 1)
                     titledBorder("Cubes")
+                    // rotation
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JToggleButton("Visible")
+                                .setup(true) { ae -> events.onNext(Event(CUBES_VISIBLE, isSelected(ae))) })
+                            add(JLabel("|"))
+                            add(JToggleButton("X")
+                                .setup(true) { ae ->
+                                    events.onNext(
+                                        Event(CUBES_ROTATION, Pair(RotationAxis.X, isSelected(ae)))
+                                    )
+                                })
+                            add(JToggleButton("Y")
+                                .setup(true) { ae ->
+                                    events.onNext(
+                                        Event(CUBES_ROTATION, Pair(RotationAxis.Y, isSelected(ae)))
+                                    )
+                                })
+                            add(JToggleButton("Z")
+                                .setup(true) { ae ->
+                                    events.onNext(
+                                        Event(CUBES_ROTATION, Pair(RotationAxis.Z, isSelected(ae)))
+                                    )
+                                })
+                            add(JLabel("|"))
+                            add(JButton("0")
+                                .setup { events.onNext(Event(CUBES_ROTATION_RESET)) })
+                            add(JButton("Align").setup { events.onNext(Event(CUBES_ROTATION_ALIGN)) })
+                        }
+                            .wrapWithLabel("Rotation", 100))
+
+                    // translation
+                    add(
+                        JPanel().apply {
+                            layout = BoxLayout(this, BoxLayout.X_AXIS)
+                            add(JButton("grid")
+                                .setup { events.onNext(Event(CUBES_FORMATION, GRID)) })
+                            add(JButton("line")
+                                .setup { events.onNext(Event(CUBES_FORMATION, LINE)) })
+                            add(JButton("square")
+                                .setup { events.onNext(Event(CUBES_FORMATION, SQUARE)) })
+                            add(JButton("0")
+                                .setup { events.onNext(Event(CUBES_FORMATION, CENTER)) })
+                        }.wrapWithLabel("Formation", 100)
+                    )
 
                     // speed
                     add(
@@ -208,51 +254,6 @@ class Controls(
                                     .apply { value = 1 }
                             )
                         }.wrapWithLabel("Speed", 100)
-                    )
-
-                    // rotation
-                    add(
-                        JPanel().apply {
-                            layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JToggleButton("X")
-                                .setup(true) { ae ->
-                                    events.onNext(
-                                        Event(CUBES_ROTATION, Pair(CubesContract.RotationAxis.X, isSelected(ae)))
-                                    )
-                                })
-                            add(JToggleButton("Y")
-                                .setup(true) { ae ->
-                                    events.onNext(
-                                        Event(CUBES_ROTATION, Pair(CubesContract.RotationAxis.Y, isSelected(ae)))
-                                    )
-                                })
-                            add(JToggleButton("Z")
-                                .setup(true) { ae ->
-                                    events.onNext(
-                                        Event(CUBES_ROTATION, Pair(CubesContract.RotationAxis.Z, isSelected(ae)))
-                                    )
-                                })
-                            add(JButton("0")
-                                .setup { events.onNext(Event(CUBES_ROTATION_RESET)) })
-                            add(JButton("Align").setup { events.onNext(Event(CUBES_ROTATION_ALIGN)) })
-                            add(JToggleButton("Visible")
-                                .setup(true) { ae -> events.onNext(Event(CUBES_VISIBLE, isSelected(ae))) })
-                        }
-                            .wrapWithLabel("Rotation", 100))
-
-                    // translation
-                    add(
-                        JPanel().apply {
-                            layout = BoxLayout(this, BoxLayout.X_AXIS)
-                            add(JButton("grid")
-                                .setup { events.onNext(Event(CUBES_FORMATION, GRID)) })
-                            add(JButton("line")
-                                .setup { events.onNext(Event(CUBES_FORMATION, LINE)) })
-                            add(JButton("square")
-                                .setup { events.onNext(Event(CUBES_FORMATION, SQUARE)) })
-                            add(JButton("0")
-                                .setup { events.onNext(Event(CUBES_FORMATION, CENTER)) })
-                        }.wrapWithLabel("Position", 100)
                     )
 
                     // scale
@@ -370,7 +371,6 @@ class Controls(
                                     if (!dialog.isCancelSelected) {
                                         System.out.printf("Selected font is: %s%n", dialog.selectedFont)
                                         selectedFont = dialog.selectedFont
-                                        // listener.textFont(dialog.selectedFont)
                                         events.onNext(Event(TEXT_FONT, dialog.selectedFont))
                                     }
                                 }
@@ -379,16 +379,15 @@ class Controls(
                         }.wrapWithLabel("Ordering")
                     )
 
-
                     // motion
                     add(
                         JPanel().apply {
                             layout = BoxLayout(this, BoxLayout.X_AXIS)
                             add(JButton("None").setup { ae -> events.onNext(Event(TEXT_MOTION, TextTransition.NONE)) })
                             add(JButton("Fade").setup { ae -> events.onNext(Event(TEXT_MOTION, FADE)) })
-                            add(JButton("fade-zoom").setup { ae -> events.onNext(Event(TEXT_MOTION, FADE_ZOOM)) })
-                            add(JButton("spin x").setup { ae -> events.onNext(Event(TEXT_MOTION, SPIN)) })
-
+                            add(JButton("Fade-Zoom").setup { ae -> events.onNext(Event(TEXT_MOTION, FADE_ZOOM)) })
+                            add(JButton("Spin X").setup { ae -> events.onNext(Event(TEXT_MOTION, SPIN_X)) })
+                            add(JButton("Spin Y").setup { ae -> events.onNext(Event(TEXT_MOTION, SPIN_Y)) })
                         }.wrapWithLabel("Motion")
                     )
 
@@ -399,7 +398,6 @@ class Controls(
                             addActionListener {
                                 val color = JColorChooser.showDialog(this, "Fill Start Color", Color.WHITE)
                                 color?.let {
-                                    //listener.textFillColor(it)
                                     events.onNext(Event(TEXT_COLOR_FILL, it))
                                     @Suppress("LABEL_NAME_CLASH")
                                     this@apply.background = it
@@ -417,6 +415,22 @@ class Controls(
                                 .wrapWithLabel("Alpha")
                         )
                     }.wrapWithLabel("Fill"))
+
+                    // text
+                    add(JPanel().apply {
+                        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+                        val textSetField = JTextField().also { add(it) }
+                        add(JButton("Apply")
+                            .apply {
+                                addActionListener {
+                                    events.onNext(Event(TEXT_SET, textSetField.text.split(":")))
+                                }
+                            })
+                        add(JButton("Restart")
+                            .apply { addActionListener { events.onNext(Event(TEXT_GOTO, 0)) } })
+                        add(JButton("Next")
+                            .apply { addActionListener { events.onNext(Event(TEXT_NEXT, null)) } })
+                    }.wrapWithLabel("Text"))
                 })
                 add(JPanel().apply {
                     layout = GridLayout(-1, 1)
@@ -427,7 +441,7 @@ class Controls(
                         add(JToggleButton("Terminator").setup { ae -> addOrRemoveModel(ae, TERMINATOR) })
                         add(JToggleButton("MF").setup { ae -> addOrRemoveModel(ae, MILLENIUM_FALCON) })
                         add(JLabel("|"))
-                        add(JToggleButton("Buddah").setup { ae -> addOrRemoveImage(ae, "buddha.svg") })
+                        add(JToggleButton("Buddha").setup { ae -> addOrRemoveImage(ae, "buddha.svg") })
                         add(JToggleButton("Yin Yang").setup { ae -> addOrRemoveImage(ae, "yinyang.svg") })
                         add(JToggleButton("Hand").setup { ae -> addOrRemoveImage(ae, "buddhism_hand2.svg") })
                     }, BorderLayout.CENTER)

@@ -4,6 +4,8 @@ import cubes.CubesContract.Control.*
 import cubes.CubesContract.Formation.*
 import cubes.CubesContract.Model3D.MILLENIUM_FALCON
 import cubes.CubesContract.Model3D.TERMINATOR
+import cubes.CubesContract.RotationAxis.X
+import cubes.CubesContract.RotationAxis.Y
 import cubes.CubesContract.TextTransition.*
 import cubes.gui.Controls
 import cubes.models.*
@@ -93,6 +95,8 @@ class CubesPresenter constructor(
                         TEXT_FILL_ALPHA -> textFillAlpha(it.data as Int)
                         TEXT_VISIBLE -> textVisible(it.data as Boolean)
                         TEXT_NEXT -> textNext()
+                        TEXT_SET -> textSet(it.data as List<String>)
+                        TEXT_GOTO -> textGoto(it.data as Int)
                         MENU_SAVE_STATE -> saveState(it.data as File)
                         MENU_OPEN_STATE -> openState(it.data as File)
                         MENU_OPEN_TEXT -> openText(it.data as File)
@@ -114,6 +118,10 @@ class CubesPresenter constructor(
             .fromCallable { openState(files.lastStateFile) }
             .delay(1, TimeUnit.SECONDS)
             .subscribe({ readyForInput = true }, { it.printStackTrace() })
+    }
+
+    override fun setState(state: CubesState) {
+        this._state = state
     }
 
     private fun addImage(name: String) {
@@ -182,11 +190,7 @@ class CubesPresenter constructor(
 
     private fun openText(file: File) {
         val list = file.readLines()
-        _state.textList = TextList(view.applet)
-            .apply { list.forEach { addText(it) } }
-            .apply { fillColor = _state.textColor }
-            .apply { _state.textFont?.also { setFont(it) } }
-        startText()
+        textSet(list)
     }
 
     fun updateBeforeDraw() {
@@ -194,6 +198,8 @@ class CubesPresenter constructor(
         _state.models.forEach { it.updateState() }
     }
 
+    /////////////////////////////////// CUBES //////////////////////////////////////////////////////
+    // region cubes
     private fun cubesLength(i: Int) {
         _state.cubeList = CubeList(view.applet, i, 50f, 50f).apply { visible = true }
     }
@@ -224,8 +230,8 @@ class CubesPresenter constructor(
 
     private fun motionRot(axis: CubesContract.RotationAxis, selected: Boolean) {
         _state.cubeRotationAxes = when (axis) {
-            CubesContract.RotationAxis.X -> _state.cubeRotationAxes.copy(first = selected)
-            CubesContract.RotationAxis.Y -> _state.cubeRotationAxes.copy(second = selected)
+            X -> _state.cubeRotationAxes.copy(first = selected)
+            Y -> _state.cubeRotationAxes.copy(second = selected)
             CubesContract.RotationAxis.Z -> _state.cubeRotationAxes.copy(third = selected)
         }
         setCubeVelocity()
@@ -327,10 +333,27 @@ class CubesPresenter constructor(
         }
     }
 
+    private fun cubesVisible(selected: Boolean) {
+        _state.cubeList.visible = selected
+    }
+
+    private fun cubeScaleMotion() = if (_state.cubeScaleDist == 0f) {
+        CubeScaleMotion.scale(_state.cubeList, _state.animationTime, _state.cubeScale)
+    } else {
+        CubeScaleMotion.range(_state.cubeList, _state.animationTime, _state.cubeScale, _state.cubeScaleDist)
+    }
+
+    private fun setCubeVelocity() {
+        _state.cubeList.cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state).apply { start() }
+    }
+
+    // endregion cubes
+    /////////////////////////////////// TEXT //////////////////////////////////////////////////////
+    // region text
     private fun startText() {
         _state.textList.apply {
-            this.ordering = _state.textOrder
-            this.timeMs = _state.animationTime
+            ordering = _state.textOrder
+            timeMs = _state.animationTime
             textMotion = when (_state.textTransition) {
                 FADE -> textColorMotion(timeMs)
                 FADE_ZOOM -> CompositeMotion(
@@ -339,12 +362,26 @@ class CubesPresenter constructor(
                         textTransitionMotion(timeMs)
                     )
                 )
-                SPIN -> textRotationMotion(timeMs)
+                SPIN_X -> textRotationMotion(timeMs, X)
+                SPIN_Y -> textRotationMotion(timeMs, Y)
                 NONE -> null
             }
             endFunction = { startText() }
             start()
         }
+    }
+
+    fun textSet(list: List<String>) {
+        _state.textList = TextList(view.applet)
+            .apply { list.map { it.trim() }.forEach { addText(it) } }
+            .apply { fillColor = _state.textColor }
+            .apply { fill = true }
+            .apply { _state.textFont?.also { setFont(it) } }
+        startText()
+    }
+
+    private fun textGoto(index: Int) {
+        _state.textList.goto(index)
     }
 
     private fun textNext() {
@@ -384,21 +421,26 @@ class CubesPresenter constructor(
         )
     }
 
-    private fun TextList.textRotationMotion(timeMs: Float): Motion<TextList.Text, Any> {
+    private fun TextList.textRotationMotion(
+        timeMs: Float,
+        axis: CubesContract.RotationAxis
+    ): Motion<TextList.Text, Any> {
         val animTimeEdge = timeMs / 3f
+        val xr = if (axis == X) (Math.PI / 2).toFloat() else 0f
+        val yr = if (axis == Y) (Math.PI / 2).toFloat() else 0f
         return SeriesMotion(
             listOf(
                 TextRotationMotion(
                     this, animTimeEdge,
                     target = PVector(0f, 0f, 0f),
-                    startAngle = PVector(0f, (Math.PI / 2).toFloat(), 0f),
+                    startAngle = PVector(xr, yr, 0f),
                     interp = SineInterpolator(IN),
                     log = logFactory(TextRotationMotion::class.java)
                 ),
                 WaitMotion(animTimeEdge),
                 TextRotationMotion(
                     this, animTimeEdge,
-                    target = PVector(0f, -(Math.PI / 2).toFloat(), 0f),
+                    target = PVector(-xr, -yr, 0f),
                     interp = SineInterpolator(OUT),
                     log = logFactory(TextRotationMotion::class.java)
                 )
@@ -437,24 +479,5 @@ class CubesPresenter constructor(
         _state.textFont = selectedFont
         _state.textList.setFont(selectedFont)
     }
-
-    private fun cubesVisible(selected: Boolean) {
-        _state.cubeList.visible = selected
-    }
-
-    private fun cubeScaleMotion() = if (_state.cubeScaleDist == 0f) {
-        CubeScaleMotion.scale(_state.cubeList, _state.animationTime, _state.cubeScale)
-    } else {
-        CubeScaleMotion.range(_state.cubeList, _state.animationTime, _state.cubeScale, _state.cubeScaleDist)
-    }
-
-    override fun setState(state: CubesState) {
-        this._state = state
-    }
-
-    private fun setCubeVelocity() {
-        _state.cubeList.cubeListMotion = VelocityRotationMotion.makeCubesRotation(_state).apply { start() }
-    }
-
-
+    // endregion text
 }
