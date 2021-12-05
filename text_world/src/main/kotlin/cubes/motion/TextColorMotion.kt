@@ -1,6 +1,6 @@
 package cubes.motion
 
-import cubes.objects.TextList
+import cubes.models.TextList
 import provider.TimeProvider
 import java.awt.Color
 
@@ -25,5 +25,4 @@ class TextColorMotion constructor(
 
     override fun getStartData(): List<Color> =
         textList.texts.map { text -> startColor ?: text.fillColor }
-
 }

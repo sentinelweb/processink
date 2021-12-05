@@ -1,5 +1,6 @@
 uniform vec2 u_resolution;
 uniform float u_time;
+uniform vec3 u_color;
 
 void main(void) {
     vec2 p = -1.0 + 2.0 * gl_FragCoord.xy / u_resolution.xy;
@@ -24,5 +25,7 @@ void main(void) {
     d=r/350.0;
     d+=sin(d*d*8.0)*0.52;
     f=(sin(a*g)+1.0)/2.0;
-    gl_FragColor=vec4(vec3(f*i/1.6, i/2.0+d/13.0, i)*d*p.x+vec3(i/1.3+d/8.0, i/2.0+d/18.0, i)*d*(1.0-p.x), 1.0);
+    vec3 col = vec3(f*i/1.6, i/2.0+d/13.0, i)*d*p.x+vec3(i/1.3+d/8.0, i/2.0+d/18.0, i)*d*(1.0-p.x);
+    col = u_color * col;
+    gl_FragColor=vec4(col, 1.0);
 }

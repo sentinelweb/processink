@@ -3,8 +3,8 @@ package cubes.motion
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import cubes.CubesProcessingView
+import cubes.models.CubeList
 import cubes.motion.Motion.Companion.interpolate
-import cubes.objects.CubeList
 import org.hamcrest.Matchers.closeTo
 import org.hamcrest.core.Is.`is`
 import org.junit.Assert.*

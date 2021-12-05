@@ -42,9 +42,9 @@ dependencies {
     //implementation "org.processing:pdf:$processing_version"
 
     // testing
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation( group: 'junit', name: 'junit', version: '4.12')
 
-    runtime files("$processing_native_lib_path")
+    runtimeClasspath files("$processing_native_lib_path")
 }
 
 compileKotlin {

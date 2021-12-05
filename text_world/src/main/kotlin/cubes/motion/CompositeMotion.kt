@@ -1,6 +1,6 @@
 package cubes.motion
 
-import cubes.objects.Shape
+import cubes.models.Shape
 import provider.TimeProvider
 
 class CompositeMotion<T : Shape> constructor(

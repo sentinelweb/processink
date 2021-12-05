@@ -15,7 +15,7 @@ class FontSerializerTest {
 
     @Test
     fun serialize() {
-        assertEquals("\"Arial-BoldMT:1:25\"", font.serialise())
+        assertEquals("\"Arial:1:25\"", font.serialise())
     }
 
     @Test

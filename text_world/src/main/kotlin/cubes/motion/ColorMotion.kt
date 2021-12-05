@@ -1,6 +1,6 @@
 package cubes.motion
 
-import cubes.objects.Shape
+import cubes.models.Shape
 import provider.TimeProvider
 import java.awt.Color
 
@@ -25,5 +25,4 @@ abstract class ColorMotion<out T : Shape> constructor(
     }
 
     override fun isEnded(): Boolean = isStarted() && (timeProvider.getTime() - startTime >= timeMs)
-
 }

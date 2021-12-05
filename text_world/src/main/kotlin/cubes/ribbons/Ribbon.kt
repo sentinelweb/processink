@@ -3,6 +3,7 @@ package cubes.ribbons
 import processing.core.PApplet
 import processing.core.PApplet.lerp
 import processing.core.PVector
+import kotlin.random.Random
 
 class Ribbon(
     private val p: PApplet,
@@ -17,8 +18,8 @@ class Ribbon(
     private var MAXSEPARATION = 500f
 
     private val pts: MutableList<PVector> = mutableListOf()
-    private val curves: MutableList<RibbonCurve> = mutableListOf()
-    private lateinit var currentCurve: RibbonCurve
+    private val segments: MutableList<RibbonSegment> = mutableListOf()
+    private lateinit var currentSegment: RibbonSegment
     private var stepId: Int
     private var ribbonSeparation = 0f
     private var noisePosn: Float = 0f
@@ -33,21 +34,21 @@ class Ribbon(
     }
 
     fun draw() {
-        currentCurve.addSegment()
-        val size = curves.size
+        currentSegment.addSegment()
+        val size = segments.size
         if (size > NUMCURVES - 1) {
-            curves[0].removeSegment()
+            segments[0].removeSegment()
         }
         ribbonSeparation = lerp(-MAXSEPARATION, MAXSEPARATION, p.noise(NOISESTEP.let { noisePosn += it; noisePosn }))
         stepId++
         if (stepId > CURVERESOLUTION) addRibbonCurve()
         //draw curves
         for (i in 0 until size) {
-            curves[i].draw()
+            segments[i].draw()
         }
     }
 
-    fun addRibbonCurve() { //add new point
+    private fun addRibbonCurve() { //add new point
         pts.add(randPt)
         val nextPt = pts.elementAt(pts.size - 1)
         val curPt = pts.elementAt(pts.size - 2)
@@ -62,22 +63,22 @@ class Ribbon(
             (curPt.y + nextPt.y) / 2,
             (curPt.z + nextPt.z) / 2
         )
-        currentCurve =
-            RibbonCurve(p, lastMidPt, midPt, curPt, ribbonWidth, CURVERESOLUTION.toFloat(), ribbonColor).apply {
-                curves.add(this)
+        currentSegment =
+            RibbonSegment(p, lastMidPt, midPt, curPt, ribbonWidth, CURVERESOLUTION.toFloat(), ribbonColor).apply {
+                segments.add(this)
             }
 
         //remove old curves
-        if (curves.size > NUMCURVES) {
-            curves.removeAt(0)
+        if (segments.size > NUMCURVES) {
+            segments.removeAt(0)
         }
         stepId = 0
     }
 
-    val randPt: PVector
+    private val randPt: PVector
         get() = PVector(
-            ribbonTarget.x + p.random(-ribbonSeparation, ribbonSeparation),
-            ribbonTarget.y + p.random(-ribbonSeparation, ribbonSeparation),
-            ribbonTarget.z + p.random(-ribbonSeparation, ribbonSeparation)
+            ribbonTarget.x + Random.nextFloat() * 2 * ribbonSeparation - ribbonSeparation,
+            ribbonTarget.y + Random.nextFloat() * 2 * ribbonSeparation - ribbonSeparation,
+            ribbonTarget.z + Random.nextFloat() * 2 * ribbonSeparation - ribbonSeparation
         )
 }

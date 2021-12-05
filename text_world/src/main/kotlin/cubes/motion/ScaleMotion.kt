@@ -1,6 +1,6 @@
 package cubes.motion
 
-import cubes.objects.Shape
+import cubes.models.Shape
 import processing.core.PVector
 import provider.TimeProvider
 

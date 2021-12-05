@@ -79,13 +79,12 @@ class SubFinder {
         return mutableMapOf
     }
 
-
     fun buildMapCorrelate(readWordList: List<String>, subs: List<Subtitles.Subtitle>): Map<Int, Int> {
         // find best position
         val writeWordList = subs.map { it.text[0] }
         val scores = correlate(readWordList, writeWordList)
         // build map
-        val max = scores.max()
+        val max = scores.maxOrNull()
         return mutableMapOf()
     }
 

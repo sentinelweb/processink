@@ -11,7 +11,8 @@ ext {
     processing_version="3.3.7"
     jna_version="3.4.0"
     ver_koin='2.1.6'
-    ver_kotlinx_serialization_runtime="0.20.0"
+    ver_kotlinx_serialization_runtime="1.0-M1-1.4.0-rc"
+    ver_kotlinx_serialization_core="1.2.1"
     ver_osc="0.7"
     ver_fontchooser="2.4"
     ver_rxjava="2.2.16"
@@ -38,6 +39,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$ver_kotlinx_serialization_runtime"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$ver_kotlinx_serialization_core"
     implementation "com.google.code.gson:gson:$ver_gson"
 
     // https://mvnrepository.com/artifact/org.processing/core
@@ -62,7 +64,7 @@ dependencies {
     implementation "com.github.akarnokd:rxjava2-swing:0.3.7"
     implementation "org.koin:koin-core:$ver_koin"
 
-    runtime files("$processing_native_lib_path")
+    runtimeClasspath files("$processing_native_lib_path")
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"

@@ -1,7 +1,7 @@
 package cubes.motion
 
-import cubes.objects.Cube
-import cubes.objects.CubeList
+import cubes.models.Cube
+import cubes.models.CubeList
 import processing.core.PVector
 import provider.TimeProvider
 
@@ -11,7 +11,7 @@ class CubeRotationAlignMotion constructor(
     target: List<PVector> = cubeList.cubes.map { PVector() },
     timeProvider: TimeProvider = TimeProvider(),
     endFunction: () -> Unit = {}
-) : RotationMotion<Cube>(timeMs, target, timeProvider, endFunction) {
+) : RotationMotion<Cube>(timeMs, target, timeProvider, null, endFunction) {
 
     override fun ensureEndState() {
         cubeList.cubes.forEachIndexed { i, cube ->
