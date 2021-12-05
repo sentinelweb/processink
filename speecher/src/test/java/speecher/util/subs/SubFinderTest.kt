@@ -111,9 +111,9 @@ class SubFinderTest {
     private fun printCorrelateData(rList: List<String>, wList: List<String>) {
         val scores = sut.correlate(rList, wList)
         println(
-            "fwd: $scores sLen = ${scores.size} rLen = ${rList.size} wLen = ${wList.size} max = ${scores.max()} maxIndex = ${
+            "fwd: $scores sLen = ${scores.size} rLen = ${rList.size} wLen = ${wList.size} max = ${scores.maxOrNull()} maxIndex = ${
                 scores.indexOf(
-                    scores.max()
+                    scores.maxOrNull()
                 )
             } "
         )

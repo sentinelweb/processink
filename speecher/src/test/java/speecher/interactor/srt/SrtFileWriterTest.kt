@@ -29,6 +29,7 @@ class SrtFileWriterTest {
         testFile.delete()
     }
 
+    // fixme precision error is written to actual - fromSec=72.0 vs fromSec=71.99899
     @Test
     fun write() {
         sut.write(fixtSubs, testFile)

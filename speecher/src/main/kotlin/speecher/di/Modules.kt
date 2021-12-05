@@ -60,7 +60,7 @@ object Modules {
         }
     )
 
-    private val utilModule = module {
+    val utilModule = module {
         single { TimeFormatter() }
         factory { SubFinder() }
         factory { SubTracker() }

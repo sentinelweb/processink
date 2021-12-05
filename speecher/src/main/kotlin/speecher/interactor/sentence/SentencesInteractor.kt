@@ -12,13 +12,13 @@ class SentencesInteractor constructor(
     fun openFile(f: File): Single<SentencesData> =
         Single.just(f)
             .map {
-                json.parse(SentencesData.serializer(), it.readText())
+                json.decodeFromString(SentencesData.serializer(), it.readText())
             }
 
     fun saveFile(f: File, data: SentencesData): Completable =
         Single.just(f)
             .doOnSuccess {
-                it.writeText(json.stringify(SentencesData.serializer(), data))
+                it.writeText(json.encodeToString(SentencesData.serializer(), data))
             }.ignoreElement()
 
 }

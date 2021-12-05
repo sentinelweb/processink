@@ -31,7 +31,6 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$ver_kotlinx_serialization_runtime"
-    implementation "com.google.code.gson:gson:$ver_gson"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$ver_kotlinx_serialization_core"
 
     // https://mvnrepository.com/artifact/org.processing/core

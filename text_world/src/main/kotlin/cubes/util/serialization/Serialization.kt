@@ -36,7 +36,7 @@ val stateJsonSerializer = Json {
     prettyPrint = true
     isLenient = true
     ignoreUnknownKeys = true
-    classDiscriminator = "domainType"// property added when base domain type is use (see ResponseDomain)
+    //classDiscriminator = "domainType"// property added when base domain type is use (see ResponseDomain)
     serializersModule = SerializersModule {
         mapOf(
             CubesState::class to CubesState.serializer(),
@@ -51,17 +51,9 @@ val stateJsonSerializer = Json {
 //        polymorphic(Domain::class, PlaylistDomain::class, PlaylistDomain.serializer())
     }.plus(SerializersModule {
         contextual(Color::class, ColorSerializer)
-    }
-    ).plus(SerializersModule {
         contextual(Font::class, FontSerializer)
-    }
-    ).plus(SerializersModule {
         contextual(File::class, FileSerializer)
-    }
-    ).plus(SerializersModule {
         contextual(PVector::class, PVectorSerializer)
-    }
-    ).plus(SerializersModule {
         contextual(LocalTime::class, LocalTimeSerializer)
     }
     )
