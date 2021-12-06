@@ -6,6 +6,7 @@ import cubes.CubesContract.Control.*
 import cubes.CubesContract.Event
 import cubes.CubesContract.Formation.CENTER
 import cubes.CubesContract.Model3D.TERMINATOR
+import cubes.CubesContract.ParticleShape.CIRCLE
 import cubes.CubesContract.TextTransition.FADE
 import cubes.models.TextList.Ordering.INORDER
 import cubes.util.wrapper.FilesWrapper
@@ -40,7 +41,7 @@ class OscController(
     override fun processEvent(e: OscContract.OscEvent) {
         try {
             when (e.message) {
-                // toplevel
+                // top level
                 "/state/load" -> events.onNext(
                     Event(MENU_OPEN_STATE, File(files.stateDir, eventMapper.getString(e, 0)))
                 )
@@ -95,10 +96,21 @@ class OscController(
                 "/text/visible" -> events.onNext(Event(TEXT_VISIBLE, eventMapper.getBoolean(e, 0)))
                 "/text/motion" -> events.onNext(Event(TEXT_MOTION, eventMapper.getEnum(e, 0, FADE)))
                 "/text/order" -> events.onNext(Event(TEXT_ORDER, eventMapper.getEnum(e, 0, INORDER)))
-                "/text/load" -> events.onNext(
-                    Event(MENU_OPEN_TEXT, File(files.textDir, eventMapper.getString(e, 0)))
-                )
+                "/text/load" -> events.onNext(Event(MENU_OPEN_TEXT, File(files.textDir, eventMapper.getString(e, 0))))
                 "/text/next" -> events.onNext(Event(TEXT_NEXT, null))
+
+                // particle
+                "/particle/trigger" -> events.onNext(Event(PARTICLE_SYS_CREATE, null))
+                "/particle/position" -> events.onNext(Event(PARTICLE_POSITION, eventMapper.getPVector(e)))
+                "/particle/size" -> events.onNext(Event(PARTICLE_SIZE, eventMapper.getInt(e, 0)))
+                "/particle/fill" -> events.onNext(Event(PARTICLE_FILL_COLOUR, eventMapper.getColor(e, null)))
+                "/particle/stroke" -> events.onNext(Event(PARTICLE_STROKE_COLOUR, eventMapper.getColor(e, null)))
+                "/particle/number" -> events.onNext(Event(PARTICLE_NUMBER, eventMapper.getInt(e, 0)))
+                "/particle/lifespan" -> events.onNext(Event(PARTICLE_LIFESPAN, eventMapper.getInt(e, 0)))
+                "/particle/shape" -> events.onNext(Event(PARTICLE_SHAPE, eventMapper.getEnum(e, 0, CIRCLE)))
+                "/particle/shape/path" -> events.onNext(Event(PARTICLE_SHAPE_PATH, eventMapper.getString(e, 0)))
+
+                // object
                 "/obj/load" -> events.onNext(Event(ADD_MODEL, eventMapper.getEnum(e, 0, TERMINATOR)))
                 "/obj/unload" -> events.onNext(Event(REMOVE_MODEL, eventMapper.getEnum(e, 0, TERMINATOR)))
                 else -> {
