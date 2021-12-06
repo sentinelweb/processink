@@ -11,6 +11,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import processing.core.PApplet
+import processing.core.PVector
 import java.awt.Color
 import java.awt.Font
 
@@ -54,6 +55,10 @@ data class CubesState constructor(
     var particleShape: CubesContract.ParticleShape = CubesContract.ParticleShape.CIRCLE,
     var particleShapePath: String? = null, // for SVG /  image
     var particleNum: Int = 50,
+    var particleSize: Float = 2f,
+    @Contextual
+    var particlePosition: PVector = PVector(0.5f, 0.5f, 0f),
+    var particleLifespan: Int = 1000, //msec
 ) {
     companion object {
         fun makeFromState(p: PApplet) = CubesState(

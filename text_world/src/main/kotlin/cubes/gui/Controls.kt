@@ -476,9 +476,20 @@ class Controls(
                             }
                             isOpaque = true
                         })
+                        add(JLabel("#"))
                         add(JSpinner().apply {
                             addChangeListener { events.onNext(Event(PARTICLE_NUMBER, this.value)) }
                             value = 50
+                        })
+                        add(JLabel("Life"))
+                        add(JSpinner().apply {
+                            addChangeListener { events.onNext(Event(PARTICLE_LIFESPAN, this.value)) }
+                            value = 1000
+                        })
+                        add(JLabel("Sz"))
+                        add(JSpinner().apply {
+                            addChangeListener { events.onNext(Event(PARTICLE_SIZE, this.value)) }
+                            value = 1
                         })
                         val textSetField = JTextField()
                         add(JSpinner(SpinnerListModel(ParticleShape.values())).apply {

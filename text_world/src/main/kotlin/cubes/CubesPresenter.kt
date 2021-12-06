@@ -105,6 +105,9 @@ class CubesPresenter constructor(
                         PARTICLE_SHAPE_PATH -> _state.particleShapePath = it.data as String?
                         PARTICLE_FILL_COLOUR -> _state.particleFillColor = it.data as Color?
                         PARTICLE_STROKE_COLOUR -> _state.particleStrokeColor = it.data as Color?
+                        PARTICLE_SIZE -> _state.particleSize = (it.data as Int).toFloat()
+                        PARTICLE_POSITION -> _state.particlePosition = it.data as PVector
+                        PARTICLE_LIFESPAN -> _state.particleLifespan = it.data as Int
                         MENU_SAVE_STATE -> saveState(it.data as File)
                         MENU_OPEN_STATE -> openState(it.data as File)
                         MENU_OPEN_TEXT -> openText(it.data as File)
@@ -113,7 +116,7 @@ class CubesPresenter constructor(
                         REMOVE_MODEL -> removeModel(it.data as CubesContract.Model3D)
                         ADD_IMAGE -> addImage(it.data as String)
                         REMOVE_IMAGE -> removeImage(it.data as String)
-                        else -> println("Couldnt handle : ${it.control} ")
+                        else -> println("Couldn't handle : ${it.control} ")
                     }
                 }, {
                     println("Exception from UI : ${it.message} ")
@@ -496,20 +499,26 @@ class CubesPresenter constructor(
     // region psys
     fun createParticleSystem() {
         _state.particleSystems.add(
-            ParticleSystem(view.applet, _state.particleNum) { i -> particle() }
-                .apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
+            ParticleSystem(view.applet, _state.particleNum, _state.particleLifespan) { i -> particle() }
+                .apply {
+                    position.set(
+                        view.applet.width * _state.particlePosition.x,
+                        view.applet.height * _state.particlePosition.y,
+                        _state.particlePosition.z
+                    )
+                }
         )
     }
 
     private fun particle() = when (_state.particleShape) {
-        CIRCLE -> Circle(view.applet, 2f)
+        CIRCLE -> Circle(view.applet, _state.particleSize)
             .apply { scale.set(10) }
             .apply { fill = _state.particleFillColor != null }
             .apply { if (fill) fillColor = _state.particleFillColor!! }
             .apply { stroke = _state.particleStrokeColor != null }
             .apply { if (stroke) strokeColor = _state.particleStrokeColor!! }
             .apply { strokeWeight(3f) }
-        CUBE -> Cube(view.applet, 2f)
+        CUBE -> Cube(view.applet, _state.particleSize)
             .apply { scale.set(10) }
             .apply { fill = _state.particleFillColor != null }
             .apply { if (fill) fillColor = _state.particleFillColor!! }
@@ -517,6 +526,7 @@ class CubesPresenter constructor(
             .apply { if (stroke) strokeColor = _state.particleStrokeColor!! }
             .apply { strokeWeight(3f) }
         SVG -> SvgImage(view.applet, _state.particleShapePath ?: "yinyang.svg")
+            .apply { scale.set(_state.particleSize) }
             .apply { fill = _state.particleFillColor != null }
             .apply { if (fill) fillColor = _state.particleFillColor!! }
             .apply { stroke = _state.particleStrokeColor != null }

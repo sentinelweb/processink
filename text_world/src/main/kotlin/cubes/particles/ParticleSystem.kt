@@ -4,9 +4,11 @@ import cubes.models.Shape
 import cubes.util.pushMatrix
 import processing.core.PApplet
 
+// todo find a way to re-use the pShape object in the shape as it is heavy to create for many particles
 class ParticleSystem(
     override var p: PApplet? = null,
     n: Int,
+    private val lifeSpan: Int,
     private val shapeProvider: (Int) -> Shape
 ) : Shape(p) {
 
@@ -19,7 +21,8 @@ class ParticleSystem(
     private fun init(n: Int) {
         particles = ArrayList()
         for (i in 0 until n) {
-            val particle = Particle(p!!, shapeProvider.invoke(i))
+            val sprite = shapeProvider.invoke(i)
+            val particle = Particle(p!!, sprite, lifeSpan)
             particles.add(particle)
         }
     }
