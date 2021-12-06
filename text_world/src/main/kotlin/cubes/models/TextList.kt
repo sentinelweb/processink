@@ -162,7 +162,6 @@ data class TextList constructor(
     override fun draw() {
         if (visible) {
             setProps()
-            updateState()
             p?.apply {
                 pushMatrix {
                     translate(width / 2f, height / 2f)

@@ -123,6 +123,11 @@ fun main() {
                 models.forEach { it.draw() }
             } catch (e: ConcurrentModificationException) {
             }
+
+            try {
+                particleSystems.forEach { it.draw() }
+            } catch (e: ConcurrentModificationException) {
+            }
             // ribbons.draw()
 
             textList.draw()

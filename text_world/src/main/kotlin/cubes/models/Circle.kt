@@ -3,13 +3,12 @@ package cubes.models
 import cubes.util.pushMatrix
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.robmunro.processing.util.encodeARGB
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PShape
 
 @Serializable
-data class Cube constructor(
+data class Circle constructor(
     @Transient
     override var p: PApplet? = null,
     val width: Float,
@@ -18,7 +17,8 @@ data class Cube constructor(
 ) : Shape(p) {
 
     @Transient
-    private var cubeShape: PShape? = null
+    var circleShape: PShape? = null
+        private set
 
     init {
         initialise()
@@ -31,7 +31,7 @@ data class Cube constructor(
     }
 
     fun initialise() {
-        cubeShape = p?.createShape(PConstants.BOX, width, height, depth)
+        circleShape = p?.createShape(PConstants.ELLIPSE, 1f, 1f, width, height)
             .apply { this?.disableStyle() }
     }
 
@@ -45,17 +45,17 @@ data class Cube constructor(
                     rotateZ(angle.z)
                     updateColors()
                     scale(scale.x, scale.y, scale.z)
-                    shape(cubeShape)
+                    shape(circleShape)
                 }
             }
         }
     }
 
-    fun log() {
-        println(
-            "cube: v:$visible - pos:$position - angle:$angle - scale:$scale" +
-                    " fill:$fill - fillColor:${fillColor.encodeARGB()} - stroke:$stroke - strokeColor:${strokeColor.encodeARGB()}"
-        )
-    }
+//    fun log() {
+//        println(
+//            "cube: v:$visible - pos:$position - angle:$angle - scale:$scale" +
+//                    " fill:$fill - fillColor:${fillColor.encodeARGB()} - stroke:$stroke - strokeColor:${strokeColor.encodeARGB()}"
+//        )
+//    }
 
 }

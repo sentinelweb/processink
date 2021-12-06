@@ -14,7 +14,7 @@ import java.awt.Color
 @Serializable
 abstract class Shape constructor(
     @Transient
-    open var p: PApplet? = null,
+    protected open var p: PApplet? = null,
     @Contextual
     val angle: PVector = PVector(),
     @Contextual
@@ -34,7 +34,7 @@ abstract class Shape constructor(
     var strokeWeight: Float = 2f
         set(value) {
             field = if (value > 0) value else 1f
-            if (value > 0) {// shape seems to die after hitting zero
+            if (value > 0) { // shape seems to die after hitting zero
                 this.stroke = true
             } else {
                 this.stroke = false

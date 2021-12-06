@@ -6,10 +6,12 @@ import cubes.models.CubeList
 import cubes.models.Shape
 import cubes.models.TextList
 import cubes.models.TextList.Ordering.INORDER
+import cubes.particles.ParticleSystem
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import processing.core.PApplet
+import processing.core.PVector
 import java.awt.Color
 import java.awt.Font
 
@@ -29,6 +31,8 @@ data class CubesState constructor(
     @Contextual
     var cubesFillStartColor: Color = Color.YELLOW,
     var cubesFillAlpha: Float = 255f,
+    @Contextual
+    var cubesStrokeColor: Color = Color.RED,
     // text
     var textTransition: CubesContract.TextTransition = FADE,
     var textOrder: TextList.Ordering = INORDER,
@@ -40,7 +44,21 @@ data class CubesState constructor(
     var backgroundColor: Color = Color.BLACK,
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN,
     @Transient
-    val models: MutableList<Shape> = mutableListOf()
+    val models: MutableList<Shape> = mutableListOf(),
+    // psys
+    @Transient
+    val particleSystems: MutableList<ParticleSystem> = mutableListOf(),
+    @Contextual
+    var particleFillColor: Color? = null,
+    @Contextual
+    var particleStrokeColor: Color? = null,
+    var particleShape: CubesContract.ParticleShape = CubesContract.ParticleShape.CIRCLE,
+    var particleShapePath: String? = null, // for SVG /  image
+    var particleNum: Int = 50,
+    var particleSize: Float = 2f,
+    @Contextual
+    var particlePosition: PVector = PVector(0.5f, 0.5f, 0f),
+    var particleLifespan: Int = 1000, //msec
 ) {
     companion object {
         fun makeFromState(p: PApplet) = CubesState(

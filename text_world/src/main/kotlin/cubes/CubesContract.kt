@@ -22,6 +22,8 @@ interface CubesContract {
         MILLENIUM_FALCON(MilleniumFalcon::class)
     }
 
+    enum class ParticleShape { CUBE, CIRCLE, SVG }
+
     interface View {
         val applet: PApplet
     }
@@ -37,7 +39,8 @@ interface CubesContract {
     )
 
     enum class Control {
-        SHADER_BG, BG_COLOR,
+        SHADER_BG,
+        BG_COLOR,
         MOTION_ANIMATION_TIME,
         CUBES_ROTATION_SPEED,
         CUBES_ROTATION_OFFEST_RESET,
@@ -67,6 +70,15 @@ interface CubesContract {
         TEXT_NEXT,
         TEXT_SET,
         TEXT_GOTO,
+        PARTICLE_SYS_CREATE,
+        PARTICLE_SHAPE,
+        PARTICLE_SHAPE_PATH,
+        PARTICLE_STROKE_COLOUR,
+        PARTICLE_FILL_COLOUR,
+        PARTICLE_NUMBER,
+        PARTICLE_SIZE,
+        PARTICLE_POSITION,
+        PARTICLE_LIFESPAN,
         ADD_MODEL,
         REMOVE_MODEL,
         ADD_IMAGE,

@@ -1,5 +1,7 @@
 package cubes.osc
 
+import net.robmunro.processing.util.decodeARGB
+import processing.core.PVector
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Font
@@ -11,14 +13,15 @@ class OscEventMapper(
         log.tag(this)
     }
 
-    fun getColor(event: OscContract.OscEvent): Color = kotlin.runCatching {
+    fun getColor(event: OscContract.OscEvent, default: Color? = Color.BLACK): Color? = kotlin.runCatching {
         when (event.args.size) {
             0 -> {
-                Color.BLACK
+                default
             }
             1 -> {
                 when (event.args[0].type) {
-                    "s" -> Color.decode(event.args[0].value as? String)
+                    "s" -> (event.args[0].value as String)
+                        .let { if (it.length == 9) it.decodeARGB() else Color.decode(it) }
                     "f" -> {
                         val grey = event.args[0].value as Float
                         Color(grey, grey, grey)
@@ -29,7 +32,7 @@ class OscEventMapper(
                     }
                     else -> {
                         log.e("${event.message}: color osc = ${event.args}");
-                        Color.BLACK
+                        default
                     }
                 }
             }
@@ -49,7 +52,7 @@ class OscEventMapper(
                     }
                     else -> {
                         log.e("${event.message}: color osc = ${event.args}");
-                        Color.BLACK
+                        default
                     }
                 }
             }
@@ -59,38 +62,54 @@ class OscEventMapper(
                         val r = event.args[0].value as Int
                         val g = event.args[1].value as Int
                         val b = event.args[2].value as Int
-                        val a = event.args[2].value as Int
+                        val a = event.args[3].value as Int
                         Color(r, g, b, a)
                     }
                     "f" -> {
                         val r = event.args[0].value as Float
                         val g = event.args[1].value as Float
                         val b = event.args[2].value as Float
-                        val a = event.args[2].value as Float
+                        val a = event.args[3].value as Float
                         Color(r, g, b, a)
                     }
                     else -> {
                         log.e("${event.message}: color osc = ${event.args}")
-                        Color.BLACK
+                        default
                     }
                 }
             }
             else -> {
                 log.e("${event.message}: color osc = ${event.args}")
-                Color.BLACK
+                default
             }
         }
     }.getOrElse {
         log.e("${event.message}: color osc = ${event.args}")
-        Color.BLACK
+        default
     }
 
-    fun getString(event: OscContract.OscEvent, arg: Int): String = if (event.args[arg].type == "s") {
-        (event.args[arg].value as String)
-    } else {
-        log.e("${event.message}: arg:$arg not a string = ${event.args[arg]}");
-        ""
-    }
+    fun getString(event: OscContract.OscEvent, arg: Int): String =
+        if (event.args[arg].type == "s") {
+            (event.args[arg].value as String)
+        } else if (event.args[arg].type == "i") {
+            (event.args[arg].value as Int).toString()
+        } else if (event.args[arg].type == "f") {
+            (event.args[arg].value as Float).toString()
+        } else {
+            log.e("${event.message}: arg:$arg not a string = ${event.args[arg]}");
+            ""
+        }
+
+    fun getStringOrNull(event: OscContract.OscEvent, arg: Int): String? =
+        if (event.args[arg].type == "s") {
+            (event.args[arg].value as String)
+        } else if (event.args[arg].type == "i") {
+            (event.args[arg].value as Int).toString()
+        } else if (event.args[arg].type == "f") {
+            (event.args[arg].value as Float).toString()
+        } else {
+            null
+        }
 
     fun <E : Enum<E>> getEnum(event: OscContract.OscEvent, arg: Int, def: E): E = if (event.args[arg].type == "s") {
         def::class.java.enumConstants.find { it.name == event.args[arg].value as String } ?: def
@@ -163,4 +182,11 @@ class OscEventMapper(
                 Font(name, Font.PLAIN, 60)
             }
         }
+
+    fun getPVector(e: OscContract.OscEvent): PVector =
+        PVector(
+            getFloat(e, 0),
+            getFloat(e, 1),
+            getFloat(e, 2)
+        )
 }
