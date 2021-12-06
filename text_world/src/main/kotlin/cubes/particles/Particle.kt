@@ -2,32 +2,35 @@ package cubes.particles
 
 import cubes.models.Shape
 import cubes.util.increment
+import net.robmunro.processing.util.alpha
+import net.robmunro.processing.util.encodeARGB
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PVector
 
-class Particle(var p: PApplet, sprite: Shape) {
+class Particle(var p: PApplet, sprite: Shape, val useGravity: Boolean = false) {
 
-    var velocity: PVector = PVector(.1f, .2f, 0f)
-    var lifespan = 255f
-    var shape: Shape
-    //var partSize: Float
-    //var gravity = PVector(0f, 0.1f)
+    private var velocity: PVector
+    private var lifespan = LIFESPAN
+    private var shape: Shape
+    private val gravity = PVector(0f, 0.1f)
+
+    private var originalFillAlpha = 255;
 
     init {
-        //partSize = p.random(10f, 60f)
         shape = sprite
-        //rebirth(p.width / 2f, p.height / 2f)
-        lifespan = p.random(255f)
+        lifespan = p.random(205f).toInt() + 50
+        velocity =
+            PVector(p.random(MAX_SPEED), p.random(MAX_SPEED), p.random(MAX_SPEED))
+                .sub(MAX_SPEED / 2, MAX_SPEED / 2, MAX_SPEED / 2)
     }
 
-    private fun updatePosition() {
+    private fun updateParticle() {
         val a = p.random(PConstants.TWO_PI)
-        val speed = p.random(0.5f, 4f)
-//        velocity = PVector(PApplet.cos(a), PApplet.sin(a))
-//        velocity!!.mult(speed)
-        //lifespan = 255f
-        shape.position.increment(velocity.copy().mult(speed))
+        if (useGravity) {
+            velocity.add(gravity)
+        }
+        shape.position.increment(velocity)
     }
 
     val isDead: Boolean
@@ -35,12 +38,25 @@ class Particle(var p: PApplet, sprite: Shape) {
 
     fun update() {
         lifespan = lifespan - 1
-        //velocity!!.add(gravity)
-        updatePosition()
+        updateParticle()
     }
 
     fun draw() {
-        println("Particle:draw - ${shape.position}")
+        if (lifespan == FADEOUT) {
+            originalFillAlpha = shape.fillColor.alpha
+        } else if (lifespan < FADEOUT && lifespan >= 0) {
+            shape.fillColor = shape.fillColor.alpha(originalFillAlpha * (lifespan / FADEOUT.toFloat()))
+            if (shape.stroke) {
+                shape.strokeColor = shape.strokeColor.alpha(255 * (lifespan / FADEOUT.toFloat()))
+            }
+            println("fadeout: ${shape.fillColor.encodeARGB()} ${shape.strokeColor.encodeARGB()}")
+        }
         shape.draw()
+    }
+
+    companion object {
+        private const val MAX_SPEED = 10f
+        private const val LIFESPAN = 255
+        private const val FADEOUT = 50
     }
 }

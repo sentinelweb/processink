@@ -22,6 +22,7 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
+import net.robmunro.processing.util.alpha
 import processing.core.PVector
 import speecher.util.serialization.stateJsonSerializer
 import speecher.util.wrapper.logFactory
@@ -185,7 +186,6 @@ class CubesPresenter constructor(
                 }
             )
             _state.textList.apply { startText() }
-            makeTestCube()
         } else {
             setState(CubesState.makeFromState(view.applet))
         }
@@ -200,10 +200,8 @@ class CubesPresenter constructor(
         _state.cubeList.updateState()
         _state.models.forEach { it.updateState() }
         _state.textList.updateState()
-        _state.particleSystem?.update()
-        if (_state.particleSystem?.isDead() ?: false) {
-            _state.particleSystem = null
-        }
+        _state.particleSystems.forEach { it.update() }
+        _state.particleSystems.removeIf { it.isDead() }
     }
 
     /////////////////////////////////// CUBES //////////////////////////////////////////////////////
@@ -491,24 +489,20 @@ class CubesPresenter constructor(
     /////////////////////////////////// PARTICLE SYSTEMS /////////////////////////////////////////////
     // region psys
     fun createParticleSystem() {
-        if (_state.particleSystem == null) {
-            _state.particleSystem = ParticleSystem(view.applet, 30) { i ->
-                Cube(view.applet, 2f)
-                    .apply { fill = true }
-                    .apply { fillColor = Color.RED }
-            }.apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
-        }
+        _state.particleSystems.add(
+            ParticleSystem(view.applet, 100) { i -> particle() }
+                .apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
+        )
     }
 
-    fun makeTestCube() {
-        _state.testCube = Cube(view.applet, 2f)
+    private fun particle() =
+        Circle(view.applet, 2f)
             .apply { fill = true }
-            .apply { fillColor = Color.RED }
-            .apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
-            .apply { scale.set(5) }
+            .apply { fillColor = _state.cubesFillStartColor.alpha(_state.cubesFillAlpha) }
+            .apply { scale.set(10) }
             .apply { stroke = true }
-            .apply { strokeColor = Color.YELLOW }
+            .apply { strokeColor = _state.cubesStrokeColor }
             .apply { strokeWeight(3f) }
-    }
+
     // endregion psys
 }

@@ -12,6 +12,7 @@ class ColorUtils {
 
 fun Color.toProcessing(p: PApplet) = p.color(red, green, blue, alpha)
 fun Color.toProcessing(alpha: Float, p: PApplet) = p.color(red, green, blue, alpha.toInt())
+fun Color.alpha(alpha: Float) = Color(red, green, blue, alpha.toInt())
 fun String.webc(p: PApplet) = Color.decode(this).toProcessing(p)
 
 fun Color.encodeARGB() = "#${alpha.hex2()}${red.hex2()}${green.hex2()}${blue.hex2()}"

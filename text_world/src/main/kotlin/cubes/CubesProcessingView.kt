@@ -124,9 +124,10 @@ fun main() {
             } catch (e: ConcurrentModificationException) {
             }
 
-            particleSystem?.draw()
-
-            testCube?.draw()
+            try {
+                particleSystems.forEach { it.draw() }
+            } catch (e: ConcurrentModificationException) {
+            }
             // ribbons.draw()
 
             textList.draw()

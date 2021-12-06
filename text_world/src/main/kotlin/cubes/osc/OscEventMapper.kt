@@ -1,5 +1,6 @@
 package cubes.osc
 
+import net.robmunro.processing.util.decodeARGB
 import speecher.util.wrapper.LogWrapper
 import java.awt.Color
 import java.awt.Font
@@ -18,7 +19,7 @@ class OscEventMapper(
             }
             1 -> {
                 when (event.args[0].type) {
-                    "s" -> Color.decode(event.args[0].value as? String)
+                    "s" -> (event.args[0].value as String).decodeARGB()
                     "f" -> {
                         val grey = event.args[0].value as Float
                         Color(grey, grey, grey)

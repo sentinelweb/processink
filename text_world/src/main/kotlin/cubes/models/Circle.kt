@@ -9,7 +9,7 @@ import processing.core.PConstants
 import processing.core.PShape
 
 @Serializable
-data class Cube constructor(
+data class Circle constructor(
     @Transient
     override var p: PApplet? = null,
     val width: Float,
@@ -31,7 +31,7 @@ data class Cube constructor(
     }
 
     fun initialise() {
-        cubeShape = p?.createShape(PConstants.BOX, width, height, depth)
+        cubeShape = p?.createShape(PConstants.ELLIPSE, 1f, 1f, width, height)
             .apply { this?.disableStyle() }
     }
 

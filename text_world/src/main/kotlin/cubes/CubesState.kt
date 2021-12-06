@@ -2,7 +2,6 @@ package cubes
 
 import cubes.CubesContract.BackgroundShaderType.REFRACTION_PATTERN
 import cubes.CubesContract.TextTransition.FADE
-import cubes.models.Cube
 import cubes.models.CubeList
 import cubes.models.Shape
 import cubes.models.TextList
@@ -31,6 +30,8 @@ data class CubesState constructor(
     @Contextual
     var cubesFillStartColor: Color = Color.YELLOW,
     var cubesFillAlpha: Float = 255f,
+    @Contextual
+    var cubesStrokeColor: Color = Color.RED,
     // text
     var textTransition: CubesContract.TextTransition = FADE,
     var textOrder: TextList.Ordering = INORDER,
@@ -43,11 +44,15 @@ data class CubesState constructor(
     var background: CubesContract.BackgroundShaderType = REFRACTION_PATTERN,
     @Transient
     val models: MutableList<Shape> = mutableListOf(),
+    // psys
     @Transient
-    var particleSystem: ParticleSystem? = null,
-    @Transient
-    var testCube: Cube? = null
-) {
+    val particleSystems: MutableList<ParticleSystem> = mutableListOf(),
+    @Contextual
+    var particleFillColor: Color = Color.YELLOW,
+    @Contextual
+    var particleStrokeColor: Color = Color.RED,
+
+    ) {
     companion object {
         fun makeFromState(p: PApplet) = CubesState(
             textList = TextList(p)

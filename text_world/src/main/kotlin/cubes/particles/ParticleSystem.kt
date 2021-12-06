@@ -35,8 +35,6 @@ class ParticleSystem(
     override fun draw() {
         p?.apply {
             pushMatrix {
-                println("ParticleSys:draw - ${position}")
-
                 translate(position.x, position.y, position.z)
                 pushMatrix {
                     for (particle in particles) {
