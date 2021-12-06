@@ -3,7 +3,6 @@ package cubes.particles
 import cubes.models.Shape
 import cubes.util.increment
 import net.robmunro.processing.util.alpha
-import net.robmunro.processing.util.encodeARGB
 import processing.core.PApplet
 import processing.core.PConstants
 import processing.core.PVector
@@ -49,7 +48,6 @@ class Particle(var p: PApplet, sprite: Shape, val useGravity: Boolean = false) {
             if (shape.stroke) {
                 shape.strokeColor = shape.strokeColor.alpha(255 * (lifespan / FADEOUT.toFloat()))
             }
-            println("fadeout: ${shape.fillColor.encodeARGB()} ${shape.strokeColor.encodeARGB()}")
         }
         shape.draw()
     }

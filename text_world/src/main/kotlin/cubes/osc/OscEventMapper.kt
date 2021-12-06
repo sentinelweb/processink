@@ -19,7 +19,8 @@ class OscEventMapper(
             }
             1 -> {
                 when (event.args[0].type) {
-                    "s" -> (event.args[0].value as String).decodeARGB()
+                    "s" -> (event.args[0].value as String)
+                        .let { if (it.length == 9) it.decodeARGB() else Color.decode(it) }
                     "f" -> {
                         val grey = event.args[0].value as Float
                         Color(grey, grey, grey)

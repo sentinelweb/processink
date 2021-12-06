@@ -32,6 +32,8 @@ fun JButton.setup(click: (ActionEvent) -> Unit): JButton {
     return this
 }
 
+//fun <E:Enum<E>> spinnerModel(clazz:Class<E>):SpinnerListModel = SpinnerListModel(clazz.enumConstants)
+
 fun <T : Any> JList<T>.setData(list: List<T>) {
     model = DefaultListModel<T>().let { model ->
         list.forEach {

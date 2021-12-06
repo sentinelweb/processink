@@ -4,6 +4,8 @@ import cubes.CubesContract.Control.*
 import cubes.CubesContract.Formation.*
 import cubes.CubesContract.Model3D.MILLENIUM_FALCON
 import cubes.CubesContract.Model3D.TERMINATOR
+import cubes.CubesContract.ParticleShape.*
+import cubes.CubesContract.ParticleShape.CIRCLE
 import cubes.CubesContract.RotationAxis.X
 import cubes.CubesContract.RotationAxis.Y
 import cubes.CubesContract.TextTransition.*
@@ -22,7 +24,6 @@ import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import net.robmunro.processing.util.ColorUtils.Companion.TRANSPARENT
-import net.robmunro.processing.util.alpha
 import processing.core.PVector
 import speecher.util.serialization.stateJsonSerializer
 import speecher.util.wrapper.logFactory
@@ -99,6 +100,11 @@ class CubesPresenter constructor(
                         TEXT_SET -> textSet(it.data as List<String>)
                         TEXT_GOTO -> textGoto(it.data as Int)
                         PARTICLE_SYS_CREATE -> createParticleSystem()
+                        PARTICLE_NUMBER -> _state.particleNum = it.data as Int
+                        PARTICLE_SHAPE -> _state.particleShape = it.data as CubesContract.ParticleShape
+                        PARTICLE_SHAPE_PATH -> _state.particleShapePath = it.data as String?
+                        PARTICLE_FILL_COLOUR -> _state.particleFillColor = it.data as Color?
+                        PARTICLE_STROKE_COLOUR -> _state.particleStrokeColor = it.data as Color?
                         MENU_SAVE_STATE -> saveState(it.data as File)
                         MENU_OPEN_STATE -> openState(it.data as File)
                         MENU_OPEN_TEXT -> openText(it.data as File)
@@ -490,19 +496,32 @@ class CubesPresenter constructor(
     // region psys
     fun createParticleSystem() {
         _state.particleSystems.add(
-            ParticleSystem(view.applet, 100) { i -> particle() }
+            ParticleSystem(view.applet, _state.particleNum) { i -> particle() }
                 .apply { position.set(view.applet.width / 2f, view.applet.height / 2f) }
         )
     }
 
-    private fun particle() =
-        Circle(view.applet, 2f)
-            .apply { fill = true }
-            .apply { fillColor = _state.cubesFillStartColor.alpha(_state.cubesFillAlpha) }
+    private fun particle() = when (_state.particleShape) {
+        CIRCLE -> Circle(view.applet, 2f)
             .apply { scale.set(10) }
-            .apply { stroke = true }
-            .apply { strokeColor = _state.cubesStrokeColor }
+            .apply { fill = _state.particleFillColor != null }
+            .apply { if (fill) fillColor = _state.particleFillColor!! }
+            .apply { stroke = _state.particleStrokeColor != null }
+            .apply { if (stroke) strokeColor = _state.particleStrokeColor!! }
             .apply { strokeWeight(3f) }
-
+        CUBE -> Cube(view.applet, 2f)
+            .apply { scale.set(10) }
+            .apply { fill = _state.particleFillColor != null }
+            .apply { if (fill) fillColor = _state.particleFillColor!! }
+            .apply { stroke = _state.particleStrokeColor != null }
+            .apply { if (stroke) strokeColor = _state.particleStrokeColor!! }
+            .apply { strokeWeight(3f) }
+        SVG -> SvgImage(view.applet, _state.particleShapePath ?: "yinyang.svg")
+            .apply { fill = _state.particleFillColor != null }
+            .apply { if (fill) fillColor = _state.particleFillColor!! }
+            .apply { stroke = _state.particleStrokeColor != null }
+            .apply { if (stroke) strokeColor = _state.particleStrokeColor!! }
+            .apply { strokeWeight(3f) }
+    }
     // endregion psys
 }

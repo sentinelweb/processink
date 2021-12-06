@@ -48,11 +48,13 @@ data class CubesState constructor(
     @Transient
     val particleSystems: MutableList<ParticleSystem> = mutableListOf(),
     @Contextual
-    var particleFillColor: Color = Color.YELLOW,
+    var particleFillColor: Color? = null,
     @Contextual
-    var particleStrokeColor: Color = Color.RED,
-
-    ) {
+    var particleStrokeColor: Color? = null,
+    var particleShape: CubesContract.ParticleShape = CubesContract.ParticleShape.CIRCLE,
+    var particleShapePath: String? = null, // for SVG /  image
+    var particleNum: Int = 50,
+) {
     companion object {
         fun makeFromState(p: PApplet) = CubesState(
             textList = TextList(p)
